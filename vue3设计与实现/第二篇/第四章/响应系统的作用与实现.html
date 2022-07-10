@@ -1,0 +1,1764 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>响应系统的作用与实现.md</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+
+<style>
+/* https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/media/markdown.css */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+body {
+	font-family: var(--vscode-markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif);
+	font-size: var(--vscode-markdown-font-size, 14px);
+	padding: 0 26px;
+	line-height: var(--vscode-markdown-line-height, 22px);
+	word-wrap: break-word;
+}
+
+#code-csp-warning {
+	position: fixed;
+	top: 0;
+	right: 0;
+	color: white;
+	margin: 16px;
+	text-align: center;
+	font-size: 12px;
+	font-family: sans-serif;
+	background-color:#444444;
+	cursor: pointer;
+	padding: 6px;
+	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+}
+
+#code-csp-warning:hover {
+	text-decoration: none;
+	background-color:#007acc;
+	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
+}
+
+body.scrollBeyondLastLine {
+	margin-bottom: calc(100vh - 22px);
+}
+
+body.showEditorSelection .code-line {
+	position: relative;
+}
+
+body.showEditorSelection .code-active-line:before,
+body.showEditorSelection .code-line:hover:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: -12px;
+	height: 100%;
+}
+
+body.showEditorSelection li.code-active-line:before,
+body.showEditorSelection li.code-line:hover:before {
+	left: -30px;
+}
+
+.vscode-light.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.vscode-light.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.40);
+}
+
+.vscode-light.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-dark.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.vscode-dark.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.60);
+}
+
+.vscode-dark.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-high-contrast.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 160, 0, 0.7);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 160, 0, 1);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+a {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 1px solid -webkit-focus-ring-color;
+	outline-offset: -1px;
+}
+
+hr {
+	border: 0;
+	height: 2px;
+	border-bottom: 2px solid;
+}
+
+h1 {
+	padding-bottom: 0.3em;
+	line-height: 1.2;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+h1, h2, h3 {
+	font-weight: normal;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table > thead > tr > th {
+	text-align: left;
+	border-bottom: 1px solid;
+}
+
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td {
+	padding: 5px 10px;
+}
+
+table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+blockquote {
+	margin: 0 7px 0 5px;
+	padding: 0 16px 0 10px;
+	border-left-width: 5px;
+	border-left-style: solid;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 1em;
+	line-height: 1.357em;
+}
+
+body.wordWrap pre {
+	white-space: pre-wrap;
+}
+
+pre:not(.hljs),
+pre.hljs code > div {
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+pre code {
+	color: var(--vscode-editor-foreground);
+	tab-size: 4;
+}
+
+/** Theming */
+
+.vscode-light pre {
+	background-color: rgba(220, 220, 220, 0.4);
+}
+
+.vscode-dark pre {
+	background-color: rgba(10, 10, 10, 0.4);
+}
+
+.vscode-high-contrast pre {
+	background-color: rgb(0, 0, 0);
+}
+
+.vscode-high-contrast h1 {
+	border-color: rgb(0, 0, 0);
+}
+
+.vscode-light table > thead > tr > th {
+	border-color: rgba(0, 0, 0, 0.69);
+}
+
+.vscode-dark table > thead > tr > th {
+	border-color: rgba(255, 255, 255, 0.69);
+}
+
+.vscode-light h1,
+.vscode-light hr,
+.vscode-light table > tbody > tr + tr > td {
+	border-color: rgba(0, 0, 0, 0.18);
+}
+
+.vscode-dark h1,
+.vscode-dark hr,
+.vscode-dark table > tbody > tr + tr > td {
+	border-color: rgba(255, 255, 255, 0.18);
+}
+
+</style>
+
+<style>
+/* Tomorrow Theme */
+/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+/* Original theme - https://github.com/chriskempson/tomorrow-theme */
+
+/* Tomorrow Comment */
+.hljs-comment,
+.hljs-quote {
+	color: #8e908c;
+}
+
+/* Tomorrow Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+	color: #c82829;
+}
+
+/* Tomorrow Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+	color: #f5871f;
+}
+
+/* Tomorrow Yellow */
+.hljs-attribute {
+	color: #eab700;
+}
+
+/* Tomorrow Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+	color: #718c00;
+}
+
+/* Tomorrow Blue */
+.hljs-title,
+.hljs-section {
+	color: #4271ae;
+}
+
+/* Tomorrow Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+	color: #8959a8;
+}
+
+.hljs {
+	display: block;
+	overflow-x: auto;
+	color: #4d4d4c;
+	padding: 0.5em;
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: bold;
+}
+</style>
+
+<style>
+/*
+ * Markdown PDF CSS
+ */
+
+ body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "Meiryo";
+	padding: 0 12px;
+}
+
+pre {
+	background-color: #f8f8f8;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+pre:not(.hljs) {
+	padding: 23px;
+	line-height: 19px;
+}
+
+blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.emoji {
+	height: 1.4em;
+}
+
+code {
+	font-size: 14px;
+	line-height: 19px;
+}
+
+/* for inline code */
+:not(pre):not(.hljs) > code {
+	color: #C9AE75; /* Change the old color so it seems less like an error */
+	font-size: inherit;
+}
+
+/* Page Break : use <div class="page"/> to insert page break
+-------------------------------------------------------- */
+.page {
+	page-break-after: always;
+}
+
+</style>
+
+<script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
+</head>
+<body>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: document.body.classList.contains('vscode-dark') || document.body.classList.contains('vscode-high-contrast')
+          ? 'dark'
+          : 'default'
+    });
+  </script>
+<!--
+ * @Description: 响应系统的作用与实现
+ * @version: 1.0
+ * @Author: renyong
+ * @Date: 2022-07-03 15:57:51
+ * @LastEditors: renyong
+ * @LastEditTime: 2022-07-10 23:10:51
+-->
+<h3 id="%E7%AC%AC%E5%9B%9B%E7%AB%A0-%E5%93%8D%E5%BA%94%E7%B3%BB%E7%BB%9F%E7%9A%84%E4%BD%9C%E7%94%A8%E4%B8%8E%E5%AE%9E%E7%8E%B0">第四章 响应系统的作用与实现</h3>
+<p><strong>问题1</strong>：什么是响应式数据和副作用函数，如何实现一个相对完善的响应式系统？
+<strong>问题2</strong>：如何避免无限递归？
+<strong>问题3</strong>：为什么需要嵌套的副作用函数？
+<strong>问题4</strong>: 两个副作用函数之间会产生哪些影响？</p>
+<h4 id="41-%E5%93%8D%E5%BA%94%E5%BC%8F%E6%95%B0%E6%8D%AE%E4%B8%8E%E5%89%AF%E4%BD%9C%E7%94%A8%E5%87%BD%E6%95%B0">4.1 响应式数据与副作用函数</h4>
+<p>副作用函数：函数执行会直接或间接影响其他函数的执行</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">let</span> val = <span class="hljs-number">1</span>
+  <span class="hljs-keyword">const</span> effect = <span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
+    val = <span class="hljs-number">2</span> <span class="hljs-comment">// 修改全局变量，产生副作用.</span>
+  }
+</div></code></pre>
+<p>理解了什么是副作用函数，再来说说什么是响应式数据。假设在一个副作用函数中读取了某个对象的属性：</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> obj = { <span class="hljs-attr">text</span>: <span class="hljs-string">'hello world'</span>}
+  <span class="hljs-keyword">const</span> effect = <span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
+    <span class="hljs-comment">// effect函数的执行会读取obj.text</span>
+    <span class="hljs-built_in">document</span>.body.innerText = obj.text
+  }
+</div></code></pre>
+<p>当obj.text的值发生变化时，我们希望副作用函数effect会重新执行</p>
+<pre class="hljs"><code><div>  obj.text = <span class="hljs-string">'hello vue3'</span> <span class="hljs-comment">// 修改obj.text的值，同时希望副作用函数effect会重新执行</span>
+</div></code></pre>
+<p>修改了obj.text的值，我们希望当值变化后，副作用函数自动重新执行，如果能实现这个目标，那么对象obj就是响应式数据，很明显，以上代码来看，我们还做不到这一点，因为obj是一个普通的对象，当我们修改它的值时，除了值本身发生变化之外，不会有任何其他反应。</p>
+<h4 id="42-%E5%93%8D%E5%BA%94%E5%BC%8F%E6%95%B0%E6%8D%AE%E7%9A%84%E5%9F%BA%E6%9C%AC%E5%AE%9E%E7%8E%B0">4.2 响应式数据的基本实现</h4>
+<p>接着上文思考，如何让obj变成响应式数据呢？通过观察我们能发现两点线索：</p>
+<ul>
+<li>当副作用函数effect执行时，就会触发字段obj.text的 <strong>读取</strong> 操作</li>
+<li>当修改obj.text值时，就会触发字段obj.text的 <strong>设置</strong> 操作</li>
+</ul>
+<p>如果我们能拦截一个对象的读取和设置操作，事情就变得简单了，当读取字段obj.text时，我们可以把副作用函数effect存储到一个“桶”里</p>
+<p>// 执行effect()
+const effect = () =&gt; {
+document.body.innerText = obj.text
+}
+$\downarrow$
+触发读取操作
+$\downarrow$
+存储副作用函数的“桶”</p>
+<p>接着，当设置obj.text时，再把副作用函数effect从“桶”里取出来并执行即可：
+obj.text = 'hello vue3'
+$\downarrow$
+触发设置操作
+$\downarrow$
+存储副作用函数的“桶”
+$\downarrow$
+取出effect并执行</p>
+<p>如何拦截一个对象属性的读取和设置操作？
+Vue3用代理对象Proxy来实现</p>
+<pre class="hljs"><code><div>  <span class="hljs-comment">// 存储副作用函数的桶</span>
+  <span class="hljs-keyword">const</span> bucket = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Set</span>()
+  
+  <span class="hljs-comment">// 原始数据</span>
+  <span class="hljs-keyword">const</span> data = { <span class="hljs-attr">text</span>: <span class="hljs-string">'hello world'</span> }
+  <span class="hljs-comment">// 对原始数据的代理</span>
+  <span class="hljs-keyword">const</span> obj = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Proxy</span>(data, {
+    <span class="hljs-comment">// 拦截读取操作</span>
+    <span class="hljs-keyword">get</span>(target, key) {
+      <span class="hljs-comment">// 将副作用函数effect添加到存储副作用函数的桶中</span>
+      bucket.push(effect)
+      <span class="hljs-comment">// 返回属性值</span>
+      <span class="hljs-keyword">return</span> target[key]
+    },
+
+    <span class="hljs-comment">// 拦截设置操作</span>
+    <span class="hljs-keyword">set</span>(target, key, newVal) {
+      <span class="hljs-comment">// 设置属性值</span>
+      target[key] = newVal
+      <span class="hljs-comment">// 把副作用函数从桶里面取出来并执行</span>
+      bucket.forEach(<span class="hljs-function"><span class="hljs-params">fn</span> =&gt;</span> fn())
+      <span class="hljs-comment">// 返回true代表设置操作成功</span>
+      <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>
+    }
+  })
+</div></code></pre>
+<p>测试代码：</p>
+<pre class="hljs"><code><div>  <span class="hljs-comment">// 副作用函数</span>
+  <span class="hljs-keyword">const</span> effect = <span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
+    docuemnt.body.innerText = obj.text
+  }
+  <span class="hljs-comment">// 执行副作用函数。触发读取</span>
+  effect()
+  <span class="hljs-comment">// 1秒后修改响应式数据</span>
+  setTimeout(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
+    obj.text = <span class="hljs-string">'hello vue3'</span>.
+  }, <span class="hljs-number">1000</span>);
+</div></code></pre>
+<p>这种实现存在很多缺陷，例如我们直接通过名字（effect）来获取副作用函数，这种硬编码的方式很不灵活，副作用函数的名字可以任意取，我们完全可以把副作用函数命名为myEffect,甚至是一个匿名函数，因此我们要想办法去掉这种硬编码的机制</p>
+<h4 id="43-%E8%AE%BE%E8%AE%A1%E4%B8%80%E4%B8%AA%E5%AE%8C%E5%96%84%E7%9A%84%E5%93%8D%E5%BA%94%E7%B3%BB%E7%BB%9F">4.3 设计一个完善的响应系统</h4>
+<p>上一个列子不难看出，一个响应系统的工作流程如下：</p>
+<ul>
+<li>当 <strong>读取</strong> 操作发生时，将副作用函数收集到“桶”中</li>
+<li>当 <strong>设置</strong> 操作发生时，从“桶”中取出副作用函数并执行</li>
+</ul>
+<p>上一节的实现中，我们硬编码了副作用函数的名字（effect）,导致一旦副作用函数的名字补交effect， 那么这段代码就不能正确地工作了。而我们希望的是，哪怕副作用函数是一个匿名函数，也能够被正确地收集到“桶”中。为了实现这一点，我们需要提供一个用来注册副作用函数的机制，如下所示：</p>
+<pre class="hljs"><code><div>  <span class="hljs-comment">// 用一个全局变量存储被注册的副作用函数</span>
+  <span class="hljs-keyword">let</span> activeEffect
+  <span class="hljs-comment">// effect函数用于注册副作用函数</span>
+  <span class="hljs-keyword">const</span> effect = <span class="hljs-function">(<span class="hljs-params">fn</span>) =&gt;</span> {
+    <span class="hljs-comment">// 当调用effect注册副作用函数时，将副作用函数fn赋值给activeEffect</span>
+    activeEffect = fn
+    <span class="hljs-comment">// 执行副作用函数</span>
+    fn()
+  }
+</div></code></pre>
+<pre class="hljs"><code><div>  effect(
+    <span class="hljs-comment">// 一个匿名的副作用函数</span>
+    <span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
+      <span class="hljs-built_in">document</span>.body.innerText = obj.text
+    }
+  )
+</div></code></pre>
+<p>调用effect,触发obj.text读取操作</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> obj = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Proxy</span>(data, {
+    <span class="hljs-keyword">get</span>(target, key) {
+      <span class="hljs-comment">// 将activeEffect 中存储的副作用函数收集到“桶”中</span>
+      <span class="hljs-keyword">if</span> (activeEffect) { <span class="hljs-comment">// 新增</span>
+        bucket.add(activeEffect)
+      }
+      <span class="hljs-keyword">return</span> target[key]
+    },
+
+    <span class="hljs-comment">// 设置操作</span>
+    <span class="hljs-keyword">set</span>(target, key, newVal) {
+      target[key] = newVal
+      bucket.forEach(<span class="hljs-function"><span class="hljs-params">fn</span> =&gt;</span> fn())
+      <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>
+    }
+  })
+</div></code></pre>
+<p>由于副作用函数已经存储到了activeEffect中，所以在get拦截函数内应该把activeEffect收集到“桶”中，这样响应系统就不依赖副作用函数的名字了。</p>
+<p>测试代码：例如在响应式数据obj上设置一个不存在的属性时：</p>
+<pre class="hljs"><code><div>  effect(
+    <span class="hljs-comment">// 匿名副作用函数</span>
+    <span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
+      <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'effect run'</span>) <span class="hljs-comment">// 会打印2次</span>
+      <span class="hljs-built_in">document</span>.body.innerText = obj.text
+    }
+  )
+  setTimeout(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
+    <span class="hljs-comment">// 副作用函数中病没有读取notExist属性的值</span>
+    obj.noExist = <span class="hljs-string">'hello vue3'</span>
+  }, <span class="hljs-number">1000</span>);
+</div></code></pre>
+<p>理论上，字段obj.noExist并没有与副作用函数建立响应联系，因此，定时器内语句的执行不应该触发匿名副作用函数重新执行。但是上述这段代码匿名副作用函数却重新执行了，这是不正确的，为了解决这个问题，我们需要重新设计“桶”的数据结构。</p>
+<p>在上一节例子中，我们使用一个Set数据结构作为存储副作用函数的“桶”。导致该问题的根本原因是，我们 <strong>没有在副作用函数与被操作的目标字段之间建立明确的联系</strong>。读取属性时，无论读取哪一种属性，其实都一样，都会把副作用函数收集到“桶”里；当设置属性时，无论设置哪一种属性，也都会把“桶”里的副作用函数取出来并执行。副作用函数与被操作的字段之间没有明确的联系。
+解决方法很简单，只需要在副作用函数与被操作的字段之间建立联系即可，这需要我们重新设计“桶”的数据结构，而不能简单地使用一个Set类型的数据作为“桶”了。</p>
+<p>那应该设计怎么样的数据结构呢？观察下面代码：</p>
+<pre class="hljs"><code><div>  effect(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">effectFn</span>(<span class="hljs-params"></span>) </span>{
+    docuemnt.body.innerText = obj.text
+  })
+</div></code></pre>
+<p>这段代码中存在三个角色：</p>
+<ul>
+<li>被操作（读取）的代理对象obj</li>
+<li>被操作（读取）的字段名text</li>
+<li>使用effect函数注册的副作用函数effectFn</li>
+</ul>
+<p>如果用target来表示一个代理对象所代理的原始对象，用key来表示被操作的字段名，用effectFn来表示被注册的副作用函数，那么可以为这个三个角色建立关系如下：</p>
+<pre class="hljs"><code><div>  target
+      |___key
+            |___effectFn
+</div></code></pre>
+<p>如果有两个副作用函数同时读取同一个对象的属性值：</p>
+<pre class="hljs"><code><div>  effect(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">effectFn1</span>(<span class="hljs-params"></span>) </span>{
+    obj.text
+  })
+  effect(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">effectFn2</span>(<span class="hljs-params"></span>) </span>{
+    obj.text
+  })
+</div></code></pre>
+<p>那么关系如下：</p>
+<pre class="hljs"><code><div>  target
+      |___text
+            |___effectFn1
+            |___effectFn2
+</div></code></pre>
+<p>如果一个副作用函数中读取了同一个对象的两个不同属性：</p>
+<pre class="hljs"><code><div>  effect(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">effectFn</span>(<span class="hljs-params"></span>) </span>{
+    obj.text1
+    obj.text2
+  })
+</div></code></pre>
+<p>那么关系如下：</p>
+<pre class="hljs"><code><div>  target
+      |___text1
+            |___effectFn
+      |___text2
+            |___effectFn
+</div></code></pre>
+<p>如果在不同副作用函数中读取了两个不同对象的不同属性</p>
+<pre class="hljs"><code><div>  effect(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">effectFn1</span>(<span class="hljs-params"></span>) </span>{
+    obj1.text1
+  })
+  effect(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">effectFn2</span>(<span class="hljs-params"></span>) </span>{
+    obj2.text2
+  })
+</div></code></pre>
+<p>那么关系如下：</p>
+<pre class="hljs"><code><div>  target1
+      |___text1
+            |___effectFn1
+  target2
+      |___text2
+            |___effectFn2
+</div></code></pre>
+<p>这其实就是一个树型数据结构，这个联系建立起来后，就可以解决前文提到的问题了。如果我们设置obj2.text2, 就只会导致effefctFn2函数重新执行，并不会导致effectFn1函数重新执行。</p>
+<p>接下来我们尝试用代码实现这个新的“桶”，首先我们需要用weakMap替代Set作为桶的数据结构：</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> bucket = <span class="hljs-keyword">new</span> <span class="hljs-built_in">WeakMap</span>()
+  <span class="hljs-comment">// 修改get/set拦截器代码：</span>
+  <span class="hljs-keyword">const</span> obj = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Proxy</span>(data, {
+    <span class="hljs-comment">// 拦截读取操作</span>
+    <span class="hljs-keyword">get</span>(target, key) {
+      <span class="hljs-comment">// 没有activeEffect,直接return</span>
+      <span class="hljs-keyword">if</span> (!activeEffect) <span class="hljs-keyword">return</span>
+      <span class="hljs-comment">// 根据target从“桶”中取得depsMap,它也是一个Map类型：key --&gt; effects</span>
+      <span class="hljs-keyword">let</span> depsMap = bucket.get(target)
+      <span class="hljs-comment">// 如果不存在desMap, 那么新建一个Map并与target关联</span>
+      <span class="hljs-keyword">if</span> (!depsMap) {
+        bucket.set(target, (depsMap = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Map</span>()))
+      }
+      <span class="hljs-comment">// 再根据key从desMap中取得deps, 它是一个Set类型</span>
+      <span class="hljs-comment">// 里面存储这所有与当前key相关联的副作用函数：effects</span>
+      <span class="hljs-keyword">let</span> deps = desMap.get(key)
+      <span class="hljs-comment">// 如果deps不存在，同样新建一个Set并与key关联</span>
+      <span class="hljs-keyword">if</span> (!deps) {
+        depsMap.set(key, (deps = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Set</span>()))
+      }
+      <span class="hljs-comment">// 最后将当前激活的副作用函数添加到“桶”里</span>
+      deps.add(activeEffect)
+
+      <span class="hljs-comment">// 返回属性值</span>
+      <span class="hljs-keyword">return</span> target[key]
+    },
+
+    <span class="hljs-comment">// 设置拦截操作</span>
+    <span class="hljs-keyword">set</span>(target, key, newVal) {
+      <span class="hljs-comment">// 设置属性值</span>
+      target[key] = newVal
+      <span class="hljs-comment">// 根据target从桶中取得depsMap, 它是 key ---&gt; effects</span>
+      <span class="hljs-keyword">const</span> depsMap = bucket.get(target)
+      <span class="hljs-keyword">if</span> (!depsMap) <span class="hljs-keyword">return</span>
+      <span class="hljs-comment">// 根据key取得所有副作用函数effects</span>
+      <span class="hljs-keyword">const</span> effects = desMap.get(key)
+      <span class="hljs-comment">//执行副作用函数</span>
+      effects &amp;&amp; effects.forEach(<span class="hljs-function"><span class="hljs-params">fn</span> =&gt;</span> fn())
+    }
+  })
+</div></code></pre>
+<p>weakMap和Map的区别：</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> map = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Map</span>()
+  <span class="hljs-keyword">const</span> weakMap = <span class="hljs-keyword">new</span> <span class="hljs-built_in">WeakMap</span>()
+  (<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>)</span>{
+    <span class="hljs-keyword">const</span> foo = { <span class="hljs-attr">foo</span>: <span class="hljs-number">1</span> }
+    <span class="hljs-keyword">const</span> bar = { <span class="hljs-attr">bar</span>: <span class="hljs-number">2</span> }
+
+    map.set(foo, <span class="hljs-number">1</span>)
+    weakMap.set(bar, <span class="hljs-number">2</span>)
+  })
+</div></code></pre>
+<p>weakMap对key是弱引用，不影响垃圾回收机器的工作。根据这个特性得知，一旦key被垃圾回收器回收，那么对应的键和值就访问不到了。所以WeakMap经常用于存储那些只有当key所引用的对象存在时（没有被回收）才有价值的信息。如果使用Map来代替WeakMap,那么即使用户侧的代码对target没有任何引用，这个target也不会被回收，最终可能导致内存溢出。</p>
+<p>最后对上文的代码做一些封装处理，在目前的实现中，当读取属性的值时，我们直接在get拦截函数里编写把副作用函数收集到“桶”里的这部分逻辑，但更好的做法是将这部分逻辑单独封装到一个track函数中，函数的名字叫track是为了表达追踪的含义。同样，我们也可以把触发副作用函数重新执行的逻辑封装到trigger函数中：</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> obj = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Proxy</span>(data, {
+    <span class="hljs-comment">// 拦截读取操作</span>
+    <span class="hljs-keyword">get</span>(target, key) {
+      <span class="hljs-comment">// 将副作用函数activeEffect添加到存储副作用函数的桶中</span>
+      track(target, key)
+      <span class="hljs-comment">// 返回属性值</span>
+      <span class="hljs-keyword">return</span> target[key]
+    },
+    <span class="hljs-comment">// 拦截设置操作</span>
+    <span class="hljs-keyword">set</span>(target, key, newVal) {
+      <span class="hljs-comment">// 设置属性值</span>
+      target[key] = newVal
+      <span class="hljs-comment">// 把副作用函数从桶里面取出来并执行</span>
+      trigger(target, key)
+    }
+  })
+
+  <span class="hljs-comment">// 在get拦截函数内调用track函数追踪变化</span>
+  <span class="hljs-keyword">const</span> track = <span class="hljs-function">(<span class="hljs-params">target, key</span>) =&gt;</span> {
+    <span class="hljs-comment">// 没有activeEffect,直接return</span>
+    <span class="hljs-keyword">if</span> (!activeEffect) <span class="hljs-keyword">return</span>
+    <span class="hljs-keyword">let</span> depsMap = bucket.get(target)
+    <span class="hljs-keyword">if</span> (!depsMap) {
+      bucket.set(target, (depsMap = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Map</span>()))
+    }
+    <span class="hljs-keyword">let</span> deps = depsMap.get(key)
+    <span class="hljs-keyword">if</span> (!deps) {
+      desMap.set(key, (deps = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Set</span>()))
+    }
+    deps.add(activeEffect)
+  }
+
+  <span class="hljs-comment">// 在set拦截函数内调用trigger函数触发变化</span>
+  <span class="hljs-keyword">const</span> trigger = <span class="hljs-function">(<span class="hljs-params">target, key</span>) =&gt;</span> {
+    <span class="hljs-keyword">const</span> depsMap = bucket.get(target)
+    <span class="hljs-keyword">if</span> (!depsMap) <span class="hljs-keyword">return</span>
+    <span class="hljs-keyword">const</span> effects = depsMap.get(key)
+    effects &amp;&amp; effects,forEach(<span class="hljs-function"><span class="hljs-params">fn</span> =&gt;</span> fn())
+  }
+</div></code></pre>
+<p>把逻辑封装到track和trigger函数内，这能为我们带来极大的灵活性</p>
+<h4 id="44-%E5%88%86%E6%94%AF%E5%88%87%E6%8D%A2%E4%B8%8Ecleanup">4.4 分支切换与cleanup</h4>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> data = { <span class="hljs-attr">ok</span>: <span class="hljs-literal">true</span>, <span class="hljs-attr">text</span>: <span class="hljs-string">'hello world'</span>}
+  <span class="hljs-keyword">const</span> obj = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Proxy</span>(data, {<span class="hljs-comment">/*  */</span>})
+
+  effect(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">effectFn</span>(<span class="hljs-params"></span>) </span>{
+    docuemnt.body.innerText = data.ok ? obj.text : <span class="hljs-string">'not'</span>
+  })
+</div></code></pre>
+<p>在effectFn函数内部存在一个三元表达式，根据字段obj.ok值的不同会执行不同的代码分支，当字段obj.ok的值发生变化时，代码执行的分支会跟着变化，这就是所谓的分支切换。</p>
+<p>分支切换可能会产生遗留的副作用函数。拿上面这段代码来说，字段obj.ok的初始值为true,这时会读取obj.text的值，所以当effectFn函数执行时会触发字段obj.ok和字段obj.text这两个属性的读取操作，此时副作用函数effectFn与响应式数据之间建立的联系如下：</p>
+<pre class="hljs"><code><div>  data
+    |___ok
+        |___effectFn
+    |___text
+        |___effectFn
+</div></code></pre>
+<p>更详细的描述图如下：</p>
+<pre class="hljs"><code><div>  weakMap
+    |
+   key
+        value
+  data ---------&gt; Map
+                  |
+                  key
+                        value    依赖集合
+                  ok ----------&gt;   Set    effectFn
+                  text --------&gt;   Set    effectFn
+</div></code></pre>
+<p>图4-4 副作用函数与响应式数据之间的联系</p>
+<p>可以看到，副作用函数effectFn分别被字段data.ok和字段data.text所对应的依赖集合收集。当字段data.ok的值修改为false,并触发副作用函数重新执行后，由于此时字段obj.text不会被读取，只触发字段obj.ok的读取操作，所以理想情况下副作用函数effectFn不应该被字段obj.text所对应的依赖集合收集，如下图：</p>
+<pre class="hljs"><code><div>  weakMap
+    |
+   key
+        value
+  data ---------&gt; Map
+                  |
+                  key
+                        value    依赖集合
+                  ok ----------&gt;   Set    effectFn
+</div></code></pre>
+<p>图4-5 理想情况下副作用函数与响应式数据之间的联系</p>
+<p>但是按照前文的实现，我们还做不到这一点。也就是说，当我们把字段data.ok的值修改为false,并触发副作用函数重新执行后，整个依赖关系保持图4-4所描述的那样，也就是说产生了遗留的副作用函数。</p>
+<p>遗留的副作用函数会导致不必要的更新：</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> data = {
+    <span class="hljs-attr">ok</span>: <span class="hljs-literal">true</span>,
+    <span class="hljs-attr">text</span>: <span class="hljs-string">'hello world'</span>
+  }
+  <span class="hljs-keyword">const</span> obj = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Proxy</span>(data, {<span class="hljs-comment">/*  */</span>})
+
+  effect(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">effectFn</span>(<span class="hljs-params"></span>) </span>{
+    <span class="hljs-built_in">document</span>.body.innerText = obj.ok ? obj.text : <span class="hljs-string">'not'</span>
+  })
+</div></code></pre>
+<p>obj.ok的初始值为true,当我们将其修改为false后：</p>
+<pre class="hljs"><code><div>  obj.ok = <span class="hljs-literal">false</span>
+</div></code></pre>
+<p>这会触发更新，即副作用函数会重新执行。但是由于此时obj.ok 的值为false,所以不再会读取字段obj.text的值。换句话说，无论obj.text的值如何改变，document.body.innerText的值始终都是'not'，<strong>所以最好的结果是，无论obj.text的值怎么变，都不需要重新执行副作用函数。但事实并非如此，如果我们尝试修改obj.text的值</strong>：</p>
+<pre class="hljs"><code><div>  obj.text = <span class="hljs-string">'hello vue3'</span>
+</div></code></pre>
+<p>这会导致副作用函数重新执行，即使document.body.innerText的值不需要变化。</p>
+<p>解决这个问题的思路很简单，每次副作用函数执行时，我们可以先把它从所有与之关联的依赖集合中删除，如图4-6所示：</p>
+<pre class="hljs"><code><div>weakMap
+    |
+   key
+        value
+  data ---------&gt; Map
+                  |
+                  key
+                        value    依赖集合
+                  ok ----------&gt;   Set    effectFn 删除掉
+                  text --------&gt;   Set    effectFn 删除掉
+</div></code></pre>
+<p>当副作用函数执行完毕后，会重新建立联系，但在新的联系中不会包含遗留的副作用函数，如图4-5描述的那样。<strong>所以，如果我们能做到每次副作用函数执行前，将其从相关联的依赖集合中移除，问题就解决了</strong>。</p>
+<p><strong>要将一个副作用函数从所有与之关联的依赖集合中移除，就需要明确知道哪些依赖集合中包含它，因此我们需要重新设计副作用函数</strong>：</p>
+<pre class="hljs"><code><div>  <span class="hljs-comment">// 用一个全局变量存储被注册的副作用函数</span>
+  <span class="hljs-keyword">let</span> activeEffect
+  <span class="hljs-keyword">const</span> effect = <span class="hljs-function">(<span class="hljs-params">fn</span>) =&gt;</span> {
+    <span class="hljs-keyword">const</span> effectFn = <span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
+      <span class="hljs-comment">// 当effectFn执行时，将其设置为当前激活的副作用函数</span>
+      activeEffect = effectFn
+      fn()
+    }
+    <span class="hljs-comment">// activeEffect.deps 用来存储所有与该副作用函数相关联的依赖集合</span>
+    effectFn.deps = []
+    <span class="hljs-comment">// 执行副作用函数</span>
+    effectFn()
+  }
+</div></code></pre>
+<p>那么 effectFn数组中的依赖集合是如何收集的呢？其实就是在track函数中：</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> track = <span class="hljs-function">(<span class="hljs-params">target, key</span>) =&gt;</span> {
+    <span class="hljs-comment">// 没有activeEffect, 直接return</span>
+    <span class="hljs-keyword">if</span> (!activeEffect) <span class="hljs-keyword">return</span>
+    <span class="hljs-keyword">let</span> depsMap = bucket.get(target)
+    <span class="hljs-keyword">if</span> (!depsMap) {
+      bucket.set(target, (depsMap = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Map</span>()))
+    }
+    <span class="hljs-keyword">let</span> deps = depsMap.get(key)
+    <span class="hljs-keyword">if</span> (!deps) {
+      depsMap.set(key, (deps = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Set</span>()))
+    }
+    <span class="hljs-comment">// 把当前激活的副作用函数添加到依赖集合的deps中</span>
+    deps.add(activeEffect)
+    <span class="hljs-comment">// deps就是一个与当前副作用函数存在联系的依赖集合</span>
+    <span class="hljs-comment">// 将其添加到activeEffect.deps 数组中</span>
+    activeEffect.deps.push(deps)
+  }
+</div></code></pre>
+<p>有了这个联系，我们就可以在副作用函数执行时，根据effectFn.deps获取所有相关联的依赖集合，进而将副作用函数从依赖集合中移除：</p>
+<pre class="hljs"><code><div>  <span class="hljs-comment">// 用一个全局变量存储被注册的副作用函数</span>
+  <span class="hljs-keyword">let</span> activeEffect
+  <span class="hljs-keyword">const</span> effect = <span class="hljs-function">(<span class="hljs-params">fn</span>) =&gt;</span> {
+    <span class="hljs-keyword">const</span> effectFn = <span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
+      <span class="hljs-comment">// 调用cleanup函数完成清除工作</span>
+      cleanup(effectFn)
+      activeEffect = effectFn
+      fn()
+    }
+    effectFn.deps = []
+    effectFn()
+  }
+</div></code></pre>
+<p>下面是cleanup函数的实现：</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> cleanup = <span class="hljs-function">(<span class="hljs-params">effectFn</span>) =&gt;</span> {
+    <span class="hljs-comment">// 遍历effectFn.deps数组</span>
+    <span class="hljs-keyword">for</span>(<span class="hljs-keyword">let</span> i = <span class="hljs-number">0</span>; i &lt; effectFn.deps.length; i++) {
+      <span class="hljs-comment">// deps是依赖集合</span>
+      <span class="hljs-keyword">const</span> deps = effectFn.deps[i]
+      <span class="hljs-comment">// 将effectFn从依赖集合中移除</span>
+      deps.delete(effectFn)
+    }
+    <span class="hljs-comment">// 最后重置effectFn.deps数组</span>
+    effectFn.deps.length = <span class="hljs-number">0</span>
+  }
+</div></code></pre>
+<p>至此，我们的响应系统已经可以避免副作用函数产生遗留了。但如果你尝试运行代码，会发现目前的实现会导致无限循环执行，问题出在trigger函数中：</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> trigger = <span class="hljs-function">(<span class="hljs-params">target, key</span>) =&gt;</span> {
+    <span class="hljs-keyword">const</span> depsMap = bucket.get(target)
+    <span class="hljs-keyword">if</span> (!depsMap) <span class="hljs-keyword">return</span>
+    <span class="hljs-keyword">const</span> effects = depsMap.get(key)
+    effects &amp;&amp; effects.forEach(<span class="hljs-function"><span class="hljs-params">fn</span> =&gt;</span> fn()) <span class="hljs-comment">// 问题出现在这句代码</span>
+  }
+</div></code></pre>
+<p>在trigger函数内部，我们遍历effects集合，它是一个Set集合，里面存储着副作用函数。当副作用函数执行时，会调用cleanup进行清除，实际上就是从effects集合中将当前执行的副作用剔除，但是副作用函数的执行导致其重新被收集到集合中，而此时对于effects集合的遍历仍在进行：</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> <span class="hljs-keyword">set</span> = new Set([1])
+  <span class="hljs-keyword">set</span>.forEach(item =&gt; {
+    <span class="hljs-keyword">set</span>.delete(1)
+    <span class="hljs-keyword">set</span>.add(1)
+    console.log('遍历中')
+  }) 
+</div></code></pre>
+<p>这段代码会无限执行下去，<strong>在调用forEach遍历Set集合时，如果一个值已经被访问过了，但该值被删除并重新添加到集合，如果此时forEach遍历还没结束，那么该值就会重新被访问</strong>,
+解决办法：<strong>我们可以构造另一个Set集合遍历它</strong>：</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> <span class="hljs-keyword">set</span> = new Set([1])
+  
+  const newSet = new Set(<span class="hljs-keyword">set</span>)
+  newSet.forEach(item =&gt; {
+    <span class="hljs-keyword">set</span>.delete(1)
+    <span class="hljs-keyword">set</span>.add(1)
+    console.log('遍历中')
+  })
+</div></code></pre>
+<p>这样就不会无限执行了，回到trigger函数，我们可以用同样的手段来避免无限执行：</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> trigger = <span class="hljs-function">(<span class="hljs-params">target, key</span>) =&gt;</span> {
+    <span class="hljs-keyword">const</span> depsMap = bucket.get(target)
+    <span class="hljs-keyword">if</span> (!depsMap) <span class="hljs-keyword">return</span>
+    <span class="hljs-keyword">const</span> effects = depsMap.get(key)
+
+    <span class="hljs-keyword">const</span> effectsToRun = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Set</span>(effects) <span class="hljs-comment">// 新增</span>
+    effectsToRun.forEach(<span class="hljs-function"><span class="hljs-params">effectFn</span> =&gt;</span> effectFn()) <span class="hljs-comment">// 新增</span>
+    <span class="hljs-comment">// effects &amp;&amp; effects.forEach(fn =&gt; fn()) // 删除</span>
+  }
+</div></code></pre>
+<h4 id="44-%E5%B5%8C%E5%A5%97%E7%9A%84effect%E4%B8%8Eeffect%E6%A0%88">4.4 嵌套的effect与effect栈</h4>
+<p>effect是可以发生嵌套的，例如：</p>
+<pre class="hljs"><code><div>  effect(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">effectFn1</span>(<span class="hljs-params"></span>) </span>{
+    effect(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">effectFn2</span>(<span class="hljs-params"></span>) </span>{<span class="hljs-comment">/*  */</span>})
+    <span class="hljs-comment">/*  */</span>
+  })
+</div></code></pre>
+<p>什么样的场景会出现effect嵌套呢？拿Vue.js来说，实际上Vue.js的渲染函数就是在一个effect中执行的：</p>
+<pre class="hljs"><code><div>  <span class="hljs-comment">// Foo组件</span>
+  <span class="hljs-keyword">const</span> Foo = {
+    render() {
+      <span class="hljs-keyword">return</span> <span class="hljs-comment">/*  */</span>
+    }
+  }
+</div></code></pre>
+<p>在一个effect中执行Foo组件的渲染函数：</p>
+<pre class="hljs"><code><div>  effect(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
+    Foo.render()
+  })
+</div></code></pre>
+<p>当组件发生嵌套时，例如Foo组件渲染了Bar组件：</p>
+<pre class="hljs"><code><div>  <span class="hljs-comment">// Bar组件</span>
+  <span class="hljs-keyword">const</span> Bar = {
+    render() {<span class="hljs-comment">/*  */</span>}
+  }
+  <span class="hljs-comment">// Foo组件渲染了Bar组件</span>
+  <span class="hljs-keyword">const</span> Foo = {
+    render() {
+      <span class="hljs-keyword">return</span> <span class="xml"><span class="hljs-tag">&lt;<span class="hljs-name">Bar</span> /&gt;</span></span> <span class="hljs-comment">// jsx语法</span>
+    }
+  }
+</div></code></pre>
+<p>此时effect就发生了嵌套，相当于：</p>
+<pre class="hljs"><code><div>  effect(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
+    Foo.render()
+    <span class="hljs-comment">// 嵌套</span>
+    effect(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
+      Bar.render()
+    })
+  })
+</div></code></pre>
+<p>这个例子说明了为什么effect要设计成其嵌套的，如果effect不支持嵌套会发生什么？按照前文的介绍与实现来看，我们所实现的响应系统并不支持effect嵌套，我们可以测试一下：</p>
+<pre class="hljs"><code><div>  <span class="hljs-comment">// 原始数据</span>
+  <span class="hljs-keyword">const</span> data = {
+    <span class="hljs-attr">foo</span>: <span class="hljs-literal">true</span>,
+    <span class="hljs-attr">bar</span>: <span class="hljs-literal">true</span>
+  }
+  <span class="hljs-comment">// 代理对象</span>
+  <span class="hljs-keyword">const</span> obj = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Proxy</span>(data, {<span class="hljs-comment">/*  */</span>})
+
+  <span class="hljs-comment">// 全局变量</span>
+  <span class="hljs-keyword">let</span> temp1, temp2
+  <span class="hljs-comment">// effectFn1嵌套了effectFn2</span>
+  effect(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">effectFn1</span>(<span class="hljs-params"></span>) </span>{
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'effectFn1 执行'</span>)
+
+    effect(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">effectFn2</span>(<span class="hljs-params"></span>) </span>{
+      <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'effectFn2 执行'</span>)
+      <span class="hljs-comment">// 在effectFn2中读取obj.bar属性</span>
+      temp2 = obj.bar
+    })
+    <span class="hljs-comment">// 在effectFn1中读取obj.foo属性</span>
+    temp1 = obj.foo
+  })
+</div></code></pre>
+<p>在上面的代码中，effectFn1 内部嵌套了 effectFn2，很明显，effectFn1的执行会导致effectFn2的执行。需要注意的是，我们在effectFn2中读取了字段obj.bar,在effectFn1中读取了obj.foo,并且effectFn2的执行先于对字段obj.foo的读取操作。在理想情况下，我们希望副作用函数与对象属性之间的联系如下：</p>
+<pre class="hljs"><code><div>  data
+    |___foo
+          |___ effectFn1
+    |___bar
+          |___ effectFn2
+</div></code></pre>
+<p>在这种情况下，我们希望当修改obj.foo时会触发effectFn1执行。由于effectFn2嵌套在effectFn1里，所以会间接触发effectFn2，而当修改obj.bar时，只会触发effectFn2执行。但结果并不是这样的，我们尝试修改obj.foo的值，会发现输出为：</p>
+<pre class="hljs"><code><div>  effectFn1 执行
+  effectFn2 执行
+  effectFn2 执行
+</div></code></pre>
+<p>一共打印了3次，前两次分别是副作用函数effectFn1和effectFn2初始执行的打印结果，到这一步是正常的，问题出在第三行打印。我们修改了obj.foo的值，发现effectFn1并没有重新执行，反而使effectFn2重新执行了，这显然不符合预期</p>
+<p>问题出在哪呢？<strong>其实就出在我们实现的effect函数与activeEffect上</strong>：</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">let</span> activeEffect
+  <span class="hljs-keyword">const</span> effectFn = <span class="hljs-function">(<span class="hljs-params">fn</span>) =&gt;</span> {
+    cleanup(effectFn)
+    <span class="hljs-comment">// 当调用effect注册副作用函数时，将副作用函数复制给activeEffect</span>
+    activeEffect = effectFn
+    fn()
+  }
+  effectFn.deps = []
+  effectFn()
+</div></code></pre>
+<p><strong>我们用全局变量activeEffect来存储通过effect函数注册的副作用函数，这意味着同一时刻activeEffect所存储的副作用函数只能有一个。当副作用函数发生嵌套时，内层副作用函数的执行会覆盖activeEffect的值，并且永远不会恢复到原来的值。这时如果再有响应式数据进行依赖收集，即使这个响应式数据是在外层副作用函数中读取的，他们收集到的副作用函数也是内层副作用函数，这就是问题所在</strong>。</p>
+<pre class="hljs"><code><div>  <span class="hljs-comment">// 用一个全局变量存储当前激活的effect函数</span>
+  <span class="hljs-keyword">let</span> activeEffect
+  <span class="hljs-comment">// effect栈</span>
+  <span class="hljs-keyword">const</span> effectStack = [] <span class="hljs-comment">// 新增</span>
+
+  <span class="hljs-keyword">const</span> effect = <span class="hljs-function">(<span class="hljs-params">fn</span>) =&gt;</span> {
+    <span class="hljs-keyword">const</span> effectFn = <span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
+      cleanup(effectFn)
+      <span class="hljs-comment">// 当调用effect注册副作用函数时，将副作用函数复制给 activeEffect</span>
+      activeEffect = effectFn
+      <span class="hljs-comment">// 在调用副作用函数之间将当前副作用函数压入栈中</span>
+      effectStack.push(effectFn) <span class="hljs-comment">// 新增</span>
+      fn()
+      <span class="hljs-comment">// 在当前副作用函数执行完毕之后，将当前副作用函数弹出栈，并把activeEffect还原为之前的值</span>
+      effectStack.pop() <span class="hljs-comment">// 新增</span>
+      activeEffect = effectStack[effectStack.length - <span class="hljs-number">1</span>]
+    }
+    <span class="hljs-comment">// activeEffect.deps 存储所以与该副作用函数相关的依赖集合</span>
+    effectFn.deps = []
+    <span class="hljs-comment">// 执行副作用函数</span>
+    effectFn()
+  }
+</div></code></pre>
+<p>我们定义了effectStack数组，用它来模拟栈，<strong>activeEffect没有变化，它仍然指向当前正在执行的副作用函数。不同的是，当前执行的副作用函数会被压入栈顶，这样当副作用函数发生嵌套时，栈底存储的就是外层副作用函数，而栈顶存储的则是内层副作用函数</strong></p>
+<h4 id="46-%E9%81%BF%E5%85%8D%E6%97%A0%E9%99%90%E9%80%92%E5%BD%92%E5%BE%AA%E7%8E%AF">4.6 避免无限递归循环</h4>
+<p>举个例子：</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> data = { <span class="hljs-attr">foo</span>: <span class="hljs-number">1</span> }
+  <span class="hljs-keyword">const</span> obj = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Proxy</span>(data, {<span class="hljs-comment">/*  */</span>})
+  effect(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> obj.foo++ )
+</div></code></pre>
+<p>我们可以把obj.foo++这个自增操作分开来看，它相当于：</p>
+<pre class="hljs"><code><div>  effect(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
+    obj.foo = obj.foo + <span class="hljs-number">1</span>
+  })
+</div></code></pre>
+<p>这个语句，既会读取obj.foo的值，又会设置foo的值，我们尝试下梳理代码执行流程：首先读取obj.foo的值，这会触发track操作，将当前副作用函数收集到“桶”中，接着将其加1后再赋值给obj.foo,此时会触发trigger操作，即把“桶”中的副作用函数取出来并执行。但问题是该副作用函数正在执行中，还没执行完毕，就要开始下一次的执行。这会导致无限地递归自己，于是就产生了栈溢出。</p>
+<p>通过分析我们发现，读取和设置操作是在同一个副作用函数内进行的。此时无论是track时收集的副作用函数，还是trigger时要触发执行的副作用函数，都是activeEffect。基于此，我们可以在trigger动作发生时增加守卫条件：<strong>如果trigger触发执行的副作用函数与当前正在执行的副作用函数相同，则不触发执行</strong>，如下代码所示：</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> trigger = <span class="hljs-function">(<span class="hljs-params">target, key</span>) =&gt;</span> {
+    <span class="hljs-keyword">const</span> depsMap = bucket.get(target)
+    <span class="hljs-keyword">if</span> (!depsMap) <span class="hljs-keyword">return</span>
+    <span class="hljs-keyword">const</span> effects = depsMap.get(key)
+
+    <span class="hljs-keyword">const</span> effectsToRun = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Set</span>()
+    effects &amp;&amp; effects.forEach(<span class="hljs-function"><span class="hljs-params">effectFn</span> =&gt;</span> {
+      <span class="hljs-comment">// 如果trigger触发执行的副作用函数与当前正在执行的副作用函数相同，则不触发执行</span>
+      <span class="hljs-keyword">if</span> (effectFn !== activeEffect) {
+        effectsToRun.add(effectFn)
+      }
+    })
+    effectsToRun.forEach(<span class="hljs-function"><span class="hljs-params">effectFn</span> =&gt;</span> effectFn())
+    <span class="hljs-comment">// effects &amp;&amp; effects.forEach(effectFn =&gt; effectFn())</span>
+  }
+</div></code></pre>
+<p>这样我们就能避免无限递归调用，从而避免栈溢出。</p>
+<h4 id="47-%E8%B0%83%E5%BA%A6%E6%89%A7%E8%A1%8C">4.7 调度执行</h4>
+<p>所谓调度，指的是当trigger动作触发副作用函数重新执行时，有能力决定副作用函数执行的时机、次数以及方式。</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> data = { <span class="hljs-attr">foo</span>: <span class="hljs-number">1</span> }
+  <span class="hljs-keyword">const</span> obj = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Proxy</span>(data, {<span class="hljs-comment">/*  */</span>})
+  
+  effect(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
+    <span class="hljs-built_in">console</span>.log(obj.foo)
+  })
+  obj.foo++
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'结束了'</span>)
+</div></code></pre>
+<p>在副作用函数中，我们首先使用console.log语句打印obj.foo的值，接着对obj.foo执行自增操作，最后使用console.log打印‘结束了’。这段代码的输出结果如下：</p>
+<pre class="hljs"><code><div>  1
+  2
+  '结束了'
+</div></code></pre>
+<p>现在假设需求有变，输出顺序需要调整为：</p>
+<pre class="hljs"><code><div>  1
+  '结束了'
+  2
+</div></code></pre>
+<p>根据打印结果我们很容易想到对策，即把语句obj.foo++和语句console.log('结束了')位置互换即可。那么有没有什么办法能够在不调整代码的情况下实现需求呢？这时需要响应式系统支持 <strong>调度</strong>。
+我们可以为effect函数设计一个选项参数options,允许用户指定调度器：</p>
+<pre class="hljs"><code><div>  effect(
+    <span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
+      <span class="hljs-built_in">console</span>.log(obj.foo)
+    },
+    <span class="hljs-comment">// options</span>
+    {
+      <span class="hljs-comment">// 调度器scheduler是一个函数</span>
+      scheduler(fn) {
+        <span class="hljs-comment">// ...</span>
+      }
+    }
+  )
+</div></code></pre>
+<p>用户在调用effect函数注册副作用函数时，可以传递第二个参数options,它是一个对象，其中允许指定scheduler调度函数，同时在effect函数内部我们需要把options选项挂载到对应的副作用函数上：</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> effect = <span class="hljs-function">(<span class="hljs-params">fn, options = {}</span>) =&gt;</span> {
+    <span class="hljs-keyword">const</span> effectFn = <span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
+      cleanup(effectFn)
+      <span class="hljs-comment">// 当调用effect注册副作用函数时，将副作用函数复制给activeEffect</span>
+      activeEffect = effectFn
+      <span class="hljs-comment">// 在调用副作用函数之前将当前副作用函数压栈</span>
+      effectStack.push(effectFn)
+      fn()
+      <span class="hljs-comment">// 在当前副作用函数执行完毕后，将当前副作用函数弹出栈，并把activeEffect还原为之前的值</span>
+      effectStack.pop()
+      activeEffect = effectStack[effectStack.length - <span class="hljs-number">1</span>]
+    }
+    <span class="hljs-comment">// 将options挂载到effectFn上</span>
+    effectFn.options = options
+    <span class="hljs-comment">// activeEffect.deps 用来存储所有与该副作用函数相关联的依赖集合</span>
+    effectFn.deps = []
+    <span class="hljs-comment">// 执行副作用函数</span>
+    effectFn()
+  }
+</div></code></pre>
+<p>有了调度函数，我们在trigger函数中触发副作用函数重新执行时，就可以直接调用用户传递的调度器函数，把控制权交给用户：</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> trigger = <span class="hljs-function">(<span class="hljs-params">target, key</span>) =&gt;</span> {
+    <span class="hljs-keyword">const</span> depsMap = bucket.get(target)
+    <span class="hljs-keyword">if</span> (!depsMap) <span class="hljs-keyword">return</span>
+    <span class="hljs-keyword">const</span> effects = depsMap.get(key)
+
+    <span class="hljs-comment">// 防止无限递归</span>
+    <span class="hljs-keyword">const</span> effectsToRun = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Set</span>()
+    effects &amp;&amp; effects.forEach(<span class="hljs-function"><span class="hljs-params">effectFn</span> =&gt;</span> {
+      <span class="hljs-keyword">if</span> (effectFn !== activeEffect) {
+        effectsToRun.add(effectFn)
+      }
+    })
+    effectsToRun.forEach(<span class="hljs-function"><span class="hljs-params">effectFn</span> =&gt;</span> {
+      <span class="hljs-comment">// 如果一个副作用函数存在调度器，则调用该调度器，并将副作用函数作为参数传递</span>
+      <span class="hljs-keyword">if</span>(effectFn.options.scheduler) { <span class="hljs-comment">// 新增</span>
+        effectFn.options.scheduler(effectFn) <span class="hljs-comment">// 新增</span>
+      } <span class="hljs-keyword">else</span> {
+        <span class="hljs-comment">// 否则直接执行副作用函数</span>
+        effectFn() <span class="hljs-comment">// 新增</span>
+      }
+    })
+  }
+</div></code></pre>
+<p>有了这些基础设施之后，就可以实现前文的需求了，如下：</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> data = { <span class="hljs-attr">foo</span>: <span class="hljs-number">1</span> }
+  <span class="hljs-keyword">const</span> obj = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Proxy</span>(data, {<span class="hljs-comment">/*  */</span>})
+
+  effect(
+    <span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
+      <span class="hljs-built_in">console</span>.log(obj.foo)
+    },
+    <span class="hljs-comment">// options</span>
+    {
+      <span class="hljs-comment">// 调度器scheduler是一个函数</span>
+      scheduler(fn) {
+        <span class="hljs-comment">// 将副作用函数放到宏任务队列中执行</span>
+        setTimeout(fn)
+      }
+    }
+  )
+  obj.foo++
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'结束了'</span>)
+</div></code></pre>
+<p>我们使用setTimeout开启一个宏任务来执行副作用函数fn,这样就能实现期望的打印顺序了：</p>
+<pre class="hljs"><code><div>  1
+  '结束了'
+  2
+</div></code></pre>
+<p>除了控制副作用函数的执行顺序，通过调度器还可以做到控制它的执行次数，这一点尤为重要。思考如下例子：</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> data = {<span class="hljs-attr">foo</span>: <span class="hljs-number">1</span>}
+  <span class="hljs-keyword">const</span> obj = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Proxy</span>(data, {<span class="hljs-comment">/*  */</span>})
+
+  effect(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
+    <span class="hljs-built_in">console</span>.log(obj.foo)
+  })
+
+  obj.foo++
+  obj.foo++
+</div></code></pre>
+<p>首先在副作用函数中打印obj.foo的值，接着连续对其执行两次自增操作，在没有指定调度器的情况下，它的输出如下：</p>
+<pre class="hljs"><code><div>  1
+  2
+  3
+</div></code></pre>
+<p>由输出可知，字段obj.foo的值一定会从1自增到3，2只是它的过渡状态。如果我们只关心最终结果而不关心过程，那么执行三次打印操作是多余的，我们期望的打印结果是：</p>
+<pre class="hljs"><code><div>  1
+  3
+</div></code></pre>
+<p>其中不包含过渡状态，基于调度器我们可以很容易地实现此功能：</p>
+<pre class="hljs"><code><div>  <span class="hljs-comment">// 定义一个任务队列</span>
+  <span class="hljs-keyword">const</span> jobQueue = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Set</span>()
+  <span class="hljs-comment">// 使用Promise.resolve()创建一个promise实例，我们用它将一个任务添加到微任务队列</span>
+  <span class="hljs-keyword">const</span> p = <span class="hljs-built_in">Promise</span>.resolve()
+
+  <span class="hljs-comment">// 一个标志代表是否正在刷新队列</span>
+  <span class="hljs-keyword">let</span> isFlushing = <span class="hljs-literal">false</span>
+  <span class="hljs-keyword">const</span> flushJob = <span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
+    <span class="hljs-comment">// 如果队列正在刷新，则什么也不做</span>
+    <span class="hljs-keyword">if</span> (isFlushing) <span class="hljs-keyword">return</span>
+    <span class="hljs-comment">// 设置为true, 代表正在刷新</span>
+    isFlushing = <span class="hljs-literal">true</span>
+    <span class="hljs-comment">// 在微任务队列中刷新jobQueue队列</span>
+    p.then(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
+      jobQueue.forEach(<span class="hljs-function"><span class="hljs-params">job</span> =&gt;</span> job())
+    }).finally(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
+      <span class="hljs-comment">// 结束后重置isFlushing</span>
+      isFlushing = <span class="hljs-literal">false</span>
+    })
+  }
+
+  effect(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
+    <span class="hljs-built_in">console</span>.log(obj.foo)
+  }, {
+    scheduler(fn) {
+      <span class="hljs-comment">// 每次调度时，将副作用函数添加到jobQueue队列中</span>
+      jobQueue.add(fn)
+      <span class="hljs-comment">// 调用flushJob刷新队列</span>
+      flushJob()
+    }
+  })
+  obj.foo++
+  obj.foo++
+</div></code></pre>
+<p>整段代码的效果是，连续对obj.foo执行两次自增操作，
+会同步且连续执行两次scheduler调度函数，这意味着同一个副作用函数会被jobQueue.add(fn)语句添加两次，但由于Set数据结构的去重能力，最终jobQueue中只会有一项，即当前副作用函数，类似地，flushJob也会同步且连续地执行两次，但是由于isFlushing标志的存在，实际上flushJob函数在一个事件循环内只执行一次，即在微任务队列内执行一次。当微任务队列开始执行时，就会遍历jobQueue并执行里面存储的副作用函数。由于此时jobQueue队列中只有一个副作用函数，所以只会执行一次，并且当它执行时，字段obj.foo的值已经是3了，这样就实现了我们的期望输出：</p>
+<pre class="hljs"><code><div>  1
+  3
+</div></code></pre>
+<h4 id="48-%E8%AE%A1%E7%AE%97%E5%B1%9E%E6%80%A7computed%E4%B8%8Elazy">4.8 计算属性computed与lazy</h4>
+<p>在深入讲解计算属性之前，我们需要先来聊聊关于懒执行的effect，即lazy的effect。这个是什么意思呢？举个例子，现在我们所实现的effect函数会立即执行传递给它的副作用函数，例如：</p>
+<pre class="hljs"><code><div>  effect(
+    <span class="hljs-comment">// 这个函数会立即执行</span>
+    <span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
+      <span class="hljs-built_in">console</span>.log(obj.foo)
+    }
+  )
+</div></code></pre>
+<p>在某些场景下，我们并不希望它立即执行，而是希望它在需要的时候才执行，例如计算属性。这时我们可以 <strong>通过在options中添加lazy属性来达到目的</strong>，如下面的代码所示：</p>
+<pre class="hljs"><code><div>  effect(
+    <span class="hljs-comment">// 指定了lazy选项</span>
+    <span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
+      <span class="hljs-built_in">console</span>.log(obj.foo)
+    },
+    <span class="hljs-comment">// options</span>
+    {
+      <span class="hljs-attr">lazy</span>: <span class="hljs-literal">true</span>
+    }
+  )
+</div></code></pre>
+<p>lazy选项和之前介绍的scheduler一样，它通过options选项对象指定。有了它，我们就可以修改effect函数的实现逻辑了，当options.lazy为true时，则不立即执行副作用函数：</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> effect = <span class="hljs-function">(<span class="hljs-params">fn, options = {}</span>) =&gt;</span> {
+    <span class="hljs-keyword">const</span> effectFn = <span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
+      cleanup(effectFn)
+      activeEffect = effectFn
+      effectStack.push(effectFn)
+      fn()
+      effectStack.pop()
+      activeEffect = effectStack[effectStack.length - <span class="hljs-number">1</span>]
+    }
+    effectFn.options = options
+    effectFn.deps = []
+    <span class="hljs-comment">// 只有非lazy的时候，才执行</span>
+    <span class="hljs-keyword">if</span> (!options.lazy) { <span class="hljs-comment">// 新增</span>
+      effectFn() <span class="hljs-comment">// 执行副作用函数</span>
+    }
+    <span class="hljs-comment">// 将副作用函数作为返回值返回</span>
+    <span class="hljs-keyword">return</span> effectFn <span class="hljs-comment">// 新增</span>
+  }
+</div></code></pre>
+<p>通过这个判断，我们就实现了让副作用函数不立即执行的功能。但问题是，副作用函数应该什么时候执行呢？通过上面的代码可以看到，我们将副作用函数effectFn作为effect函数的返回值，这就意味着当调用effect函数时，通过其返回值就能够拿到对应的副作用函数，这样我们就能手动执行该副作用函数了：</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> effectFn = effect(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
+    <span class="hljs-built_in">console</span>.log(obj.foo)
+  }, { <span class="hljs-attr">lazy</span>: <span class="hljs-literal">true</span>} )
+
+  <span class="hljs-comment">// 手动执行副作用函数</span>
+  effectFn()
+</div></code></pre>
+<p>如果仅仅手动执行副作用函数，其意义不大。但如果我们把传递给effect的函数看作一个getter,那么这个getter函数可以返回任何值，例如：</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> effectFn = effect(
+    <span class="hljs-comment">// getter返回obj.foo 与 obj.bar 的和</span>
+    <span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> obj.foo + obj.bar,
+    { <span class="hljs-attr">lazy</span>: <span class="hljs-literal">true</span> }
+  )
+
+  <span class="hljs-comment">// value是getter的返回值</span>
+  <span class="hljs-keyword">const</span> value = effectFn()
+</div></code></pre>
+<p>为了实现这个目标，我们需要再对effect函数做一些修改，如下代码所示：</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> effect = <span class="hljs-function">(<span class="hljs-params">fn, options = {}</span>) =&gt;</span> {
+    <span class="hljs-keyword">const</span> effectFn = <span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
+      <span class="hljs-comment">// 将所有与effectFn有关的依赖集合中的effectFn清除</span>
+      cleanup(effectFn)
+      activeEffect = effectFn
+      <span class="hljs-comment">// effect嵌套处理</span>
+      effectStack.push(effectFn)
+      <span class="hljs-comment">// 将fn的执行结果存储到res中</span>
+      <span class="hljs-keyword">const</span> res = fn() <span class="hljs-comment">// 新增</span>
+      effectStack.pop()
+      activeEffect = effectStack[effectStack.length - <span class="hljs-number">1</span>]
+      <span class="hljs-comment">// 将res作为effectFn的返回值</span>
+      <span class="hljs-keyword">return</span> res
+    }
+    effectFn.options = options
+    effectFn.deps = []
+    <span class="hljs-keyword">if</span> (!options.lazy) {
+      effectFn()
+    }
+    <span class="hljs-keyword">return</span> effectFn
+  }
+</div></code></pre>
+<p>传递给effect函数的参数fn才是真正的副作用函数，而effectFn使我们包装后的副作用函数。为了通过effectFn得到真正的副作用函数fn的执行结果，我们需要将其保存在res变量中，然后将其作为effectFn的返回值。</p>
+<p>现在我们已经能够实现懒执行的副作用函数，并且能够拿到副作用函数的执行结果了，接下来就可以实现计算属性了，如下所示：</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> computed = <span class="hljs-function">(<span class="hljs-params">getter</span>) =&gt;</span> {
+    <span class="hljs-comment">// 把getter作为副作用函数，创建一个lazy的effect</span>
+    <span class="hljs-keyword">const</span> effectFn = effect(getter, {
+      <span class="hljs-attr">lazy</span>: <span class="hljs-literal">true</span>
+    })
+
+    <span class="hljs-keyword">const</span> obj = {
+      <span class="hljs-comment">// 当读取value时才执行effectFn</span>
+      <span class="hljs-keyword">get</span> value() {
+        <span class="hljs-keyword">return</span> effectFn()
+      }
+    }
+
+    <span class="hljs-keyword">return</span> obj
+  }
+</div></code></pre>
+<p>首先我们定义了一个computed函数，它接受一个getter函数作为参数，我们把函数当作副作用函数，用它创建一个lazy的effect。computed函数的执行会返回一个对象，该对象的value属性时一个访问器属性，只有当读取value值时，才会执行effectFn并将其结果作为返回值返回。</p>
+<p>我们可以使用computed函数来创建一个计算属性：</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> data = { <span class="hljs-attr">foo</span>: <span class="hljs-number">1</span>, <span class="hljs-attr">bar</span>: <span class="hljs-number">2</span> }
+  <span class="hljs-keyword">const</span> obj = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Proxy</span>(data, {<span class="hljs-comment">/*  */</span>})
+
+  <span class="hljs-keyword">const</span> sumRes = computed(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> obj.foo + obj.bar)
+  <span class="hljs-built_in">console</span>.log(sumRes.value) <span class="hljs-comment">// 3</span>
+</div></code></pre>
+<p>现在我们实现的计算属性只做到了懒计算，也就是说，只有当你真正读取sumRes.value的值时，它才会进行计算并得到值，但是还做不到对值进行缓存，即假如我们多次访问sumRes.value的值，会导致effectFn进行多次计算，即使obj.foo与obj.bar的值本身并没有变化：</p>
+<pre class="hljs"><code><div>  <span class="hljs-built_in">console</span>.log(sumRes.value) <span class="hljs-comment">// 3</span>
+  <span class="hljs-built_in">console</span>.log(sumRes.value) <span class="hljs-comment">// 3</span>
+  <span class="hljs-built_in">console</span>.log(sumRes.value) <span class="hljs-comment">// 3</span>
+</div></code></pre>
+<p>上面的代码多次访问sumRes.value的值，每次访问都会调用effectFn重新计算。</p>
+<p>为了解决这个问题，就需要我们在实现computed函数时，添加对值进行缓存的功能，如下所示：</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> computed = <span class="hljs-function">(<span class="hljs-params">getter</span>) =&gt;</span> {
+    <span class="hljs-comment">// value 用来缓存上一次计算的值</span>
+    <span class="hljs-keyword">let</span> value
+    <span class="hljs-comment">// dirty标志，用来标识是否需要重新计算值，为true则意味着“脏”，需要重新计算</span>
+    <span class="hljs-keyword">let</span> dirty = <span class="hljs-literal">true</span>
+
+    <span class="hljs-keyword">const</span> effectFn = effect(getter, {
+      <span class="hljs-attr">lazy</span>: <span class="hljs-literal">true</span>
+    })
+
+    <span class="hljs-keyword">const</span> obj = {
+      <span class="hljs-keyword">get</span> value() {
+        <span class="hljs-comment">// 只有“脏”时才计算值，并将得到的值缓存到value中</span>
+        <span class="hljs-keyword">if</span> (dirty) {
+          value = effectFn()
+          <span class="hljs-comment">// 将dirty设置为false，下一次访问直接使用缓存到value中的值</span>
+          dirty = <span class="hljs-literal">false</span>
+        }
+        <span class="hljs-keyword">return</span> value
+      }
+    }
+
+    <span class="hljs-keyword">return</span> obj
+  }
+</div></code></pre>
+<p>我们新增了两个变量value和dirty，其中value用来缓存上一次计算的值，而dirty是一个标识，代表是否需要重新计算。当我们通过sumRes.value访问值时，只有当dirty为true时才会调用effectFn重新计算值，否则直接使用上一次缓存在value中的值。这样无论我们访问多少次sumRes.value，都只会在第一次访问时进行真正的计算，后续访问都会直接读取缓存的value值。</p>
+<p>如果此时我们修改obj.foo或obj.bar的值，再访问sumRes.value会发现访问到的值没有发生变化：</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> data = { <span class="hljs-attr">foo</span>: <span class="hljs-number">1</span>, <span class="hljs-attr">bar</span>: <span class="hljs-number">2</span> }
+  <span class="hljs-keyword">const</span> obj = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Proxy</span>(data, {<span class="hljs-comment">/*  */</span>})
+
+  <span class="hljs-keyword">const</span> sumRes = computed(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> obj.foo + obj.bar )
+
+  <span class="hljs-built_in">console</span>.log(sumRes.value) <span class="hljs-comment">// 3</span>
+  <span class="hljs-built_in">console</span>.log(sumRes.value) <span class="hljs-comment">// 3</span>
+
+  <span class="hljs-comment">// 修改obj.foo</span>
+  obj.foo++
+  <span class="hljs-comment">// 再次访问，得到的仍然是3，但预期结果应该是4</span>
+  <span class="hljs-built_in">console</span>.log(sumRes.value) <span class="hljs-comment">// 3</span>
+</div></code></pre>
+<p>这是因为，当第一次访问sumRes.value的值后，变量dirty会设置为false，代表不需要计算。即使我们修改了obj.foo的值，但只要dirty的值为false，就不会重新计算，所以导致我们得到错误的值。</p>
+<p>解决办法很简单，当obj.foo或者obj.bar的值发生变化后，只要dirty的值重置为true就可以了。那么应该怎么做呢？这时就用到了上一节介绍的scheduler选项了，代码如下所示：</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> computed = <span class="hljs-function">(<span class="hljs-params">getter</span>) =&gt;</span> {
+    <span class="hljs-keyword">let</span> value
+    <span class="hljs-keyword">let</span> dirty = <span class="hljs-literal">true</span>
+
+    <span class="hljs-keyword">const</span> effectFn = effect(getter, {
+      <span class="hljs-attr">lazy</span>: <span class="hljs-literal">true</span>,
+      
+      <span class="hljs-comment">// 添加调度器，在调度器中将dirty重置为true</span>
+      scheduler() {
+        dirty = <span class="hljs-literal">true</span>
+      }
+    })
+
+    <span class="hljs-keyword">const</span> obj = {
+      <span class="hljs-keyword">get</span> value() {
+        <span class="hljs-keyword">if</span> (dirty) {
+          value = effectFn()
+          dirty = <span class="hljs-literal">false</span>
+        }
+        <span class="hljs-keyword">return</span> value
+      }
+    }
+
+    <span class="hljs-keyword">return</span> obj
+  }
+</div></code></pre>
+<p>我们为effect添加了scheduler调度器函数，它会在getter函数中所依赖的响应式数据变化时执行，这样我们在scheduler函数内将dirty重置为true，当下一次访问sumRes.value时，就会重新调用effectFn计算值，这样就能够得到预期的结果了。</p>
+<p>现在，我们设计的计算属性已经趋近于完美了，但还有一个缺陷，它体现在我们在另一个effect中读取计算属性的值时：</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> sumRes = computed(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> obj.foo + obj.bar)
+  
+  effect(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
+    <span class="hljs-comment">// 在该副作用函数中读取sumRes.value</span>
+    <span class="hljs-built_in">console</span>.log(sumRes.value)
+  })
+
+  <span class="hljs-comment">// 修改obj.foo的值</span>
+  obj.foo++
+</div></code></pre>
+<p>sumRes是一个计算属性，并且在另一个effect的副作用函数中读取了sumRes.value的值。如果此时修改obj.foo的值，我们期望副作用函数重新执行，就像我们在Vue.js的模板中读取计算属性值的时候，一旦计算属性发生变化就会触发重新渲染一样。但是如果尝试运行上面这段代码，会发现修改obj.foo的值并不会触发副作用函数的渲染，我们说这是一个缺陷。</p>
+<p>分析原因，我们发现，<strong>从本质上看这就是一个典型的effect嵌套。一个计算属性内部拥有自己的effect，并且它是懒执行的，只有当真正读取计算属性的值时才会执行。对于计算属性的getter函数来说，它里面访问的响应式数据只会把computed内部的effect收集为依赖。而当把计算属性用于另一个effect时，就会发生effect嵌套，外层effect不会被内层effect中的响应式数据收集</strong>。</p>
+<p>解决办法很简单。当读取计算属性的值时，我们可以手动调用track函数进行追踪；当计算属性依赖的响应式数据发生变化时，我们可以手动调用trigger函数触发相应：</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> computed = <span class="hljs-function">(<span class="hljs-params">getter</span>) =&gt;</span> {
+    <span class="hljs-keyword">let</span> value
+    <span class="hljs-keyword">let</span> dirty = <span class="hljs-literal">true</span>
+
+    <span class="hljs-keyword">const</span> effectFn = effect(getter, {
+      <span class="hljs-attr">lazy</span>: <span class="hljs-literal">true</span>,
+      scheduler() {
+        <span class="hljs-keyword">if</span> (!dirty) {
+          dirty = <span class="hljs-literal">true</span>
+          <span class="hljs-comment">// 当计算属性依赖的响应式数据变化时，手动调用trigger函数触发相应</span>
+          trigger(obj, <span class="hljs-string">'value'</span>)
+        }
+      }
+    })
+
+    <span class="hljs-keyword">const</span> obj = {
+      <span class="hljs-keyword">get</span> value() {
+        <span class="hljs-keyword">if</span> (dirty) {
+          value = effectFn()
+          dirty = <span class="hljs-literal">false</span>
+        }
+        <span class="hljs-comment">// 当读取value时，手动调用track函数进行追踪</span>
+        track(obj, <span class="hljs-string">'value'</span>)
+        <span class="hljs-keyword">return</span> value
+      }
+    }
+  }
+</div></code></pre>
+<p>当读取一个计算属性的value值时，我们手动调用track函数，把计算属性返回的对象作为target,同时作为第一个参数传递给track函数。当计算属性所依赖的响应式数据变化时，会执行调度器函数，在调度器函数内手动调用trigger函数触发响应即可。对于如下代码来说：</p>
+<pre class="hljs"><code><div>  effect(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">effectFn</span>(<span class="hljs-params"></span>) </span>{
+    <span class="hljs-built_in">console</span>.log(sumRes.value)
+  })
+</div></code></pre>
+<p>它会建立这样的联系：</p>
+<pre class="hljs"><code><div>  computed(obj)
+        |_____value
+                |____effectFn
+</div></code></pre>
+<h4 id="49-watch%E7%9A%84%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86">4.9 watch的实现原理</h4>
+<p>所谓watch，其本质就是观测一个响应式数据，当数据发生变化时通知并执行相应的回调函数。举个例子：</p>
+<pre class="hljs"><code><div>  watch(obj, () =&gt; {
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'数据变了'</span>)
+  })
+
+  <span class="hljs-comment">// 修改响应数据的值，会导致回调函数执行</span>
+  obj.foo++
+</div></code></pre>
+<p>假设obj是一个响应数据，使用watch函数观测它，并传递一个回调函数，当修改响应式数据的值时，会触发回调函数执行。</p>
+<p>实际上，watch的实现本质上就是利用了effect以及options.scheduler选项，如下所示：</p>
+<pre class="hljs"><code><div>  effect(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
+    <span class="hljs-built_in">console</span>.log(obj.foo)
+  }, {
+    scheduler() {
+      <span class="hljs-comment">// 当obj.foo的值变化时，会执行scheduler调度函数</span>
+    }
+  })
+</div></code></pre>
+<p>在一个副作用函数中访问响应式数据obj.foo，通过前面的介绍，我们知道这会在副作用函数与响应式数据之间建立联系，当响应式数据变化时，会触发副作用函数重新执行。但有一个例外，即 <strong>如果副作用函数存在scheduler选项，当响应数据发生变化时，会触发scheduler调度函数执行，而非直接触发副作用函数函数执行。从这个角度来看，其实scheduler调度函数就相当于一个回调函数，而watch的实现就是利用了这个特点</strong>。下面最简单的watch函数的实现：</p>
+<pre class="hljs"><code><div>  <span class="hljs-comment">// watch函数接收两个参数，source是响应式数据，cb是回调函数</span>
+  <span class="hljs-keyword">const</span> watch = <span class="hljs-function">(<span class="hljs-params">source, cb</span>) =&gt;</span> {
+    effect(
+      <span class="hljs-comment">// 触发读取操作，从而建立联系</span>
+      <span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> source.foo,
+      {
+        scheduler() {
+          <span class="hljs-comment">// 当数据变化时，调用回调函数cb</span>
+          cb()
+        }
+      }
+    )
+  }
+</div></code></pre>
+<p>我们可以如下所示使用watch函数：</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> data = { <span class="hljs-attr">foo</span>: <span class="hljs-number">1</span> }
+  <span class="hljs-keyword">const</span> obj = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Proxy</span>(data, {<span class="hljs-comment">/*  */</span>})
+
+  watch(obj, () =&gt; {
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'数据变化了'</span>)
+  })
+  obj.foo++
+</div></code></pre>
+<p>下面这段代码能正常工作，但是我们注意到watch函数的实现中，硬编码了对source.foo的读取操作。换句话说，现在只能观测obj.foo的改变。为了让watch函数具有通用性，我们需要封装一个通用的读取操作：</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> watch = <span class="hljs-function">(<span class="hljs-params">source, cb</span>) =&gt;</span> {
+    effect(
+      <span class="hljs-comment">// 调用traverse 递归地读取</span>
+      <span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> traverse(source),
+      {
+        scheduler() {
+          <span class="hljs-comment">// 当数据变化时，调用回调函数cb</span>
+          cb()
+        }
+      }
+    )
+  }
+
+  <span class="hljs-keyword">const</span> traverse = <span class="hljs-function">(<span class="hljs-params">value, seen = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Set</span>(</span>)) =&gt;</span> {
+    <span class="hljs-comment">// 如果要读取的数据是原始值，或者已经被读取过了，那么什么都不做</span>
+    <span class="hljs-keyword">if</span> (<span class="hljs-keyword">typeof</span> value !== <span class="hljs-string">'object'</span> || value === <span class="hljs-literal">null</span> || seen.has(value)) <span class="hljs-keyword">return</span>
+    <span class="hljs-comment">// 将数据添加到seen中，代表遍历地读取过了，避免循环引用引起的死循环</span>
+    seen.add(value)
+    <span class="hljs-comment">// 暂时不考虑数据等其他结构</span>
+    <span class="hljs-comment">// 假设value就是一个对象，使用for...in读取对象的每一个值，并递归地调用traverse进行处理</span>
+    <span class="hljs-keyword">for</span>(<span class="hljs-keyword">const</span> k <span class="hljs-keyword">in</span> value) {
+      traverse(value[k], seen)
+    }
+
+    <span class="hljs-keyword">return</span> value
+  }
+</div></code></pre>
+<p>在watch内部的effect中调用traverse函数进行递归的读取操作，代替硬编码的方式，这样就能读取一个对象上的任意属性，从而当任意属性发生变化时都能够触发回调函数执行。</p>
+<p>watchh函数除了可以观测响应式数据，还可以接收一个getter函数：</p>
+<pre class="hljs"><code><div>  watch(
+    <span class="hljs-comment">//getter函数</span>
+    <span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> obj.foo,
+    <span class="hljs-comment">// 回调函数</span>
+    () =&gt; {
+      <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'obj.foo的值变了'</span>)
+    }
+  )
+</div></code></pre>
+<p>传递给watch函数的第一个参数不再是一个响应式数据，而是一个getter函数。在getter函数内部，用户可以指定该watch依赖哪些响应式数据，只有当这些数据变化时，才会触发回调函数执行。</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> watch = <span class="hljs-function">(<span class="hljs-params">source, cb</span>) =&gt;</span> {
+    <span class="hljs-comment">//定义getter</span>
+    <span class="hljs-keyword">let</span> getter
+    <span class="hljs-comment">// 如果source是函数，说明用户传递的是getter,所以至直接把source赋值给getter</span>
+    <span class="hljs-keyword">if</span> (<span class="hljs-keyword">typeof</span> source === <span class="hljs-string">'function'</span>) {
+      getter = source
+    } <span class="hljs-keyword">else</span> {
+      <span class="hljs-comment">// 否则按照原来的实现调用traverse递归地读取</span>
+      getter = <span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> traverse(source)
+    }
+
+    effect(
+      <span class="hljs-comment">// 执行getter</span>
+      <span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> getter(),
+      {
+        scheduler() {
+          cb()
+        }
+      }
+    )
+  }
+</div></code></pre>
+<p>这样就实现了自定义getter的功能，使watch函数更强大。</p>
+<p>现在的实现缺少一个非常重要的能力，即在回调函数中拿不到旧值与新值。通常我们在使用Vue.js中的watch函数时，能够在回调函数中得到变化前后的值：</p>
+<pre class="hljs"><code><div>  watch(
+    <span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> obj.foo,
+    (newValue, oldValue) =&gt; {
+      <span class="hljs-built_in">console</span>.log(newValue, oldValue) <span class="hljs-comment">// 2, 1</span>
+    }
+  )
+  obj.foo++
+</div></code></pre>
+<p>那么如何获得新值与旧值呢？这需要充分利用effect函数的lazy选项：</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> watch = <span class="hljs-function">(<span class="hljs-params">source, cb</span>) =&gt;</span> {
+    <span class="hljs-keyword">let</span> getter
+    <span class="hljs-keyword">if</span> (<span class="hljs-keyword">typeof</span> source === <span class="hljs-string">'function'</span>) {
+      getter = source
+    } <span class="hljs-keyword">else</span> {
+      getter = <span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> traverse(source)
+    }
+    <span class="hljs-comment">// 定义旧值与新值</span>
+    <span class="hljs-keyword">let</span> oldValue, newValue
+    <span class="hljs-comment">// 使用effect注册副作用函数时，开启lazy选项，并把返回值存储到effectFn中以便后续手动调用</span>
+    <span class="hljs-keyword">const</span> effectFn = effect(
+      <span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> getter(),
+      {
+        <span class="hljs-attr">lazy</span>: <span class="hljs-literal">true</span>,
+        scheduler() {
+          <span class="hljs-comment">// 在scheduler中重新执行副作用函数，得到的是新值</span>
+          newValue = effectFn()
+          <span class="hljs-comment">// 将旧值和新值作为回调函数的参数</span>
+          cb(newValue, oldValue)
+          <span class="hljs-comment">// 更新旧值，不然下一次会得到错误的旧值</span>
+          oldValue = newValue
+        }
+      }
+    )
+    <span class="hljs-comment">// 手动调用副作用函数，拿到的值就是旧值</span>
+    oldValue = effectFn()
+  }
+</div></code></pre>
+<p>在这段代码中，最核心的改动是使用lazy选项创建了一个懒执行的effect。注意上面的代码中最下面的部分，我们手动调用effectFn函数得到的返回值就是旧值，即第一次执行得到的值。当变化发生并触发scheduler调度函数执行时，会重新调用effectFn函数并得到新值，这样我们就拿到了旧值与新值，接着将它们传递给回调函数cb就可以了，最后意见非常重要的事情是，不要忘记使用新值更新旧值：oldValue = newValue，否则下次变更发生时会得到错误的旧值。</p>
+<h4 id="410-%E7%AB%8B%E5%8D%B3%E6%89%A7%E8%A1%8C%E7%9A%84watch%E4%B8%8E%E5%9B%9E%E8%B0%83%E6%89%A7%E8%A1%8C%E6%97%B6%E6%9C%BA">4.10 立即执行的watch与回调执行时机</h4>
+<p>watch本质其实是对effect的第二次封装，我们继续讨论watch的两个特性：<strong>一个是立即执行的回调函数，另一个是回调函数的执行时机</strong>。</p>
+<p>首先我们来看立即执行的回调函数。默认情况下，一个watch的回调只会在响应数据发生变化时才执行：</p>
+<pre class="hljs"><code><div>  <span class="hljs-comment">// 回调函数只有在响应式数据obj后续发生变化时才执行</span>
+  watch(obj, () =&gt; {
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'变化了'</span>)
+  })
+</div></code></pre>
+<p>在Vue.js中可以通过选项参数immediate来指定回调是否需要立即执行：</p>
+<pre class="hljs"><code><div>  watch(obj, () =&gt; {
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'变化了'</span>)
+  }, {
+    <span class="hljs-comment">// 回调函数会在watch创建时立即执行一次</span>
+    <span class="hljs-attr">immediate</span>: <span class="hljs-literal">true</span>
+  })
+</div></code></pre>
+<p>所有我们可以把scheduler调度函数封装为一个通用函数，分别在初始化和变更时执行它，如下所示：</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> watch = <span class="hljs-function">(<span class="hljs-params">source, cb, options = {}</span>) =&gt;</span> {
+    <span class="hljs-keyword">let</span> getter
+    <span class="hljs-keyword">if</span> (<span class="hljs-keyword">typeof</span> source === <span class="hljs-string">'function'</span>) {
+      getter = source
+    } <span class="hljs-keyword">else</span> {
+      getter = <span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> traverse(source)
+    }
+
+    <span class="hljs-keyword">let</span> oldValue, newValue
+    
+    <span class="hljs-comment">// 提取scheduler调度函数为一个独立的job函数</span>
+    <span class="hljs-keyword">const</span> job = <span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
+      newValue = effectFn()
+      cb(newValue, oldValue)
+      oldValue = newValue
+    }
+
+    <span class="hljs-keyword">const</span> effectFn = effect(
+      <span class="hljs-comment">// 执行getter</span>
+      <span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> getter(),
+      {
+        <span class="hljs-attr">lazy</span>: <span class="hljs-literal">true</span>,
+        <span class="hljs-comment">// 使用job函数作为调度器函数</span>
+        <span class="hljs-attr">scheduler</span>: job
+      }
+    )
+
+    <span class="hljs-keyword">if</span> (options.immediate) {
+      <span class="hljs-comment">// 当immedidate为true时立即执行job，从而触发回调执行</span>
+      job()
+    } <span class="hljs-keyword">else</span> {
+      oldValue = effectFn()
+    }
+  }
+</div></code></pre>
+<p>这样就实现了回调函数的立即执行功能。由于回调函数是立即执行的，所以第一次回调执行时没有所谓的旧值，因此此时回调函数的oldValue值为undefined，这也是符合预期的。</p>
+<p>除了指定回调函数为立即执行之外，还可以通过其他选项参数来指定回调函数的执行时机，例如在Vue3.js中使用flush选项来指定：</p>
+<pre class="hljs"><code><div>  watch(obj, () =&gt; {
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'变化了'</span>)
+  }, {
+    <span class="hljs-comment">// 回调函数会在watch创建时立即执行一次</span>
+    <span class="hljs-attr">flush</span>: <span class="hljs-string">'pre'</span> <span class="hljs-comment">// 还可以指定为 'post' | 'sync'</span>
+  })
+</div></code></pre>
+<p>flush本质是在指定调度函数的执行时机。前文讲解过如何在微任务队列中执行调度函数scheduler,这与flush的功能相同。当flush的值为 'post'时，代表调度函数需要将副作用函数放到一个微任务队列中，并等待DOM更新结束后再执行，我们可以用如下代码进行模拟：</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> watch = <span class="hljs-function">(<span class="hljs-params">source, cb, options = {}</span>) =&gt;</span> {
+    <span class="hljs-keyword">let</span> getter
+    <span class="hljs-keyword">if</span> (<span class="hljs-keyword">typeof</span> source === <span class="hljs-string">'function'</span>) {
+      getter = source
+    } <span class="hljs-keyword">else</span> {
+      getter = <span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> traverse(source)
+    }
+
+    <span class="hljs-keyword">let</span> oldValue, newValue
+
+    <span class="hljs-keyword">const</span> job = <span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
+      newValue = effectFn()
+      cb(newValue, oldValue)
+      oldValue = newValue
+    }
+
+    <span class="hljs-keyword">const</span> effectFn = effect(
+      <span class="hljs-comment">// 执行getter</span>
+      <span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> getter(),
+      {
+        <span class="hljs-attr">lazy</span>: <span class="hljs-literal">true</span>,
+        <span class="hljs-attr">scheduler</span>: <span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
+          <span class="hljs-comment">// 在调度函数中判断 'flush' 是否为 'post', 如果是，将其放到微任务队列中执行</span>
+          <span class="hljs-keyword">if</span> (options.flush === <span class="hljs-string">'post'</span>) {
+            <span class="hljs-keyword">const</span> p = <span class="hljs-built_in">Promise</span>.resolve()
+            p.then(job)
+          } <span class="hljs-keyword">else</span> {
+            job()
+          }
+        }
+      }
+    )
+
+    <span class="hljs-keyword">if</span> (options.immediate) {
+      job()
+    } <span class="hljs-keyword">else</span> {
+      oldValue = effectFn() 
+    }
+  }
+</div></code></pre>
+<p>我们修改调度器函数scheduler的实现方式，在调度器函数内检测options.flush的值是否为 'post'，如果是，则将job函数放到微任务队列中，从而实现异步延迟执行；否则直接执行job函数，这本质上相当于 'sync'的实现机制，即同步执行。对于options.flush的值 'pre' 的情况，我们暂时没办法模拟，因为这涉及组件的更新时机，其中 'pre' 和 'post' 原本的语义指的就是组件更新前和更新后，不过这并不影响我们理解如何控制回调函数的更新时机。</p>
+<h4 id="411-%E8%BF%87%E6%9C%9F%E7%9A%84%E5%89%AF%E4%BD%9C%E7%94%A8">4.11 过期的副作用</h4>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">let</span> finalData
+  watch(obj, <span class="hljs-keyword">async</span> () =&gt; {
+    <span class="hljs-comment">// 发送并等待网路请求</span>
+    <span class="hljs-keyword">const</span> res = <span class="hljs-keyword">await</span> fetch(<span class="hljs-string">'/path/to/request'</span>)
+    <span class="hljs-comment">// 将请求结果赋值给data</span>
+    finalData = res
+  })
+</div></code></pre>
+<p>这段代码会发生竞态问题。假设我们第一次修改obj对象的某个字段值，这会导致回调函数执行，同时发送了第一次请求A，随着时间的推移，在请求A的结果返回之前，我们对obj对象的某个字段进行第二次修改，这会导致发送第二次请求B。此时请求A和请求B都在进行中，那么哪一个请求会先返回结果呢？我们不确定，如果请求B先于请求A返回结果，就会导致最终finalData中存储的是A请求的结果，如图4-11所示：</p>
+<pre class="hljs"><code><div>  时间                                      服务器
+  第一次修改obj ---------------发送请求A----&gt;
+  第二次修改obj ---------------发送请求B----&gt;
+  将B的结果设置给finalData &lt;---请求B返回-----
+  将A的结果设置给finalData &lt;---请求A返回-----
+</div></code></pre>
+<p>但是由于请求B是后发送的，因此我们认为请求B返回的数据才是 &quot;最新&quot;的，而请求A则应该被视为 &quot;过期&quot;的，所以我们希望变量finalData存储的值应该是由请求B返回的结果，而非请求A返回的结果。
+请求A是副作用函数第一次执行所产生的副作用，请求B是副作用函数第二次执行所产生的副作用。由于请求B后发生，所以请求B的结果应该被视为 &quot;最新&quot;的，而请求A已经 &quot;过期&quot;了，其产生的结果应被视为无效。通过这种方式，就可以避免竞态问题导致的错误结果。</p>
+<p>在Vue.js中，watch函数的回调函数接受第三个参数onInvalidate，它是一个函数，类似于事件监听器，我们可以使用onInvalidate函数注册一个回调，这个回调函数会在当前副作用函数过期时执行：</p>
+<pre class="hljs"><code><div>  watch(obj, <span class="hljs-keyword">async</span>(newValue, oldValue, onInvalidate) =&gt; {
+    <span class="hljs-comment">// 定义一个标志，代表当前副作用函数是否过期，默认为false, 代表没有过期</span>
+    <span class="hljs-keyword">let</span> expired = <span class="hljs-literal">false</span>
+    <span class="hljs-comment">// 调用onInvalidate()函数注册一个过期的回调</span>
+    onInvalidate(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
+      expired = <span class="hljs-literal">true</span>
+    })
+
+    <span class="hljs-comment">// 发送网络请求</span>
+    <span class="hljs-keyword">const</span> res = <span class="hljs-keyword">await</span> fetch(<span class="hljs-string">'/path/to/request'</span>)
+
+    <span class="hljs-comment">// 只有当该副作用函数的执行没有过期时，才会执行后续操作</span>
+    <span class="hljs-keyword">if</span> (!expired) {
+      finalData = res
+    }
+  })
+</div></code></pre>
+<p>在发送请求之前，我们定义了expired标志变量，用来标识当前副作用函数的执行是否过期；接着调用onInvalidate函数注册一个过期回调，当该副作用函数的执行过期时将expired标志变量设置为true;最后只有当没有过期时才采用请求结果，这样就可以有效避免上述问题了。</p>
+<p>那么Vue.js是怎么做到的呢？换句话说，onInvalidate的原理是什么呢？其实很简单，在watch内部每次检测到变更后，在副作用函数重新执行之前，会先调用我们通过onInvalidate函数注册的过期回调，仅此而已，代码如下所示：</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> watch = <span class="hljs-function">(<span class="hljs-params">source, cb, options = {}</span>) =&gt;</span> {
+    <span class="hljs-keyword">let</span> getter
+    <span class="hljs-keyword">if</span>(<span class="hljs-keyword">typeof</span> source === <span class="hljs-string">'function'</span>) {
+      getter = source
+    } <span class="hljs-keyword">else</span> {
+      getter = <span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> traverse(source)
+    }
+
+    <span class="hljs-keyword">let</span> oldValue, newValue
+    <span class="hljs-comment">// cleanup用来存储用户注册的过期回调</span>
+    <span class="hljs-keyword">let</span> cleanup
+    <span class="hljs-comment">// 定义onInvalidate函数</span>
+    <span class="hljs-keyword">const</span> onInvalidate = <span class="hljs-function">(<span class="hljs-params">fn</span>) =&gt;</span> {
+      <span class="hljs-comment">// 将过期回调存储到cleanup中</span>
+      cleanup = fn
+    }
+
+    <span class="hljs-keyword">const</span> job = <span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
+      newValue = effectFn()
+      <span class="hljs-keyword">if</span> (cleanup) {
+        cleanup()
+      }
+      <span class="hljs-comment">// 将onInvalidate作为回调函数的第三个参数，以便用户使用</span>
+      cb(newValue, oldValue, onInvalidate)
+      oldValue = newValue
+    }
+
+    <span class="hljs-keyword">const</span> effectFn = effect(
+      <span class="hljs-comment">//执行getter</span>
+      <span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> getter(),
+      {
+        <span class="hljs-attr">lazy</span>: <span class="hljs-literal">true</span>,
+        <span class="hljs-attr">scheduler</span>: <span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
+          <span class="hljs-keyword">if</span> (options.flush === <span class="hljs-string">'post'</span>) {
+            <span class="hljs-keyword">const</span> p = <span class="hljs-built_in">Promise</span>.resolve()
+            p.then(job)
+          } <span class="hljs-keyword">else</span> {
+            job()
+          }
+        }
+      }
+    )
+
+    <span class="hljs-keyword">if</span> (options.immediate) {
+      job()
+    } <span class="hljs-keyword">else</span> {
+      oldValue = effectFn()
+    }
+  }
+</div></code></pre>
+<p>在这段代码中，我们首先定义了cleanup变量，这个变量用来存储用户通过onInvalidate函数注册的过期回调，可以看到onInvalidate函数的实现非常简单，只是把过期回调赋值给了cleanup变量。这里关键点在job函数内，每次执行回调函数cb之前，先检查是否存在过期回调，如果存在，则执行过期回调函数cleanup。最后我们把onInvalidate函数作为回调函数的第三个参数传递给cb，以便用户使用。</p>
+<p>举个一个例子进一步说明：</p>
+<pre class="hljs"><code><div>  watch(obj, <span class="hljs-keyword">async</span>(newValue, oldValue, onInvalidate) =&gt; {
+    <span class="hljs-keyword">let</span> expired = <span class="hljs-literal">false</span>
+    onInvalidate(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
+      expired = <span class="hljs-literal">true</span>
+    })
+
+    <span class="hljs-keyword">const</span> res = <span class="hljs-keyword">await</span> fetch(<span class="hljs-string">'/path/to/request'</span>)
+
+    <span class="hljs-keyword">if</span> (!expired) {
+      finalData = res
+    }
+  })
+
+  <span class="hljs-comment">// 第一次修改</span>
+  obj.foo++
+  setTimeout(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
+    <span class="hljs-comment">// 200ms后做第二次修改</span>
+    obj.foo++
+  }, <span class="hljs-number">200</span>)
+</div></code></pre>
+<p>我们修改了两次obj.foo的值，第一次修改是立即执行的，这会导致watch的回调函数执行。由于我们在回调函数内调用了onInvalidate，所以会注册一个过期回调，接着发送请求A，假设请求A需要1000ms才能返回结果，而我们在200ms时第二次修改了obj.foo的值，这又会导致watch的回调函数执行。<strong>这时要注意的是，在我们实现中，每次执行回调函数之前要先检查过期回调是否存在，如果存在，会优先执行过期回调。由于在watch的回调函数第一次执行的时候，我们已经注册了一个过期回调，这会使得第一次执行的副作用函数内闭包的变量expired的值变为true，即副作用函数的执行过期了。于是等请求A的结果返回时，其结果会被抛弃，从而避免了过期的副作用函数带来的影响</strong>。如下图4-12：</p>
+<pre class="hljs"><code><div>                  时间       服务端
+  第一次修改obj --&gt;    -----&gt; expiredA = false
+  第二次修改obj --&gt;    -----&gt; expiredB = false,expiredA = true
+  B没有过期，将B的结果&lt;-------请求B返回--- expiredB = false, expiredA = true
+  设置给finalData
+  A过期了，抛弃其结果 &lt;------- expiredB = false, expiredA = true
+</div></code></pre>
+
+</body>
+</html>
