@@ -3,8 +3,8 @@
  * @version: 1.0
  * @Author: renyong
  * @Date: 2022-05-21 13:35:58
- * @LastEditors: renyong
- * @LastEditTime: 2022-05-21 21:49:17
+ * @LastEditors: renyong 995151172@qq.com
+ * @LastEditTime: 2022-08-13 19:09:03
 -->
 
 ### 深入 Vue2.0 响应式原理
@@ -278,9 +278,9 @@
       // obj 对应实参 this.vm
       for (let i = 0; i < segments.length; i++) {
         if (!obj) return;
-        obj = obj[segments[i]];
+        obj = obj[segments[i]]; 
       }
-    };
+    };        
     return obj;
   }
   ```
