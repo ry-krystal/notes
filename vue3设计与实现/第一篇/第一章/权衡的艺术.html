@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>权衡的艺术.md</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+
+<style>
+/* https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/media/markdown.css */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+body {
+	font-family: var(--vscode-markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif);
+	font-size: var(--vscode-markdown-font-size, 14px);
+	padding: 0 26px;
+	line-height: var(--vscode-markdown-line-height, 22px);
+	word-wrap: break-word;
+}
+
+#code-csp-warning {
+	position: fixed;
+	top: 0;
+	right: 0;
+	color: white;
+	margin: 16px;
+	text-align: center;
+	font-size: 12px;
+	font-family: sans-serif;
+	background-color:#444444;
+	cursor: pointer;
+	padding: 6px;
+	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+}
+
+#code-csp-warning:hover {
+	text-decoration: none;
+	background-color:#007acc;
+	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
+}
+
+body.scrollBeyondLastLine {
+	margin-bottom: calc(100vh - 22px);
+}
+
+body.showEditorSelection .code-line {
+	position: relative;
+}
+
+body.showEditorSelection .code-active-line:before,
+body.showEditorSelection .code-line:hover:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: -12px;
+	height: 100%;
+}
+
+body.showEditorSelection li.code-active-line:before,
+body.showEditorSelection li.code-line:hover:before {
+	left: -30px;
+}
+
+.vscode-light.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.vscode-light.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.40);
+}
+
+.vscode-light.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-dark.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.vscode-dark.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.60);
+}
+
+.vscode-dark.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-high-contrast.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 160, 0, 0.7);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 160, 0, 1);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+a {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 1px solid -webkit-focus-ring-color;
+	outline-offset: -1px;
+}
+
+hr {
+	border: 0;
+	height: 2px;
+	border-bottom: 2px solid;
+}
+
+h1 {
+	padding-bottom: 0.3em;
+	line-height: 1.2;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+h1, h2, h3 {
+	font-weight: normal;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table > thead > tr > th {
+	text-align: left;
+	border-bottom: 1px solid;
+}
+
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td {
+	padding: 5px 10px;
+}
+
+table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+blockquote {
+	margin: 0 7px 0 5px;
+	padding: 0 16px 0 10px;
+	border-left-width: 5px;
+	border-left-style: solid;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 1em;
+	line-height: 1.357em;
+}
+
+body.wordWrap pre {
+	white-space: pre-wrap;
+}
+
+pre:not(.hljs),
+pre.hljs code > div {
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+pre code {
+	color: var(--vscode-editor-foreground);
+	tab-size: 4;
+}
+
+/** Theming */
+
+.vscode-light pre {
+	background-color: rgba(220, 220, 220, 0.4);
+}
+
+.vscode-dark pre {
+	background-color: rgba(10, 10, 10, 0.4);
+}
+
+.vscode-high-contrast pre {
+	background-color: rgb(0, 0, 0);
+}
+
+.vscode-high-contrast h1 {
+	border-color: rgb(0, 0, 0);
+}
+
+.vscode-light table > thead > tr > th {
+	border-color: rgba(0, 0, 0, 0.69);
+}
+
+.vscode-dark table > thead > tr > th {
+	border-color: rgba(255, 255, 255, 0.69);
+}
+
+.vscode-light h1,
+.vscode-light hr,
+.vscode-light table > tbody > tr + tr > td {
+	border-color: rgba(0, 0, 0, 0.18);
+}
+
+.vscode-dark h1,
+.vscode-dark hr,
+.vscode-dark table > tbody > tr + tr > td {
+	border-color: rgba(255, 255, 255, 0.18);
+}
+
+</style>
+
+<style>
+/* Tomorrow Theme */
+/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+/* Original theme - https://github.com/chriskempson/tomorrow-theme */
+
+/* Tomorrow Comment */
+.hljs-comment,
+.hljs-quote {
+	color: #8e908c;
+}
+
+/* Tomorrow Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+	color: #c82829;
+}
+
+/* Tomorrow Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+	color: #f5871f;
+}
+
+/* Tomorrow Yellow */
+.hljs-attribute {
+	color: #eab700;
+}
+
+/* Tomorrow Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+	color: #718c00;
+}
+
+/* Tomorrow Blue */
+.hljs-title,
+.hljs-section {
+	color: #4271ae;
+}
+
+/* Tomorrow Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+	color: #8959a8;
+}
+
+.hljs {
+	display: block;
+	overflow-x: auto;
+	color: #4d4d4c;
+	padding: 0.5em;
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: bold;
+}
+</style>
+
+<style>
+/*
+ * Markdown PDF CSS
+ */
+
+ body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "Meiryo";
+	padding: 0 12px;
+}
+
+pre {
+	background-color: #f8f8f8;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+pre:not(.hljs) {
+	padding: 23px;
+	line-height: 19px;
+}
+
+blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.emoji {
+	height: 1.4em;
+}
+
+code {
+	font-size: 14px;
+	line-height: 19px;
+}
+
+/* for inline code */
+:not(pre):not(.hljs) > code {
+	color: #C9AE75; /* Change the old color so it seems less like an error */
+	font-size: inherit;
+}
+
+/* Page Break : use <div class="page"/> to insert page break
+-------------------------------------------------------- */
+.page {
+	page-break-after: always;
+}
+
+</style>
+
+<script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
+</head>
+<body>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: document.body.classList.contains('vscode-dark') || document.body.classList.contains('vscode-high-contrast')
+          ? 'dark'
+          : 'default'
+    });
+  </script>
+<!--
+ * @Description: 权衡的艺术
+ * @version: 1.0
+ * @Author: renyong
+ * @Date: 2022-07-02 12:20:56
+ * @LastEditors: renyong
+ * @LastEditTime: 2022-07-03 12:54:08
+-->
+<h2 id="%E7%AC%AC%E4%B8%80%E7%AB%A0-%E6%9D%83%E8%A1%A1%E7%9A%84%E8%89%BA%E6%9C%AF">第一章 权衡的艺术</h2>
+<h4 id="%E9%97%AE%E9%A2%981%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E6%9D%83%E8%A1%A1">问题1：为什么要权衡？</h4>
+<p><strong>回答：</strong> 框架本省的各个模块之间并不是相互独立的，而是相互关联、相互制约的，作为框架设计者，一定要对框架的定位和方向拥有全局的把控，这样才能做好后续的设计和拆分</p>
+<h4 id="%E9%97%AE%E9%A2%982%E6%9D%83%E8%A1%A1%E4%BB%80%E4%B9%88">问题2：权衡什么？</h4>
+<p>1.框架设计是命令式还是生命式呢？这两种范式优缺点？可否汲取两者的优点？
+2.框架设计成纯运行时还是纯编译时，甚至是运行时+编译时呢？它们之间又有何差异？优缺点分别是什么？</p>
+<h4 id="11-%E5%91%BD%E4%BB%A4%E5%BC%8F%E5%92%8C%E5%A3%B0%E6%98%8E%E5%BC%8F">1.1 命令式和声明式</h4>
+<p><strong>命令式框架</strong>（例如jQuery）一大特点：<strong>关注过程(可以理解为做事的过程)</strong>
+<strong>声明式框</strong> 架特点：更加 <strong>关注结果(中间的具体实现过程不关注)</strong>, vue.js 内部实现一定是 __命令式__的，而暴露给用户的却更加 <strong>声明式</strong></p>
+<h4 id="12-%E6%80%A7%E8%83%BD%E4%B8%8E%E5%8F%AF%E7%BB%B4%E6%8A%A4%E6%80%A7%E7%9A%84%E6%9D%83%E8%A1%A1">1.2 性能与可维护性的权衡</h4>
+<p><strong>声明式代码的性能不优于命令式代码性能</strong></p>
+<pre class="hljs"><code><div>  div.textContent = <span class="hljs-string">'hello vue3'</span> <span class="hljs-comment">// 直接修改</span>
+</div></code></pre>
+<p>我们把直接修改的性能消耗定义为A，把找出差异的性能消耗定义为B，那么有：</p>
+<ul>
+<li>命令式代码的更新性能消耗 = A</li>
+<li>声明式代码的更新性能消耗 = B + A</li>
+</ul>
+<p>框架设计者要做的就是： <strong>在保持可维护性的同时让性能损失最小化</strong></p>
+<h4 id="13-%E8%99%9A%E6%8B%9Fdom%E7%9A%84%E6%80%A7%E8%83%BD%E5%88%B0%E5%BA%95%E5%A6%82%E4%BD%95">1.3 虚拟DOM的性能到底如何</h4>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>虚拟DOM</th>
+<th>innerHTML</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>纯javasctipt运算</td>
+<td>创建javascript对象(VNode)</td>
+<td>渲染HTML字符串</td>
+</tr>
+<tr>
+<td>DOM运算</td>
+<td>新建所有DOM元素</td>
+<td>新建所有DOM元素</td>
+</tr>
+</tbody>
+</table>
+<p><strong>图一 innerHTML和虚拟DOM在创建页面时的性能</strong>
+<br></p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>虚拟DOM</th>
+<th>innerHTML</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>纯javasctipt运算</td>
+<td>创建javascript对象(VNode) + Diff</td>
+<td>渲染HTML字符串</td>
+</tr>
+<tr>
+<td>DOM运算</td>
+<td>必要的DOM更新</td>
+<td>销毁所有旧DOM<br> 新建所有新DOM</td>
+</tr>
+</tbody>
+</table>
+<p><strong>图二 innerHTML和虚拟DOM在更新页面时的性能</strong>
+<br></p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>虚拟DOM</th>
+<th>innerHTML</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>纯javasctipt运算</td>
+<td>创建javascript对象(VNode) + Diff</td>
+<td>渲染HTML字符串</td>
+</tr>
+<tr>
+<td>DOM运算<br><br><br>性能因素</td>
+<td>必要的DOM更新<br><br><br>与数据变化量相关</td>
+<td>销毁所有旧DOM<br> 新建所有新DOM<br></br>与模板大小有关</td>
+</tr>
+</tbody>
+</table>
+<p><strong>图三 innerHTML和虚拟DOM在更新页面时的性能</strong>
+<br></p>
+<pre class="hljs"><code><div>  性能差-----------------------------&gt;性能高
+  innerHTML(模板) &lt; 虚拟DOM &lt; 原生javascript
+  心智负担中等      心智负担小   心智负担大
+  性能差           可维护性强   可维护性差
+                   性能不错     性能高
+</div></code></pre>
+<h4 id="14-%E8%BF%90%E8%A1%8C%E6%97%B6%E5%92%8C%E7%BC%96%E8%AF%91%E6%97%B6">1.4 运行时和编译时</h4>
+<p>纯运行时：</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> obj = {
+    <span class="hljs-attr">tag</span>: <span class="hljs-string">'div'</span>,
+    <span class="hljs-attr">children</span>: [
+      {
+        <span class="hljs-attr">tag</span>: <span class="hljs-string">'span'</span>, <span class="hljs-attr">children</span>: <span class="hljs-string">'hello world'</span>
+      }
+    ]
+  }
+  <span class="hljs-comment">/* 
+    每个对象都有两个属性: tag 代表标签名称，
+    children既可以是一个数组(代表子节点)，
+    也可以直接是一段文本(代表文本子节点)。
+    接着，我们来实现Render函数
+  */</span>
+  <span class="hljs-keyword">const</span> render = <span class="hljs-function">(<span class="hljs-params">obj, root</span>) =&gt;</span> {
+    <span class="hljs-keyword">const</span> el = <span class="hljs-built_in">document</span>.createElement(obj.tag)
+    <span class="hljs-keyword">const</span> children = obj.children
+    <span class="hljs-keyword">if</span> (<span class="hljs-keyword">typeof</span> children === <span class="hljs-string">'string'</span>) {
+      <span class="hljs-keyword">const</span> text = <span class="hljs-built_in">document</span>.createTextNode(obj.children)
+      el.appendChild(text)
+    } <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (children) {
+      <span class="hljs-comment">// 数组，递归调用render,使el作为root参数</span>
+      children.forEach(<span class="hljs-function"><span class="hljs-params">child</span> =&gt;</span> render(child, el)) 
+    }
+
+    <span class="hljs-comment">// 将元素添加到root</span>
+    root.appendChild(el)
+  }
+</div></code></pre>
+<p>为了满足用户的需求，能不能引入编译手段，把HTML标签编译成树型结构的数据对象，这样就可以使用render函数了</p>
+<pre class="hljs"><code><div>  &lt;div&gt;
+    <span class="xml"><span class="hljs-tag">&lt;<span class="hljs-name">span</span>&gt;</span> hello vue3.js <span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span></span>
+  &lt;<span class="hljs-regexp">/div&gt;
+</span></div></code></pre>
+<p>$\Downarrow$ 编译</p>
+<pre class="hljs"><code><div><span class="hljs-keyword">const</span> obj = {
+  <span class="hljs-attr">tag</span>: <span class="hljs-string">'div'</span>,
+  <span class="hljs-attr">children</span>: [
+    {
+      <span class="hljs-attr">tag</span>: <span class="hljs-string">'span'</span>, <span class="hljs-attr">children</span>: <span class="hljs-string">'hello vue3.js'</span>
+    }
+  ]
+}
+</div></code></pre>
+<p>运行时+编译时：</p>
+<pre class="hljs"><code><div><span class="hljs-keyword">const</span> html = <span class="hljs-string">`
+  &lt;div&gt;
+    &lt;span&gt;hello world&lt;/span&gt;
+  &lt;/div&gt;
+`</span>
+<span class="hljs-comment">// 调用Complier编译得到树型结构的数据对象</span>
+<span class="hljs-keyword">const</span> obj = Complier(html)
+<span class="hljs-comment">// 再调用render进行渲染</span>
+render(obj, <span class="hljs-built_in">document</span>.body)
+</div></code></pre>
+<p>纯编译过程：</p>
+<pre class="hljs"><code><div>  &lt;div&gt;
+    <span class="xml"><span class="hljs-tag">&lt;<span class="hljs-name">span</span>&gt;</span> hello vue3.js <span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span></span>
+  &lt;<span class="hljs-regexp">/div&gt;
+</span></div></code></pre>
+<p>$\Downarrow$ 编译</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> div = <span class="hljs-built_in">document</span>.createElement(<span class="hljs-string">'div'</span>)
+  <span class="hljs-keyword">const</span> span = <span class="hljs-built_in">document</span>.createElement(<span class="hljs-string">'span'</span>)
+  span.innerText = <span class="hljs-string">'hello vue3.js'</span>
+  div.appendChild(span)
+  <span class="hljs-built_in">document</span>.body.appendChild(div)
+</div></code></pre>
+
+</body>
+</html>
