@@ -3,8 +3,8 @@
  * @version: 1.0
  * @Author: renyong
  * @Date: 2022-05-21 13:35:58
- * @LastEditors: renyong 995151172@qq.com
- * @LastEditTime: 2022-08-13 19:09:03
+ * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2022-09-01 14:05:44
 -->
 
 ### 深入 Vue2.0 响应式原理
@@ -309,7 +309,6 @@
         这个方法只有在数据类型为Object时被调用
        */
     walk(obj) {
-      // 注意，这里建议不要用for...in去添加key,for...in会遍历原型链上的非Symbol属性，导致不必要的开销
       const keys = Object.keys(obj);
       for (let i = 0; i < keys.length; i++) {
         defineReactive(obj, keys[i], obj[keys[i]]);
