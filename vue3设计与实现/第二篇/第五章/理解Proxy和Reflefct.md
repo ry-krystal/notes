@@ -3,8 +3,8 @@
  * @version: 1.0
  * @Author: renyong
  * @Date: 2022-07-10 23:36:10
- * @LastEditors: renyong 995151172@qq.com
- * @LastEditTime: 2022-08-18 21:24:22
+ * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2022-09-04 14:36:09
 -->
 #### 5.1 理解Proxy与Reflect
 既然Vue3.js的响应式数据是基于Proxy实现的，那么我们就有必要了解Proxy以及与之相关联的Reflect。
@@ -112,7 +112,7 @@
     console.log(p.bar) // 1
   })
 ```
-我们分析一下这个过程发生了什么。当effect注册副作用函数执行时，会读取p.bar属性，它会发现p.bar是一个访问器属性，因此执行getter函数。由于在getter函数中通过this.food读取foo属性值，因此我们认为副作用函数与属性foo之间也会建立联系。当我们修改p.foo的值时应该能够触发响应，使得副作用函数重新执行才对。然而并非如此，我们尝试修改p.foo的值时：
+我们分析一下这个过程发生了什么。当effect注册副作用函数执行时，会读取p.bar属性，它会发现p.bar是一个访问器属性，因此执行getter函数。由于在getter函数中通过this.foo读取foo属性值，因此我们认为副作用函数与属性foo之间也会建立联系。当我们修改p.foo的值时应该能够触发响应，使得副作用函数重新执行才对。然而并非如此，我们尝试修改p.foo的值时：
 ```javascript
   p.foo++
 ```
