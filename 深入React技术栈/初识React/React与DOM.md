@@ -1,9 +1,6 @@
 <!--
  * @Description: 
 -->
-<!--
- * @Description: 
--->
 #### React 与 DOM
 ReactDOM中的API非常少，只有findDOMNode、unmountComponentAtNode和render。
 
@@ -35,5 +32,4 @@ DOM真正被添加到HTML中的生命周期方法是componentDidMount和componen
     )
   ```
   该方法把元素挂载到container中，并且返回元素的实例。当然，如果是无状态组件，render会返回null。当组件装载完毕时，callback就会被调用。
-
   当组件初次渲染之后再次更新时，React不会把整个组件重新渲染一次，而会用它高效的DOM diff算法做局部的更新。这也是React最大的亮点之一。
