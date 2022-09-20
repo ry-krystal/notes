@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>合理地触发响应.md</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+
+<style>
+/* https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/media/markdown.css */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+body {
+	font-family: var(--vscode-markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif);
+	font-size: var(--vscode-markdown-font-size, 14px);
+	padding: 0 26px;
+	line-height: var(--vscode-markdown-line-height, 22px);
+	word-wrap: break-word;
+}
+
+#code-csp-warning {
+	position: fixed;
+	top: 0;
+	right: 0;
+	color: white;
+	margin: 16px;
+	text-align: center;
+	font-size: 12px;
+	font-family: sans-serif;
+	background-color:#444444;
+	cursor: pointer;
+	padding: 6px;
+	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+}
+
+#code-csp-warning:hover {
+	text-decoration: none;
+	background-color:#007acc;
+	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
+}
+
+body.scrollBeyondLastLine {
+	margin-bottom: calc(100vh - 22px);
+}
+
+body.showEditorSelection .code-line {
+	position: relative;
+}
+
+body.showEditorSelection .code-active-line:before,
+body.showEditorSelection .code-line:hover:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: -12px;
+	height: 100%;
+}
+
+body.showEditorSelection li.code-active-line:before,
+body.showEditorSelection li.code-line:hover:before {
+	left: -30px;
+}
+
+.vscode-light.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.vscode-light.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.40);
+}
+
+.vscode-light.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-dark.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.vscode-dark.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.60);
+}
+
+.vscode-dark.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-high-contrast.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 160, 0, 0.7);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 160, 0, 1);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+a {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 1px solid -webkit-focus-ring-color;
+	outline-offset: -1px;
+}
+
+hr {
+	border: 0;
+	height: 2px;
+	border-bottom: 2px solid;
+}
+
+h1 {
+	padding-bottom: 0.3em;
+	line-height: 1.2;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+h1, h2, h3 {
+	font-weight: normal;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table > thead > tr > th {
+	text-align: left;
+	border-bottom: 1px solid;
+}
+
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td {
+	padding: 5px 10px;
+}
+
+table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+blockquote {
+	margin: 0 7px 0 5px;
+	padding: 0 16px 0 10px;
+	border-left-width: 5px;
+	border-left-style: solid;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 1em;
+	line-height: 1.357em;
+}
+
+body.wordWrap pre {
+	white-space: pre-wrap;
+}
+
+pre:not(.hljs),
+pre.hljs code > div {
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+pre code {
+	color: var(--vscode-editor-foreground);
+	tab-size: 4;
+}
+
+/** Theming */
+
+.vscode-light pre {
+	background-color: rgba(220, 220, 220, 0.4);
+}
+
+.vscode-dark pre {
+	background-color: rgba(10, 10, 10, 0.4);
+}
+
+.vscode-high-contrast pre {
+	background-color: rgb(0, 0, 0);
+}
+
+.vscode-high-contrast h1 {
+	border-color: rgb(0, 0, 0);
+}
+
+.vscode-light table > thead > tr > th {
+	border-color: rgba(0, 0, 0, 0.69);
+}
+
+.vscode-dark table > thead > tr > th {
+	border-color: rgba(255, 255, 255, 0.69);
+}
+
+.vscode-light h1,
+.vscode-light hr,
+.vscode-light table > tbody > tr + tr > td {
+	border-color: rgba(0, 0, 0, 0.18);
+}
+
+.vscode-dark h1,
+.vscode-dark hr,
+.vscode-dark table > tbody > tr + tr > td {
+	border-color: rgba(255, 255, 255, 0.18);
+}
+
+</style>
+
+<style>
+/* Tomorrow Theme */
+/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+/* Original theme - https://github.com/chriskempson/tomorrow-theme */
+
+/* Tomorrow Comment */
+.hljs-comment,
+.hljs-quote {
+	color: #8e908c;
+}
+
+/* Tomorrow Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+	color: #c82829;
+}
+
+/* Tomorrow Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+	color: #f5871f;
+}
+
+/* Tomorrow Yellow */
+.hljs-attribute {
+	color: #eab700;
+}
+
+/* Tomorrow Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+	color: #718c00;
+}
+
+/* Tomorrow Blue */
+.hljs-title,
+.hljs-section {
+	color: #4271ae;
+}
+
+/* Tomorrow Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+	color: #8959a8;
+}
+
+.hljs {
+	display: block;
+	overflow-x: auto;
+	color: #4d4d4c;
+	padding: 0.5em;
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: bold;
+}
+</style>
+
+<style>
+/*
+ * Markdown PDF CSS
+ */
+
+ body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "Meiryo";
+	padding: 0 12px;
+}
+
+pre {
+	background-color: #f8f8f8;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+pre:not(.hljs) {
+	padding: 23px;
+	line-height: 19px;
+}
+
+blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.emoji {
+	height: 1.4em;
+}
+
+code {
+	font-size: 14px;
+	line-height: 19px;
+}
+
+/* for inline code */
+:not(pre):not(.hljs) > code {
+	color: #C9AE75; /* Change the old color so it seems less like an error */
+	font-size: inherit;
+}
+
+/* Page Break : use <div class="page"/> to insert page break
+-------------------------------------------------------- */
+.page {
+	page-break-after: always;
+}
+
+</style>
+
+<script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
+</head>
+<body>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: document.body.classList.contains('vscode-dark') || document.body.classList.contains('vscode-high-contrast')
+          ? 'dark'
+          : 'default'
+    });
+  </script>
+<!--
+ * @Description: 合理触发响应
+-->
+<h4 id="%E5%90%88%E7%90%86%E5%9C%B0%E8%A7%A6%E5%8F%91%E5%93%8D%E5%BA%94">合理地触发响应</h4>
+<p>在如何代理对象中，处理了很多边界条件。例如我们需要明确知道操作的类型是'ADD'还是'SET',亦或是其他操作类型，从而正确地触发响应。但是想要合理地触发响应，还有很多工作要。</p>
+<p>首先，我们来看第一个问题，即当值没有发生变化时，应该不需要触发响应才对：</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> obj = { <span class="hljs-attr">foo</span>: <span class="hljs-number">1</span> }
+  <span class="hljs-keyword">const</span> p = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Proxy</span>(obj, {<span class="hljs-comment">/*  */</span>})
+
+  effect(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
+    <span class="hljs-built_in">console</span>.log(p.foo)
+  })
+
+  <span class="hljs-comment">// 设置p.foo的值,但值没有变化</span>
+  p.foo = <span class="hljs-number">1</span>
+</div></code></pre>
+<p>如上面的代码所示，p.foo的初始值为1，当为p.foo设置新的值时，如果值没有变化，则不需要触发响应。为例满足需求，我们需要修改set拦截函数的代码，在调用trigger函数触触发响应之前，需要检查值是否真的发生了变化：</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> p = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Proxy</span>(obj, {
+    <span class="hljs-keyword">set</span>(target, key, newVal, receiver) {
+      <span class="hljs-comment">// 先获取旧值</span>
+      <span class="hljs-keyword">const</span> oldVal = target[key]
+
+      <span class="hljs-keyword">const</span> type = <span class="hljs-built_in">Object</span>.prototype.hasOwnProperty.call(target, key) ? <span class="hljs-string">'SET'</span> : <span class="hljs-string">'ADD'</span>
+      <span class="hljs-keyword">const</span> res = <span class="hljs-built_in">Reflect</span>.set(target, key, newVal, receiver)
+      <span class="hljs-comment">// 比较新值与旧值，只要当不全等的时候才触发响应</span>
+      <span class="hljs-keyword">if</span> (oldVal !== newVal) {
+        trigger(target, key, type)
+      }
+
+      <span class="hljs-keyword">return</span> res
+    }
+  })
+</div></code></pre>
+<p>然而，仅仅进行全等比较是有缺陷的，这体现在对NaN的处理上。我们知道NaN与NaN进行全等比较总会得到false:</p>
+<pre class="hljs"><code><div>  <span class="hljs-literal">NaN</span> === <span class="hljs-literal">NaN</span> <span class="hljs-comment">// false</span>
+  <span class="hljs-literal">NaN</span> !== <span class="hljs-literal">NaN</span> <span class="hljs-comment">// true</span>
+</div></code></pre>
+<p>换句话说，如果p.foo的初始值是NaN,并且后续又为其设置了NaN作为新值，那么仅仅进行全等比较的缺陷就暴露了：</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> obj = { <span class="hljs-attr">foo</span>: <span class="hljs-literal">NaN</span> }
+  <span class="hljs-keyword">const</span> p = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Proxy</span>(obj, {<span class="hljs-comment">/*  */</span>})
+
+  effect(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
+    <span class="hljs-built_in">console</span>.log(p.foo)
+  })
+
+  <span class="hljs-comment">// 仍然会触发响应，因为NaN !== NaN 为true</span>
+  p.foo = <span class="hljs-literal">NaN</span>
+</div></code></pre>
+<p>这仍然会触发响应，并导致不必要的更新。为了解决这个问题，我们需要再加一个条件，即在新值和旧值不全等的情况下，要保证他们都不是NaN:</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> p = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Proxy</span>(obj, {
+    <span class="hljs-keyword">set</span>(target, key, newVal, receiver) {
+      <span class="hljs-comment">//先获取旧值</span>
+      <span class="hljs-keyword">const</span> oldVal = target[key]
+      <span class="hljs-keyword">const</span> type = <span class="hljs-built_in">Object</span>.prototype.hasOwnProperty.call(target, key) ? <span class="hljs-string">'SET'</span> : <span class="hljs-string">'ADD'</span>
+      <span class="hljs-keyword">const</span> res = <span class="hljs-built_in">Reflect</span>.set(target, key, newVal, receiver)
+      <span class="hljs-comment">// 比较新值与旧值，只有当它们不全等，并且都不是NaN的时候才触发响应</span>
+      <span class="hljs-keyword">if</span> (oldVal !== newVal &amp;&amp; (oldVal === oldVal || newVal === newVal)) {
+        trigger(target, key, type)
+      }
+      <span class="hljs-keyword">return</span> res
+    }
+  })
+</div></code></pre>
+<p>这样我们解决了NaN的问题。</p>
+<p>但想要合理的触发响应，仅仅处理NaN的问题还不够，接下来，我们讨论一种从原型上继承属性的情况。为了后续讲解方便，我们需要封装一个reactive函数，该函数接收一个对象作为参数，并返回为其创建的响应式数据：</p>
+<pre class="hljs"><code><div>  <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">reactive</span>(<span class="hljs-params">obj</span>) </span>{
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Proxy</span>(obj, {
+      <span class="hljs-comment">// ...</span>
+    })
+  }ß
+</div></code></pre>
+<p>可以看到，reactive只是对Proxy进行了一层封装。</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> obj = {}
+  <span class="hljs-keyword">const</span> proto = { <span class="hljs-attr">bar</span>: <span class="hljs-number">1</span> }
+  <span class="hljs-keyword">const</span> child = reactive(obj)
+  <span class="hljs-keyword">const</span> parent = reactive(proto)
+
+  <span class="hljs-comment">// 使用parent作为child的原型</span>
+  <span class="hljs-built_in">Object</span>.setPrototypeOf(child, parent)
+  effect(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
+    <span class="hljs-built_in">console</span>.log(child.bar) <span class="hljs-comment">// 1</span>
+  })
+  <span class="hljs-comment">// 修改child.bar的值</span>
+  child.bar = <span class="hljs-number">2</span> <span class="hljs-comment">// 会导致副作用函数重新执行两次</span>
+</div></code></pre>
+<p>从代码可以看出，child本身并没有bar属性，，因此当访问child.bar时，值是从原型上继承而来的。但无论如何，尽然child是响应式数据，那么它与副作用函数就会建立联系，因此当我们执行child.bar = 2时，期望副作用函数会重新执行。但是你尝试运行上面的代码，会发现副作用函数不仅执行了，还执行了两次，这会造成不必要的更新。</p>
+<p>为了搞清楚这个问题的原因，我们需要逐步分析整个过程。当在副作用函数中读取child.bar的值时，会触发child代理对象的get拦截函数。我们知道，在拦截函数内是使用Reflect.get(target, key, receiver)来得到最终结果的，对应上例，这句话相当于：</p>
+<pre class="hljs"><code><div>  <span class="hljs-built_in">Reflect</span>.get(obj, <span class="hljs-string">'bar'</span>, receiver)
+</div></code></pre>
+<p>对应到上例中，当读取child.bar属性值时，由于child代理对象obj自身没有bar属性，因此会获取对象obj的原型，也就是parent对象，所以最终得到的实际上是parent.bar的值。但是不要忘了，parent本身也是响应式数据，因此副作用函数中访问parent.bar的值时，会导致副作用函数被收集，从而建立响应联系。所以我们得出一个结论，即child.bar和parent.bar都与副作用函数建立了响应联系。
+<br />
+但仍然解释不了为什么设置chld.bar的值时，会连续触发两次副作用函数执行，所以接下来我们需要看看当设置操作发生时的具体执行流程。我们知道，当执行child.bar = 2时，会调用child代理对象的set拦截函数。同样，在set拦截函数内，我们使用Reflect.set(target, key, newVal, receiver)来完成默认的设置行为，即引擎会调用obj对象部署的[[set]]内部方法。
+如果设置的属性不存在与对象上，那么会取得其原型，并调用原型的[[set]]
+方法，也就是parent的[[set]]内部方法。由于parent是代理对象，所以这就相当于执行了它的set拦截函数。换句话说，虽然我们操作的是child.bar，但这也会导致parent代理对象的set拦截函数被执行。副作用函数不仅会被child.bar收集，也会被parent.bar收集。所以当parent代理对象的set拦截函数执行时，就会触发副作用函数重新执行，这就是为什么修改child.bar的值会导致副作用函数重新执行两次。
+<br />
+思考解决方案，思路很简单，既然执行两次，那么只要屏蔽其中一次不就可以了吗？我们可以把由parent.bar触发的那次副作用函数的重新执行屏蔽。怎么屏蔽呢？ 我们知道，两次更新时由于set拦截函数被触发了两次导致的，所以只要我们能够在set拦截函数内区分这两次更新就可以了。当我们设置child.bar的值时，会执行child代理对象的set拦截函数：</p>
+<pre class="hljs"><code><div>  <span class="hljs-comment">// child的set拦截函数</span>
+  <span class="hljs-keyword">set</span>(target, key, value, receiver) {
+    <span class="hljs-comment">// target是原始对象obj</span>
+    <span class="hljs-comment">// receiver是代理对象child</span>
+  }
+</div></code></pre>
+<p>此时target是原始对象obj,receiver是代理对象child，我们发现receiver其实就是target的代理对象。</p>
+<p>但由于obj上不存在bar属性，所以会取得obj的原型parent,并执行parent代理对象的set拦截函数：</p>
+<pre class="hljs"><code><div>  <span class="hljs-comment">// parent的set拦截函数</span>
+   <span class="hljs-keyword">set</span>(target, key, value, receiver) {
+    <span class="hljs-comment">// target 是原始对象proto</span>
+    <span class="hljs-comment">// receiver 仍然是代理对象child</span>
+   }
+</div></code></pre>
+<p>当parent代理对象的set拦截函数执行时，此时target是原始对象proto,
+而receiver仍然是代理对象child,而不再是target的代理对象，我们可以看到target和receiver的区别。由于我们最初设置的是child.bar的值，所以无论在什么情况下，receiver都是child,而target则是变化的。根据这个区别，我们很容易想到解决办法，只需要判断receiver是否是target的代理对象即可。只有当receiver是target的代理对象时才触发更新，这样就能够屏蔽由原型引起的更新了。
+<br /></p>
+<p>如何确定receiver是不是target得代理对象，这需要我们为get拦截函数添加一个能力，如以下代码所示：</p>
+<pre class="hljs"><code><div>  <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">reactive</span>(<span class="hljs-params">obj</span>) </span>{
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Proxy</span>(obj, {
+      <span class="hljs-keyword">get</span>(target, key, receiver) {
+        <span class="hljs-comment">// 代理对象可以通过raw属性访问原始数据</span>
+        <span class="hljs-keyword">if</span> (key === <span class="hljs-string">'raw'</span>) {
+          <span class="hljs-keyword">return</span> target
+        }
+        track(target, key)
+        <span class="hljs-keyword">return</span> <span class="hljs-built_in">Reflect</span>.get(target, key, receiver)
+      },
+      <span class="hljs-comment">// 省略其他拦截函数</span>
+    })
+  }
+</div></code></pre>
+<p>我们增加了一段代码，它实现的功能是，代理对象可以通过raw属性读取原始数据，例如：</p>
+<pre class="hljs"><code><div>  child.raw === obj <span class="hljs-comment">// true</span>
+  parent.raw === proto <span class="hljs-comment">// true</span>
+</div></code></pre>
+<p>有了它，我们就能够在set拦截函数中判断receiver是不是target的代理对象了：</p>
+<pre class="hljs"><code><div>  <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">reactive</span>(<span class="hljs-params">obj</span>) </span>{
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Proxy</span>(obj, {
+      <span class="hljs-keyword">set</span>(target, key, newVal, receiver) {
+        <span class="hljs-keyword">const</span> oldVal = target[key]
+        <span class="hljs-keyword">const</span> type = <span class="hljs-built_in">Object</span>.prototype.hasOwnProperty.call(target, key) ? <span class="hljs-string">'SET'</span> : <span class="hljs-string">'ADD'</span>
+        <span class="hljs-keyword">const</span> res = <span class="hljs-built_in">Reflect</span>.set(target, key, newVal, receiver)
+
+        <span class="hljs-comment">// target===receiver.raw 说明receiver就是target的代理对象</span>
+        <span class="hljs-keyword">if</span> (target === receiver.raw) {
+          <span class="hljs-keyword">if</span> (oldVal !== newVal &amp;&amp; (oldVal === oldVal || newVal === newVal)) {
+            trigger(target, key, type)
+          }
+        }
+
+        <span class="hljs-keyword">return</span> res
+      }
+      <span class="hljs-comment">// 省略其他拦截函数</span>
+    })
+  }
+</div></code></pre>
+<p>上面的代码所示，我们新增一个判断条件，只有当receiver是target的代理对象时才触发更新，这样就能屏蔽由原型引起的更新，从而避免了不必要的更新操作。</p>
+
+</body>
+</html>

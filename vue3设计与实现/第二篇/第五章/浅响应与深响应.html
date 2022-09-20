@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>浅响应与深响应.md</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+
+<style>
+/* https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/media/markdown.css */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+body {
+	font-family: var(--vscode-markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif);
+	font-size: var(--vscode-markdown-font-size, 14px);
+	padding: 0 26px;
+	line-height: var(--vscode-markdown-line-height, 22px);
+	word-wrap: break-word;
+}
+
+#code-csp-warning {
+	position: fixed;
+	top: 0;
+	right: 0;
+	color: white;
+	margin: 16px;
+	text-align: center;
+	font-size: 12px;
+	font-family: sans-serif;
+	background-color:#444444;
+	cursor: pointer;
+	padding: 6px;
+	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+}
+
+#code-csp-warning:hover {
+	text-decoration: none;
+	background-color:#007acc;
+	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
+}
+
+body.scrollBeyondLastLine {
+	margin-bottom: calc(100vh - 22px);
+}
+
+body.showEditorSelection .code-line {
+	position: relative;
+}
+
+body.showEditorSelection .code-active-line:before,
+body.showEditorSelection .code-line:hover:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: -12px;
+	height: 100%;
+}
+
+body.showEditorSelection li.code-active-line:before,
+body.showEditorSelection li.code-line:hover:before {
+	left: -30px;
+}
+
+.vscode-light.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.vscode-light.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.40);
+}
+
+.vscode-light.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-dark.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.vscode-dark.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.60);
+}
+
+.vscode-dark.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-high-contrast.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 160, 0, 0.7);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 160, 0, 1);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+a {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 1px solid -webkit-focus-ring-color;
+	outline-offset: -1px;
+}
+
+hr {
+	border: 0;
+	height: 2px;
+	border-bottom: 2px solid;
+}
+
+h1 {
+	padding-bottom: 0.3em;
+	line-height: 1.2;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+h1, h2, h3 {
+	font-weight: normal;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table > thead > tr > th {
+	text-align: left;
+	border-bottom: 1px solid;
+}
+
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td {
+	padding: 5px 10px;
+}
+
+table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+blockquote {
+	margin: 0 7px 0 5px;
+	padding: 0 16px 0 10px;
+	border-left-width: 5px;
+	border-left-style: solid;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 1em;
+	line-height: 1.357em;
+}
+
+body.wordWrap pre {
+	white-space: pre-wrap;
+}
+
+pre:not(.hljs),
+pre.hljs code > div {
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+pre code {
+	color: var(--vscode-editor-foreground);
+	tab-size: 4;
+}
+
+/** Theming */
+
+.vscode-light pre {
+	background-color: rgba(220, 220, 220, 0.4);
+}
+
+.vscode-dark pre {
+	background-color: rgba(10, 10, 10, 0.4);
+}
+
+.vscode-high-contrast pre {
+	background-color: rgb(0, 0, 0);
+}
+
+.vscode-high-contrast h1 {
+	border-color: rgb(0, 0, 0);
+}
+
+.vscode-light table > thead > tr > th {
+	border-color: rgba(0, 0, 0, 0.69);
+}
+
+.vscode-dark table > thead > tr > th {
+	border-color: rgba(255, 255, 255, 0.69);
+}
+
+.vscode-light h1,
+.vscode-light hr,
+.vscode-light table > tbody > tr + tr > td {
+	border-color: rgba(0, 0, 0, 0.18);
+}
+
+.vscode-dark h1,
+.vscode-dark hr,
+.vscode-dark table > tbody > tr + tr > td {
+	border-color: rgba(255, 255, 255, 0.18);
+}
+
+</style>
+
+<style>
+/* Tomorrow Theme */
+/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+/* Original theme - https://github.com/chriskempson/tomorrow-theme */
+
+/* Tomorrow Comment */
+.hljs-comment,
+.hljs-quote {
+	color: #8e908c;
+}
+
+/* Tomorrow Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+	color: #c82829;
+}
+
+/* Tomorrow Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+	color: #f5871f;
+}
+
+/* Tomorrow Yellow */
+.hljs-attribute {
+	color: #eab700;
+}
+
+/* Tomorrow Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+	color: #718c00;
+}
+
+/* Tomorrow Blue */
+.hljs-title,
+.hljs-section {
+	color: #4271ae;
+}
+
+/* Tomorrow Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+	color: #8959a8;
+}
+
+.hljs {
+	display: block;
+	overflow-x: auto;
+	color: #4d4d4c;
+	padding: 0.5em;
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: bold;
+}
+</style>
+
+<style>
+/*
+ * Markdown PDF CSS
+ */
+
+ body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "Meiryo";
+	padding: 0 12px;
+}
+
+pre {
+	background-color: #f8f8f8;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+pre:not(.hljs) {
+	padding: 23px;
+	line-height: 19px;
+}
+
+blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.emoji {
+	height: 1.4em;
+}
+
+code {
+	font-size: 14px;
+	line-height: 19px;
+}
+
+/* for inline code */
+:not(pre):not(.hljs) > code {
+	color: #C9AE75; /* Change the old color so it seems less like an error */
+	font-size: inherit;
+}
+
+/* Page Break : use <div class="page"/> to insert page break
+-------------------------------------------------------- */
+.page {
+	page-break-after: always;
+}
+
+</style>
+
+<script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
+</head>
+<body>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: document.body.classList.contains('vscode-dark') || document.body.classList.contains('vscode-high-contrast')
+          ? 'dark'
+          : 'default'
+    });
+  </script>
+<!--
+ * @Description: 
+-->
+<h4 id="%E6%B5%85%E5%93%8D%E5%BA%94%E4%B8%8E%E6%B7%B1%E5%93%8D%E5%BA%94">浅响应与深响应</h4>
+<p>reactive与shallowReactive的区别，即深响应与浅响应的区别。实际上么，我们目前所实现的reactive是浅响应。</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> obj = reactive({
+    <span class="hljs-attr">foo</span>: { 
+      <span class="hljs-attr">bar</span>: <span class="hljs-number">1</span>
+    }
+  })
+
+  <span class="hljs-keyword">const</span> effect(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
+    <span class="hljs-built_in">console</span>.log(obj.foo.bar)
+  })
+  <span class="hljs-comment">// 修改obj.foo.bar的值，并不能触发响应</span>
+  obj.foo.bar = <span class="hljs-number">2</span>
+</div></code></pre>
+<p>首先，创建对象obj代理对象，该对象的foo属性值也是一个对象，即{ bar: 1 }。接着，在副作用函数内访问obj.foo.bar的值。但是我们发现，后续对obj.foo.bar的修改不能触发副作用函数重新执行，这是为什么呢？来看一下实现：</p>
+<pre class="hljs"><code><div>  <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">reactive</span>(<span class="hljs-params">obj</span>) </span>{
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Proxy</span>(obj, {
+      <span class="hljs-keyword">get</span>(target, key, receiver) {
+        <span class="hljs-keyword">if</span> (key === <span class="hljs-string">'raw'</span>) {
+          <span class="hljs-keyword">return</span> target
+        }
+
+        track(target, key)
+        <span class="hljs-comment">// 当读取属性值时，直接返回结果</span>
+        <span class="hljs-keyword">return</span> <span class="hljs-built_in">Reflect</span>.get(target, key, receiver)
+      }
+      <span class="hljs-comment">// 其他拦截函数</span>
+    })
+  }
+</div></code></pre>
+<p>当我们读取obj.foo.bar时，首先要读取obj.foo的值。这里我们直接使用Reflect.get函数返回obj.foo的结果。由于通过Reflect.get得到obj.foo的结果是一个普通对象，即{ bar: 1},它并不是一个响应式对象，所以在副作用函数中访问obj.foo.bar时，是不能建立响应联系的。要解决这个问题，我们需要对Reflect.get返回的结果做一层包装：</p>
+<pre class="hljs"><code><div>  <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">reactive</span>(<span class="hljs-params">obj</span>) </span>{
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Proxy</span>(obj, {
+      <span class="hljs-keyword">get</span>(target, key, receiver) {
+        <span class="hljs-keyword">if</span> (key ==== <span class="hljs-string">'raw'</span>) {
+          <span class="hljs-keyword">return</span> target
+        }
+
+        track(target, key)
+        <span class="hljs-comment">// 得到原始值结果</span>
+        <span class="hljs-keyword">const</span> res = <span class="hljs-built_in">Reflect</span>.get(target, key, receiver)
+        <span class="hljs-keyword">if</span> (<span class="hljs-keyword">typeof</span> res === <span class="hljs-string">'object'</span> &amp;&amp; res !== <span class="hljs-literal">null</span>) {
+          <span class="hljs-comment">// 调用reactive将结果包装成响应式数据并返回</span>
+          <span class="hljs-keyword">return</span> reactive(res)
+        }
+        <span class="hljs-comment">// 返回res</span>
+        <span class="hljs-keyword">return</span> res
+      },
+      <span class="hljs-comment">// ...</span>
+    })
+  }
+</div></code></pre>
+<p>当读取属性值时，我们首先检测该值是否是对象，如果是对象，则递归地调用reactive函数将其包装成响应式数据并返回。这样当使用obj.foo读取foo属性值时，得到的就会是一个响应式数据，因此再通过obj.foo.bar读取bar属性值时，自然就会建立响应联系。这样，当我们修改obj.foo.bar的值时，就能触发副作用函数重新执行了。
+<br />
+然而，并非所有情况下我们希望深响应，这就催生了shallowReactive,即浅响应。所谓浅响应，指的就是只有对象的第一层属性是响应的，示例：</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> obj = shallowReactive({
+    <span class="hljs-attr">foo</span>: {
+      <span class="hljs-attr">bar</span>: <span class="hljs-number">1</span>
+    }
+  })
+
+  effect(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
+    <span class="hljs-built_in">console</span>.log(obj.foo.bar)
+  })
+  <span class="hljs-comment">// obj.foo是响应的，可以触发副作用函数重新执行</span>
+  obj.foo = { <span class="hljs-attr">bar</span>: <span class="hljs-number">2</span> }
+  <span class="hljs-comment">// obj.foo.bar不是响应的，不能触发副作用函数重新执行</span>
+  obj.foo.bar = <span class="hljs-number">3</span>
+</div></code></pre>
+<p>我们使用shallowReactive函数创建一个浅响应的代理对象obj。可以发现，只要对象的第一层是响应的，第二层及更深层次的属性则不是响应的。</p>
+<pre class="hljs"><code><div>  <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">createReactive</span>(<span class="hljs-params">obj, isShallow = false</span>) </span>{
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Proxy</span>(obj, {
+      <span class="hljs-comment">// 拦截读取操作</span>
+      <span class="hljs-keyword">get</span>(target, key, receiver) {
+        <span class="hljs-keyword">if</span> (key === <span class="hljs-string">'raw'</span>) {
+          <span class="hljs-keyword">return</span> target
+        }
+
+        <span class="hljs-keyword">const</span> res = <span class="hljs-built_in">Reflect</span>.get(target, key, receiver)
+
+        track(target, key)
+        <span class="hljs-comment">// 如果是浅响应，则直接返回原始值</span>
+        <span class="hljs-keyword">if</span> (isShallow) {
+          <span class="hljs-keyword">return</span> res
+        }
+
+        <span class="hljs-keyword">if</span> (<span class="hljs-keyword">typeof</span> res === <span class="hljs-string">'object'</span> &amp;&amp; res !== <span class="hljs-literal">null</span>) {
+          <span class="hljs-keyword">return</span> reactive(res)
+        }
+
+        <span class="hljs-keyword">return</span> res
+      }
+    })
+  }
+</div></code></pre>
+<p>深响应和浅响应</p>
+<pre class="hljs"><code><div><span class="hljs-comment">// 深响应</span>
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">reactive</span>(<span class="hljs-params">obj</span>) </span>{
+  <span class="hljs-keyword">return</span> createReactive(obj)
+}
+<span class="hljs-comment">// 浅响应</span>
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">shallowReactive</span>(<span class="hljs-params">obj</span>) </span>{
+  <span class="hljs-keyword">return</span> createReactive(obj, <span class="hljs-literal">true</span>)
+}
+</div></code></pre>
+
+</body>
+</html>

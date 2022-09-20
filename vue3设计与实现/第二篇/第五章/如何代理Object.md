@@ -1,5 +1,5 @@
 <!--
- * @Description: 
+ * @Description: 如何代理Object
 -->
 #### 如何代理Object
 我们将着手实现响应式数据。前面我们使用get拦截函数去拦截对属性的读取操作。但在响应系统中，“读取”是一个很宽泛的概念，例如使用in操作符检查对象上是否具有给定的key也属于“读取”操作，如下所示：
@@ -98,7 +98,7 @@
     foo: 1
   }
   const p = new Proxy(obj, {/*  */})
-
+≠≠
   effect(() => {
     // for...in 循环
     for(const key in p) {

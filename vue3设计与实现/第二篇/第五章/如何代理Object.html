@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>如何代理Object.md</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+
+<style>
+/* https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/media/markdown.css */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+body {
+	font-family: var(--vscode-markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif);
+	font-size: var(--vscode-markdown-font-size, 14px);
+	padding: 0 26px;
+	line-height: var(--vscode-markdown-line-height, 22px);
+	word-wrap: break-word;
+}
+
+#code-csp-warning {
+	position: fixed;
+	top: 0;
+	right: 0;
+	color: white;
+	margin: 16px;
+	text-align: center;
+	font-size: 12px;
+	font-family: sans-serif;
+	background-color:#444444;
+	cursor: pointer;
+	padding: 6px;
+	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+}
+
+#code-csp-warning:hover {
+	text-decoration: none;
+	background-color:#007acc;
+	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
+}
+
+body.scrollBeyondLastLine {
+	margin-bottom: calc(100vh - 22px);
+}
+
+body.showEditorSelection .code-line {
+	position: relative;
+}
+
+body.showEditorSelection .code-active-line:before,
+body.showEditorSelection .code-line:hover:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: -12px;
+	height: 100%;
+}
+
+body.showEditorSelection li.code-active-line:before,
+body.showEditorSelection li.code-line:hover:before {
+	left: -30px;
+}
+
+.vscode-light.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.vscode-light.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.40);
+}
+
+.vscode-light.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-dark.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.vscode-dark.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.60);
+}
+
+.vscode-dark.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-high-contrast.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 160, 0, 0.7);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 160, 0, 1);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+a {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 1px solid -webkit-focus-ring-color;
+	outline-offset: -1px;
+}
+
+hr {
+	border: 0;
+	height: 2px;
+	border-bottom: 2px solid;
+}
+
+h1 {
+	padding-bottom: 0.3em;
+	line-height: 1.2;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+h1, h2, h3 {
+	font-weight: normal;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table > thead > tr > th {
+	text-align: left;
+	border-bottom: 1px solid;
+}
+
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td {
+	padding: 5px 10px;
+}
+
+table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+blockquote {
+	margin: 0 7px 0 5px;
+	padding: 0 16px 0 10px;
+	border-left-width: 5px;
+	border-left-style: solid;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 1em;
+	line-height: 1.357em;
+}
+
+body.wordWrap pre {
+	white-space: pre-wrap;
+}
+
+pre:not(.hljs),
+pre.hljs code > div {
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+pre code {
+	color: var(--vscode-editor-foreground);
+	tab-size: 4;
+}
+
+/** Theming */
+
+.vscode-light pre {
+	background-color: rgba(220, 220, 220, 0.4);
+}
+
+.vscode-dark pre {
+	background-color: rgba(10, 10, 10, 0.4);
+}
+
+.vscode-high-contrast pre {
+	background-color: rgb(0, 0, 0);
+}
+
+.vscode-high-contrast h1 {
+	border-color: rgb(0, 0, 0);
+}
+
+.vscode-light table > thead > tr > th {
+	border-color: rgba(0, 0, 0, 0.69);
+}
+
+.vscode-dark table > thead > tr > th {
+	border-color: rgba(255, 255, 255, 0.69);
+}
+
+.vscode-light h1,
+.vscode-light hr,
+.vscode-light table > tbody > tr + tr > td {
+	border-color: rgba(0, 0, 0, 0.18);
+}
+
+.vscode-dark h1,
+.vscode-dark hr,
+.vscode-dark table > tbody > tr + tr > td {
+	border-color: rgba(255, 255, 255, 0.18);
+}
+
+</style>
+
+<style>
+/* Tomorrow Theme */
+/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+/* Original theme - https://github.com/chriskempson/tomorrow-theme */
+
+/* Tomorrow Comment */
+.hljs-comment,
+.hljs-quote {
+	color: #8e908c;
+}
+
+/* Tomorrow Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+	color: #c82829;
+}
+
+/* Tomorrow Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+	color: #f5871f;
+}
+
+/* Tomorrow Yellow */
+.hljs-attribute {
+	color: #eab700;
+}
+
+/* Tomorrow Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+	color: #718c00;
+}
+
+/* Tomorrow Blue */
+.hljs-title,
+.hljs-section {
+	color: #4271ae;
+}
+
+/* Tomorrow Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+	color: #8959a8;
+}
+
+.hljs {
+	display: block;
+	overflow-x: auto;
+	color: #4d4d4c;
+	padding: 0.5em;
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: bold;
+}
+</style>
+
+<style>
+/*
+ * Markdown PDF CSS
+ */
+
+ body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "Meiryo";
+	padding: 0 12px;
+}
+
+pre {
+	background-color: #f8f8f8;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+pre:not(.hljs) {
+	padding: 23px;
+	line-height: 19px;
+}
+
+blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.emoji {
+	height: 1.4em;
+}
+
+code {
+	font-size: 14px;
+	line-height: 19px;
+}
+
+/* for inline code */
+:not(pre):not(.hljs) > code {
+	color: #C9AE75; /* Change the old color so it seems less like an error */
+	font-size: inherit;
+}
+
+/* Page Break : use <div class="page"/> to insert page break
+-------------------------------------------------------- */
+.page {
+	page-break-after: always;
+}
+
+</style>
+
+<script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
+</head>
+<body>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: document.body.classList.contains('vscode-dark') || document.body.classList.contains('vscode-high-contrast')
+          ? 'dark'
+          : 'default'
+    });
+  </script>
+<!--
+ * @Description: 
+-->
+<h4 id="%E5%A6%82%E4%BD%95%E4%BB%A3%E7%90%86object">如何代理Object</h4>
+<p>我们将着手实现响应式数据。前面我们使用get拦截函数去拦截对属性的读取操作。但在响应系统中，“读取”是一个很宽泛的概念，例如使用in操作符检查对象上是否具有给定的key也属于“读取”操作，如下所示：</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> obj = { <span class="hljs-attr">foo</span>: <span class="hljs-number">1</span> }
+  effect(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
+    <span class="hljs-string">'foo'</span> <span class="hljs-keyword">in</span> obj
+  })
+</div></code></pre>
+<p>响应式系统应该拦截一切读取操作，以便当数据变化时能够正确地触发响应。下面列出了对一个普通对象的所有可能的读取操作。</p>
+<ul>
+<li>访问属性：obj.foo</li>
+<li>判断对象或原型上是否存在给定的key: key in obj</li>
+<li>使用for...in循环遍历对象：for(const key in obj) {}</li>
+</ul>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> obj = { <span class="hljs-attr">foo</span>: <span class="hljs-number">1</span> }
+
+  <span class="hljs-keyword">const</span> p = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Proxy</span>(obj, {
+    <span class="hljs-keyword">get</span>(target, key, receiver) {
+      <span class="hljs-comment">// 建立联系</span>
+      track(target, key)
+      <span class="hljs-comment">// 返回属性值</span>
+      <span class="hljs-keyword">return</span> <span class="hljs-built_in">Reflect</span>.get(target, key, receiver)
+    }
+  })
+</div></code></pre>
+<p>对于in 操作符，应该如何拦截呢？我们尝试找与in操作符对应的拦截函数，<strong>in操作符的运算结果是通过一个叫作HasProperty的抽象方法得到的。关于HasProperty抽象方法，它的返回值是通过调用对象的内部方法[[HasProperty]]得到的。而[[HasProperty]]内部方法通过查表找到对应的拦截函数名叫has</strong>,因此我们可以通过has拦截函数实现对in操作符的代理：</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> obj = {
+    <span class="hljs-attr">foo</span>: <span class="hljs-number">1</span>
+  }
+  <span class="hljs-keyword">const</span> p = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Proxy</span>(obj, {
+    has(target, key) {
+      track (target, key)
+      <span class="hljs-keyword">return</span> <span class="hljs-built_in">Reflect</span>.has(target, key)
+    }
+  })
+</div></code></pre>
+<p>这样，当我们在副作用函数中通过in操作符操作响应式数据时，就能够建立依赖关系：</p>
+<pre class="hljs"><code><div>  effect(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
+    <span class="hljs-string">'foo'</span> <span class="hljs-keyword">in</span> p
+  })
+</div></code></pre>
+<p>再看如何拦截for...in循环，查看规范，其中关键点在于EnumerateObjectProperties(obj)。这里的EnumerateObjectProperties是一个抽象方法，该方法返回一个迭代器对象，规范给出了满足该抽象方法的示例实现:</p>
+<pre class="hljs"><code><div>  <span class="hljs-function"><span class="hljs-keyword">function</span>* <span class="hljs-title">EnumerateObjectProperties</span>(<span class="hljs-params">obj</span>) </span>{
+    <span class="hljs-keyword">const</span> visited = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Set</span>()
+    <span class="hljs-comment">// 判断自身的key</span>
+    <span class="hljs-keyword">for</span>(<span class="hljs-keyword">const</span> key <span class="hljs-keyword">of</span> <span class="hljs-built_in">Reflect</span>.ownKeys(obj)) {
+      <span class="hljs-keyword">if</span> (<span class="hljs-keyword">typeof</span> key === <span class="hljs-string">'symbol'</span>) <span class="hljs-keyword">continue</span>
+      <span class="hljs-comment">// 获取该key的属性标识符</span>
+      <span class="hljs-keyword">const</span> desc = <span class="hljs-built_in">Reflect</span>.getOwnPropertyDescriptor(obj, key)
+      <span class="hljs-keyword">if</span> (desc) {
+        <span class="hljs-comment">// 存在则添加到visited中</span>
+        visited.add(key)
+        <span class="hljs-comment">// 该属性是可枚举的</span>
+        <span class="hljs-keyword">if</span>(desc.enumerable) <span class="hljs-keyword">yield</span> key
+      }
+    }
+
+    <span class="hljs-comment">// 获取obj的原型</span>
+    <span class="hljs-keyword">const</span> proto = <span class="hljs-built_in">Reflect</span>.getPrototypeOf(obj)
+    <span class="hljs-keyword">if</span> (proto === <span class="hljs-literal">null</span>) <span class="hljs-keyword">return</span>
+    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> protoKey <span class="hljs-keyword">of</span> EnumerateObjectProperties(proto)) {
+        <span class="hljs-comment">// 如果原型的protoKey不在visited中</span>
+      <span class="hljs-keyword">if</span> (!visited.has(protoKey)) <span class="hljs-keyword">yield</span> protoKey
+    }
+  }
+</div></code></pre>
+<p>可以看到，该方法是一个generator函数，接收一个参数obj。实际上，obj就是被for...in循环遍历的对象，其关键点在于使用Reflect.ownKeys(obj)来获取只属于对象自身拥有的键。因此，我们可以使用ownKeys拦截函数来拦截Reflect.ownKeys操作：</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> obj = { <span class="hljs-attr">foo</span>: <span class="hljs-number">1</span> }
+  <span class="hljs-keyword">const</span> ITEATE_KEY = <span class="hljs-built_in">Symbol</span>()
+
+  <span class="hljs-keyword">const</span> p = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Proxy</span>(obj, {
+    ownKeys(target) {
+      <span class="hljs-comment">// 将副作用函数与ITEATE_KEY关联</span>
+      track(target, ITEATE_KEY)
+      <span class="hljs-keyword">return</span> <span class="hljs-built_in">Reflect</span>.ownKeys(target)
+    }
+  })
+</div></code></pre>
+<p>上面的代码，拦截ownKeys操作即可拦截for...in循环。我们在使用track函数进行追踪的时候，将ITEATE_KEY作为追踪key,为什么这么做呢？
+这是因为ownKeys拦截函数与get/set拦截函数不同，在set/get中，我们可以得到具体操作的key,但是在ownKeys中，我们只能拿到目标对象target。这也很符合直觉，因为在读写属性值时，总是能够明确地知道当前正在操作哪一个属性，所以只需要在该属性与副作用函数之间建立联系即可。而 <strong>ownKeys用来获取一个对象的所有属于自己的键值，这个操作明显不与任何具体的键进行绑定，因此我们只能够构造唯一的key作为标识，即ITEATE_KEY。</strong></p>
+<p>既然追踪的是ITEATE_KEY，那么相应地，在触发响应的时候也应该触发它才行：</p>
+<pre class="hljs"><code><div>  trigger(target, ITEATE_KEY)
+</div></code></pre>
+<p>但是在什么情况下，对数据的操作需要触发与ITEATE_KEY相关联的副作用函数重新执行呢？ 为了够清楚这问题。假设副作用函数内有一段for...in循环：</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> obj = {
+    <span class="hljs-attr">foo</span>: <span class="hljs-number">1</span>
+  }
+  <span class="hljs-keyword">const</span> p = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Proxy</span>(obj, {<span class="hljs-comment">/*  */</span>})
+
+  effect(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
+    <span class="hljs-comment">// for...in 循环</span>
+    <span class="hljs-keyword">for</span>(<span class="hljs-keyword">const</span> key <span class="hljs-keyword">in</span> p) {
+      <span class="hljs-built_in">console</span>.log(key) <span class="hljs-comment">// foo</span>
+    }
+  })
+</div></code></pre>
+<p>副作用函数执行后，会与ITEATE_KEY之间建立响应联系，接下来我们尝试为对象p添加新的属性bar:</p>
+<pre class="hljs"><code><div>  p.bar = <span class="hljs-number">2</span>
+</div></code></pre>
+<p>由于对象p原本只有foo属性，因此for...in循环只会执行一次。现在为它添加了新的属性bar,所以for...in循环就会由执行一次变成执行两次。也就是说，当为对象添加新属性时，会对for...in循环产生影响，所以需要触发与ITEATE_KEY相关联的副作用函数重新执行。但是目前的实现还做不到这点。当我们为对象p添加新属性bar时，并没有触发副作用函数重新执行，这是为什么呢？我们来看下现在的set拦截函数的实现：</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> p = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Proxy</span>(obj, {
+    <span class="hljs-comment">// 拦截设置操作</span>
+    <span class="hljs-keyword">set</span>(target, key, newVal, receiver) {
+      <span class="hljs-comment">// 设置属性值</span>
+      <span class="hljs-keyword">const</span> res = <span class="hljs-built_in">Reflect</span>.set(target, key, newVal, receiver)
+      <span class="hljs-comment">// 把副作用函数从桶里取出并执行</span>
+      trigger(target, key)
+
+      <span class="hljs-keyword">return</span> res
+    },
+
+    <span class="hljs-comment">// 省略其他拦截函数</span>
+  })
+</div></code></pre>
+<p>当为对象p添加新的bar属性时，会触发set拦截函数执行。此时set拦截函数接收到的key就是字符串'bar', 因此最终调用trigger时也只是触发了与'bar'相关联的副作用函数重新执行。但根据前文的介绍，我们知道 <strong>for...in循环只是在副作用函数与ITEATE_KEY之间建立联系，这和'bar'一点关系都没有，因此我们尝试执行p.bar = 2操作时，并不能正确地触发响应。</strong></p>
+<p>弄清楚了问题在哪里，解决方案随之而来。<strong>当添加属性时，我们将那些与ITEATE_KEY相关联的副作用函数也取出来执行</strong> 就可以了：</p>
+<pre class="hljs"><code><div>  <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">trigger</span>(<span class="hljs-params">target, key</span>) </span>{
+    <span class="hljs-keyword">const</span> depsMap = bucket.get(target)
+    <span class="hljs-keyword">if</span> (!depsMap) <span class="hljs-keyword">return</span>
+
+    <span class="hljs-comment">// 取得与key相关联的副作用函数</span>
+    <span class="hljs-keyword">const</span> effects = depsMap.get(key)
+    <span class="hljs-comment">// 取得与ITEATE_KEY相关的副作用函数</span>
+    <span class="hljs-keyword">const</span> iterateEffects = depsMap.get(ITEATE_KEY)
+
+    <span class="hljs-keyword">const</span> effectsToRun = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Set</span>()
+    <span class="hljs-comment">// 将与key相关联的副作用函数添加到effectsToRun</span>
+    effects &amp;&amp; effects.forEach(<span class="hljs-function"><span class="hljs-params">effectFn</span> =&gt;</span> {
+      <span class="hljs-keyword">if</span> (effectFn !== activeEffect) {
+        effectsToRun.add(effectFn)
+      }
+    })
+
+    <span class="hljs-comment">// 将与ITEATE_KEY相关联的副作用函数也添加到 effectsToRun</span>
+    iterateEffects &amp;&amp; iterateEffects.forEach(<span class="hljs-function"><span class="hljs-params">effectFn</span> =&gt;</span> {
+      <span class="hljs-keyword">if</span> (effectFn !== activeEffect) {
+        effectsToRun.add(effectFn)
+      }
+    })
+
+    effectsToRun.forEach(<span class="hljs-function"><span class="hljs-params">effectFn</span> =&gt;</span> {
+      <span class="hljs-keyword">const</span> { scheduler } = effectFn.options
+      <span class="hljs-keyword">if</span> (scheduler) { <span class="hljs-comment">// 存在调度函数</span>
+        scheduler(effectFn) <span class="hljs-comment">// 将effectFn执行的控制权交给用户</span>
+      } <span class="hljs-keyword">else</span> {
+        effectFn() <span class="hljs-comment">// 立刻执行effectFn</span>
+      }
+    })
+  }
+</div></code></pre>
+<p>当trigger函数执行时，除了把那些直接与具体操作的key相关联的副作用函数取出来执行外，还要把那些与ITEATE_KEY相关联的副作用函数取出来执行。</p>
+<p>相信细心的你已经发现了，对于添加新属性来说，这么做没什么问题，但如果仅仅修改已有的属性值，而不是添加新属性，那么问题就来了，如下所示：</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> obj = { <span class="hljs-attr">foo</span>: <span class="hljs-number">1</span> }
+  <span class="hljs-keyword">const</span> p = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Proxy</span>(obj, {<span class="hljs-comment">/*  */</span>})
+
+  effect(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
+    <span class="hljs-comment">// for...in 循环</span>
+    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> key <span class="hljs-keyword">in</span> p) {
+      <span class="hljs-built_in">console</span>.log(key) <span class="hljs-comment">// foo</span>
+    }
+  })
+</div></code></pre>
+<p>当我们修改p.foo的值时：</p>
+<pre class="hljs"><code><div>  p.foo = <span class="hljs-number">2</span>
+</div></code></pre>
+<p>与添加新属性不同，修改属性不会对for...in循环产生影响。因为无论怎么修改一个属性值，对于for...in循环来说都只会循环一次。所以在这种情况下，我们不需要触发副作用函数重新执行，否则会造成不必要的性能开销。然而 <strong>无论是添加新属性，还是修改已有的属性值,其基本语义都是[[set]],我们都是通过set拦截函数来实现拦截的</strong>，如下所示：</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> p = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Proxy</span>(obj, {
+    <span class="hljs-comment">// 拦截设置操作</span>
+    <span class="hljs-keyword">set</span>(target, key, newVal) {
+      <span class="hljs-comment">// 设置属性值</span>
+      <span class="hljs-keyword">const</span> res = <span class="hljs-built_in">Reflect</span>.set(target, key, newVal, receiver)
+      <span class="hljs-comment">// 把副作用函数从桶里取出来并执行</span>
+      trigger(target, key)
+
+      <span class="hljs-keyword">return</span> res
+    },
+    <span class="hljs-comment">// 省略其他拦截函数</span>
+  })
+</div></code></pre>
+<p>所以要想解决上述问题，当设置属性操作发生时，就需要我们在set拦截函数内能够区分操作的类型，到底是添加新属性还是设置已有属性：</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> p = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Proxy</span>(obj, {
+    <span class="hljs-comment">// 拦截设置操作</span>
+    <span class="hljs-keyword">set</span>(target, key, newVal, receiver) {
+      <span class="hljs-comment">// 如果属性不存在，则说明是在添加新属性，否则是设置已有属性</span>
+      <span class="hljs-keyword">const</span> type = <span class="hljs-built_in">Object</span>.prototype.hasOwnProperty.call(target, key) ? <span class="hljs-string">'SET'</span> : <span class="hljs-string">'ADD'</span>
+
+      <span class="hljs-comment">// 设置属性值</span>
+      <span class="hljs-keyword">const</span> res = <span class="hljs-built_in">Reflect</span>.set(target, key, newVal, receiver)
+
+      <span class="hljs-comment">// 将type作为第三个参数传递给trigger函数</span>
+      trigger(target, key, type)
+
+      <span class="hljs-keyword">return</span> res
+    },
+    <span class="hljs-comment">// 省略其他函数</span>
+  })
+</div></code></pre>
+<p>在trigger函数内就可以通过类型type来区分当前的操作类型，并且只有当前操作类型type为'ADD'时，才会触发与ITEATE_KEY相关联的副作用函数重新执行，这样就避免了不必要的性能损耗：</p>
+<pre class="hljs"><code><div>  <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">trigger</span>(<span class="hljs-params">target, key, type</span>) </span>{
+    <span class="hljs-keyword">const</span> depsMap = bucket.get(target)
+    <span class="hljs-keyword">if</span>(!depsMap) <span class="hljs-keyword">return</span>
+    <span class="hljs-keyword">const</span> effects = depsMap.get(key)
+
+    <span class="hljs-keyword">const</span> effectsToRun = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Set</span>()
+    <span class="hljs-comment">// 先去与key关联的副作用函数</span>
+    effects &amp;&amp; effects.forEach(<span class="hljs-function"><span class="hljs-params">effectFn</span> =&gt;</span> {
+      <span class="hljs-keyword">if</span> (effectFn !== activeEffect) {
+        effectsToRun.add(effectFn)
+      }
+    })
+    <span class="hljs-built_in">console</span>.log(type, key)
+    <span class="hljs-comment">// 只有当操作类型为'ADD'时，才触发与ITEATE_KEY相关联的副作用函数重新执行</span>
+    <span class="hljs-keyword">if</span> (type === <span class="hljs-string">'ADD'</span>) {
+      <span class="hljs-keyword">const</span> iterateEffects = depsMap.get(ITEATE_KEY)
+      iterateEffects &amp;&amp; iterateEffects.forEach(<span class="hljs-function"><span class="hljs-params">effectFn</span> =&gt;</span> {
+        <span class="hljs-keyword">if</span> (effectFn !== activeEffect) {
+          effectsToRun.add(effectFn)
+        }
+      })
+    }
+
+    effectsToRun.forEach(<span class="hljs-function"><span class="hljs-params">effectFn</span> =&gt;</span> {
+      <span class="hljs-keyword">const</span> { scheduler } = effectFn.options
+      <span class="hljs-keyword">if</span> (scheduler) { <span class="hljs-comment">// 存在调度函数</span>
+        scheduler(effectFn) <span class="hljs-comment">// 将effectFn执行的控制权交给用户</span>
+      } <span class="hljs-keyword">else</span> {
+        effectFn() <span class="hljs-comment">// 立刻执行effectFn</span>
+      }
+    })
+  }
+</div></code></pre>
+<p>通常我们会将操作封装为一个枚举值，例如：</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> TriggerType = {
+    <span class="hljs-attr">SET</span>: <span class="hljs-string">'SET'</span>,
+    <span class="hljs-attr">ADD</span>: <span class="hljs-string">'ADD'</span>
+  }
+</div></code></pre>
+<p>这样无论是对后期代码的维护，还是对代码的清晰度，都是非常有帮助的。</p>
+<p>关于对象的代理，还剩下最后一项工作需要做，即删除属性操作的代理：</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">delete</span> p.foo
+</div></code></pre>
+<p>如何代理delete操作呢？
+查看规范得知，delete操作符的行为依赖[[Delete]]内部方法，该内部方法可以使用deleteProperty拦截：</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> p = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Proxy</span>(obj, {
+    deleteProperty(target, key) {
+      <span class="hljs-comment">// 检查被操作的属性是否是对象自己的属性</span>
+      <span class="hljs-keyword">const</span> hadKey = <span class="hljs-built_in">Object</span>.prototype.hasOwnProperty.call(target, key)
+      <span class="hljs-comment">// 使用Reflect.deleteProperty完成属性的删除</span>
+      <span class="hljs-keyword">const</span> res = <span class="hljs-built_in">Reflect</span>.deleteProperty(target, key)
+
+      <span class="hljs-keyword">if</span> (res &amp;&amp; hadKey) {
+        <span class="hljs-comment">// 只有当被删除的属性是对象自己的属性并且成功删除时，才触发更新</span>
+        trigger(target, key, <span class="hljs-string">'DELETE'</span>)
+      }
+
+      <span class="hljs-keyword">return</span>
+    }
+  })
+</div></code></pre>
+<p>由于删除操作会使对象的键变少，它会影响for...in循环次数，因此当操作类型为'DELETE'时，我们也应该触发那些与ITEATE_KEY相关联的副作用函数重新执行：</p>
+<pre class="hljs"><code><div>  <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">trigger</span>(<span class="hljs-params">target, key, type</span>) </span>{
+    <span class="hljs-keyword">const</span> depsMap = bucket.get(target)
+    <span class="hljs-keyword">if</span>(!depsMap) <span class="hljs-keyword">return</span>
+    <span class="hljs-keyword">const</span> effects = depsMap.get(key)
+
+    <span class="hljs-keyword">const</span> effectsToRun = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Set</span>()
+    <span class="hljs-comment">// 先去与key关联的副作用函数</span>
+    effects &amp;&amp; effects.forEach(<span class="hljs-function"><span class="hljs-params">effectFn</span> =&gt;</span> {
+      <span class="hljs-keyword">if</span> (effectFn !== activeEffect) {
+        effectsToRun.add(effectFn)
+      }
+    })
+    <span class="hljs-built_in">console</span>.log(type, key)
+    <span class="hljs-comment">// 只有当操作类型为'ADD'或 'DELETE'时，需要触发与ITEATE_KEY相关联的副作用函数重新执行</span>
+    <span class="hljs-keyword">if</span> (type === <span class="hljs-string">'ADD'</span> || type === <span class="hljs-string">'DELETE'</span>) {
+      <span class="hljs-keyword">const</span> iterateEffects = depsMap.get(ITEATE_KEY)
+      iterateEffects &amp;&amp; iterateEffects.forEach(<span class="hljs-function"><span class="hljs-params">effectFn</span> =&gt;</span> {
+        <span class="hljs-keyword">if</span> (effectFn !== activeEffect) {
+          effectsToRun.add(effectFn)
+        }
+      })
+    }
+
+    effectsToRun.forEach(<span class="hljs-function"><span class="hljs-params">effectFn</span> =&gt;</span> {
+      <span class="hljs-keyword">const</span> { scheduler } = effectFn.options
+      <span class="hljs-keyword">if</span> (scheduler) { <span class="hljs-comment">// 存在调度函数</span>
+        scheduler(effectFn) <span class="hljs-comment">// 将effectFn执行的控制权交给用户</span>
+      } <span class="hljs-keyword">else</span> {
+        effectFn() <span class="hljs-comment">// 立刻执行effectFn</span>
+      }
+    })
+  }
+</div></code></pre>
+
+</body>
+</html>
