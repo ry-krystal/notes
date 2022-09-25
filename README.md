@@ -8,6 +8,8 @@
 # notes
 vue2源码解析 
 vue3设计与实现
+深入react技术栈
+前端性能优化
 
 #git可视化工具
 gitHub desktop
