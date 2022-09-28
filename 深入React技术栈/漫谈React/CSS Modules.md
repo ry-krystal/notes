@@ -1,5 +1,5 @@
 <!--
- * @Description: 
+ * @Description: CSS Modules
 -->
 #### CSS Modules
 css 是前端领域中进化最慢的一块。由于es6的快速普及以及Babel与webpack等工具的迅速发展，相较于JavaScript，CSS被远远甩在后面，逐渐成为各类大型项目工程化的痛点，也成了前端走向彻底模块化前必须要解决的一个难题。
@@ -220,6 +220,6 @@ CSS 模块化的解决方案有很多，但主要有两类。
   此外，对比原始的CSS Modules，有以下几个优点：
   - 我们不用再关注是否使用驼峰来命名class名；
   - 我们不用每一次使用css modules 的时候都关联style对象
-  - 使用css modules,容易使用:global去解决特殊情况，使用react-css-modules可以写成<div className="global-css" styleName="local-module"></div>,这种形式轻松对应全局和局部：
+  - 使用css modules,容易使用:global去解决特殊情况，使用react-css-modules可以写成\<div className="global-css" styleName="local-module"></div>,这种形式轻松对应全局和局部：
   - 当styleName关联了一个undefined CSS Modules时，我们会得到一个警告：
   - 我们可以强迫使用单一的CSS Modules。

@@ -250,3 +250,118 @@ Map和Set这两个数据类型的操作方法相似。它们之间最大的不�
   }
 ```
 与add 方法的区别在于，delete方法只有在要删除的元素确实在集合中存在时，才需要触发响应，这一点恰好于add方法相反。
+
+3. 避免污染原数据
+  我们借助Map类型数据的set和get两个方法来讲解什么是"避免污染原始数据"及其原因。
+  Map数据类型拥有get和set这两个方法，当调用get方法读取数据时，需要调用track函数追踪依赖建立响应联系；当调用set方法设置数据时，需要调用trigger方法触发响应。
+  ```javascript
+    const p = reactive(new Map([['key', 1]]))
+    effect(() => {
+      console.log(p.get('key'))
+    })
+
+    p.set('key', 2) // 触发响应
+  ```
+  下面是get方法具体实现：
+  ```javascript
+    const mutableInstrumentations = {
+      get(key) {
+        // 获取原始对象
+        const target = this.raw
+        // 判断读取的key是否存在
+        const had = target.has(key)
+        // 追踪依赖，建立响应联系
+        track(target, key)
+        // 如果存在，则返回结果，这里要注意的是，如果得到的结果res仍然是可代理的数据
+        if (had) {
+          const res = target.get(key)
+          return typeof res === 'object' ? reactive(res) : res
+        }
+      }
+    }
+  ```
+  当set方法被调用时，需要调用trigger方法触发响应。只不过在触发响应的时候，需要区分操作类型是SET还是ADD，如下所示：
+  ```javascript
+    const mutableInstrumentations = {
+      set(key, value) {
+        // 获取原始对象
+        const target = this.raw
+        const had = target.has(key)
+        // 获取旧值
+        const oldValue = target.get(key)
+        // 设置新值
+        target.set(key, value)
+        // 如果不存在，则说明是ADD类型的操作，意味着新增
+        if (!had) {
+          trigger(target, key, 'ADD')
+        } else if (oldValue !== value || (oldValue === oldValue && value === value)) {
+          // 如果存在，并且值变了，则是SET类型操作，意味着修改
+          trigger(target, key, 'SET')
+        }
+      }
+    }
+  ```
+  这段代码的关键点在于，我们需要判断设置的key是否存在，以便区分不同的操作类型。我们知道，__对于SET类型和ADD类型的操作来说，它们最终触发的副作用函数是不同的。因为ADD类型的操作会对数据的size属性产生影响，所以任何依赖size属性的副作用函数都需要在ADD类型的操作发生时重新执行。__
+
+  上面给出的set函数的实现能够正常工作，但它仍然存在问题，即set方法会污染原始数据。这是什么意思呢？来看下面的代码：
+  ```javascript
+    // 原始Map对象m
+    const m = new Map()
+    // p1 是 m的代理对象
+    const p1 = reactive(m)
+    // p2 是另一个代理对象
+    const p2 = reactive(new Map())
+    // 为p1设置一个键值对，值是代理对象p2
+    p1.set('p2', p2) // 相当于给m设置了一个p2,p2也是一个代理的Map
+
+    effect(() => {
+      // 注意，这里我们通过原始数据m访问p2
+      console.log(m.get('p2').size)
+    })
+    // 注意，这里我们通过原始数据m为p2设置一个键值对foo --> 1
+    m.get('p2').set('foo', 1)
+  ```
+  在这段代码中，我们首先创建了一个原始Map对象m,p1是对象m的代理对象，接着创建另外一个代理对象p2，并将其作为值设置给p1,即p1.set('p2', p2)。接下来问题就来了，在副作用函数中，我们通过原始数据m来读取数据值，然后又通过原始数据m设置数据值，此时发现副作用函数重新执行了。这其实不是我们所期望的行为，因为原始数据不应该具有响应式数据的能力，否则就意味着用户既可以操作原始数据，又能够操作响应式数据，这样一来代码就乱套了。
+
+  那么导致问题的原因是什么呢？其实很简单，观察我们前面的实现set方法：
+  ```javascript
+      const mutableInstrumentations = {
+      set(key, value) {
+        const target = this.raw
+        const had = target.has(key)
+        const oldValue = target.get(key)
+        // 我们把value原封不动地设置到原始数据上
+        target.set(key, value)
+        if (!had) {
+          trigger(target, key, 'ADD')
+        } else if (oldValue !== value || (oldValue === oldValue && value === value)) {
+          trigger(target, key, 'SET')
+        }
+      }
+    }
+  ```
+  在set方法内，我们把value原样设置到了原始数据target上。如果value是响应式数据，就意味着设置到原始对象上的也是响应式数据，我们就把
+  __响应式数据设置到原始数据上的行为称为数据污染。__
+
+  要解决数据污染也不难，__只需要再调用target.set函数设置值之前对值进行检查即可：只要发现即将设置的值时响应式数据，那么就通过raw属性获取原始数据，再把原始数据设置到target上。__
+  ```javascript
+    const mutableInstrumentations = {
+      set(key, value) {
+        const target = this.raw
+        const had = target.has(key)
+
+        const oldValue = target.key(key)
+        // 获取原始数据，由于value本身可能已经是原始数据，所以此时value.raw不存在，则直接使用value
+        const rawValue = value.raw || value
+        target.set(key, rawValue)
+
+       if (!had) {
+          trigger(target, key, 'ADD')
+        } else if (oldValue !== value || (oldValue === oldValue && value === value)) {
+          trigger(target, key, 'SET')
+        }
+      }
+    }
+  ```
+  现在实现已经不会造成数据污染了，不过，细心观察上面的代码，会发现新问题，我们一直用raw属性来访问原始数据是有缺陷的，因为它可能与用户自定义的raw属性冲突，所以在一个严谨的实现中，我们需要使用唯一的标识作为访问原始数据的键，例如使用Symbol类型来替代。
+  除了set方法需要避免污染原始数据之外，Set类型的add方法，普通对象的写值操作，还有为数组添加元素的方法等，都需要做类似的处理。
