@@ -325,7 +325,7 @@ Map和Set这两个数据类型的操作方法相似。它们之间最大的不�
 
   那么导致问题的原因是什么呢？其实很简单，观察我们前面的实现set方法：
   ```javascript
-      const mutableInstrumentations = {
+    const mutableInstrumentations = {
       set(key, value) {
         const target = this.raw
         const had = target.has(key)
