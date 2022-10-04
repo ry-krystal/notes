@@ -365,3 +365,170 @@ Map和Set这两个数据类型的操作方法相似。它们之间最大的不�
   ```
   现在实现已经不会造成数据污染了，不过，细心观察上面的代码，会发现新问题，我们一直用raw属性来访问原始数据是有缺陷的，因为它可能与用户自定义的raw属性冲突，所以在一个严谨的实现中，我们需要使用唯一的标识作为访问原始数据的键，例如使用Symbol类型来替代。
   除了set方法需要避免污染原始数据之外，Set类型的add方法，普通对象的写值操作，还有为数组添加元素的方法等，都需要做类似的处理。
+
+  4. 处理forEach
+  集合类型forEach方法类似于数据的forEach方法，我们先看看它是如何工作的：
+  ```javascript
+    const m = new Map([
+      [{ key: 1 }, { value: 1 }]
+    ])
+
+    effect(() => {
+      m.forEach(function(value, key, m) {
+        console.log(value) // { value: 1 }
+        console.log(key) // { key: 1 }
+      })
+    })
+  ```
+  以Map为例，forEach方法接收一个回调函数作为参数，该回调函数会在Map的每个键值对上被调用。回调函数接收三个参数，分别是值、键以及原始Map对象。如上面的代码所示，我们可以使用forEach方法遍历Map数据的每一组键值对。
+
+  __遍历操作只与键值对的数量有关，因此任何会修改Map对象键值对数量的操作都应该触发副作用函数重新执行，例如delete和add方法等。__ 所以当forEach函数被调用时，我们应该让副作用函数与ITERATE_KEY建立响应联系，如图：
+  ```javascript
+    const mutableInstrumentations = {
+      forEach(callback) {
+        // 取得原始数据对象
+        const target = this.raw
+        // 与ITERATE_KEY建立响应联系
+        track(target, ITERATE_KEY)
+        // 通过原始数据对象调用forEach方法，并把callback传递过去
+        target.forEach(callback)
+      }
+    }
+  ```
+  这样我们就实现了forEach操作的追踪，可以使用下面的代码进行测试：
+  ```javascript
+    const p = reactive(new Map[[
+      {key: 1}, {value: 1}
+    ]])
+
+    effect(() => {
+      p.forEach(function(value, key) {
+        console.log(value) // { value: 1 }
+        console.log(key) // { key: 1 }
+      })
+    })
+
+    // 能够触发响应
+    p.set({key: 2}, { value: 2})
+  ```
+  上面给出的forEach函数仍然存在缺陷，我们在自定义实现的forEach方法内，通过原始数据对象调用了原生的forEach方法，即：
+  ```javascript
+    // 通过原始数据对象调用forEach方法，并把callback传递进去
+    target.forEach(callback)
+  ```
+  这意味着，传递给callback回调函数的参数将是非响应式数据。这导致下面的代码不能按预期工作：
+  ```javascript
+    const key = { key: 1 }
+    const value = new Set([1, 2, 3])
+    const p = reactive(new Map[
+      [key, value]
+    ])
+
+    effect(() => {
+      p.forEach(function(value, key) {
+        console.log(value.size) // 3
+      })
+    })
+
+    p.get(key).delete(1)
+  ```
+  上面的这段代码中，响应式数据p有一个键值对，其中键是普通对象{ key: 1 },值是Set类型的原始数据new Set([1, 2, 3])。接着，我们在副作用函数中使用forEach方法遍历p,并在回调函数中访问value.size。最后，我们尝试删除Set类型数据中值为1的元素，却发现没能触发副作用函数重新执行。导致问题的原因就是上面曾提到的，当通过value.size访问size属性时，这里的value是原始数据对象，即new Set([1, 2, 3])，而非响应式数据对象，因此无法建立响应联系。但这其实不符合直觉，因为reactive本身是深响应，forEach方法的回调函数所接收到的参数也应该是响应式数据才对。为了解决这个问题，我们需要对现有实现做一些修改，如下所示：
+  ```javascript
+    const mutableInstrumentations = {
+      forEach(callback) {
+        // wrap函数用来把可代理的值转换为响应式数据
+        const wrap = (val) => typeof val === 'object' ? reactive(val) : val
+        const target = this.raw
+        track(target, ITERATE_KEY)
+        // 通过target调用原始forEach方法进行遍历
+        target.forEach((v, k) => {
+          // 手动调用callback, 用wrap函数包裹value和key后再传给callback,这样就实现了深响应
+          callback(wrap(v), wrap(k), this)
+        })
+      }
+    }
+  ```
+  forEach函数除了接收callback作为参数之外，它还接收第二个参数，该参数可以用来指定callback函数执行时的this值。更加完善的实现如下：
+  ```javascript
+    const mutableInstrumentations = {
+      forEach(callback, thisArg) {
+        // wrap函数用来把可代理的值转换为响应式数据
+        const wrap = (val) => typeof val === 'object' ? reactive(val) : val
+        const target = this.raw
+        track(target, ITERATE_KEY)
+        // 通过target调用原始forEach方法进行遍历
+        target.forEach((v, k) => {
+          // 通过.call调用callback,并传递thisArg
+          callback.call(thisArg, wrap(v), wrap(k), this)
+        })
+      }
+    }
+  ```
+  然而，使用for...in来遍历对象与使用forEach遍历集合之间存在本质的不同。具体体现在，当使用for...in循环对象时，它只关心对象的键，而不关心对象的值
+  ```javascript
+    effect(() => {
+      for(const key in obj) {
+        console.log(key)
+      }
+    })
+  ```
+  只有当新增、删除对象的key时，才需要重新执行副作用函数。所以我们在trigger函数内判断操作类型是否是ADD或DELETE，进而知道是否需要触发那些与ITERATE_KEY相关联的副作用函数重新执行。对于SET类型操作来说，因为它不会改变一个对象的键的数量，所以当SET类型的操作发生时，不需要触发副作用函数重新执行。
+    但这个规则不适用于Map类型的forEach遍历，如下：
+  ```javascript
+    const p  = reactive(new Map([
+      ['key', 1]
+    ]))
+
+    effect(() => {
+      p.forEach(function(value, key) {
+        // forEach循环不仅关心集合的键，还关心集合的值
+        console.log(value) // 1
+      })
+    })
+
+    p.set('key', 2) // 即使操作类型是SET，也应该触发响应
+  ```
+  当使用forEach遍历Map类型的数据时，它机既关心键，又关心值。这意味着，当调用p.set('key', 2)修改值的时候，也应该触发副作用函数重新执行，即使它的操作类型是SET。因此，我们应该修改trigger函数的代码来弥补这个缺陷：
+  ```javascript
+    function trigger(target, key, type, newVal) {
+      console.log('trigger', key)
+      const depsMap = bucket.get(target)
+      if (!depsMap) return
+      const effects = depsMap.get(key)
+
+      const effectsToRun = new Set()
+      effects && effects.forEach(effectFn => {
+        if (effectFn !== activeEffect) {
+          effectsToRun.add(effectFn)
+        }
+      })
+
+      if (
+        type === 'ADD' || 
+        type === 'DELETE' ||
+        // 如果操作类型是SET，并且目标对戏那个是Map类型的数据，
+        // 也应该触发那些与ITERATE_KEY相关联的副作用函数重新执行
+        (
+          type === 'SET' &&
+          Object.prototype.toString.call(target) === '[object Map]'
+        )
+      ) {
+        const iterateEffects = depsMap.get(ITERATE_KEY)
+        iterateEffects?.forEach(effectFn => {
+          if (effectFn !== activeEffect) {
+            effectsToRun.add(effectFn)
+          }
+        })
+      }
+
+      // ...
+
+      effectsToRun.forEach(effectFn => {
+        if (effectFn.options.scheduler) {
+          ffectFn.options.scheduler(effectFn)
+        } else {
+          effectFn()
+        }
+      })
+    }
+  ```
