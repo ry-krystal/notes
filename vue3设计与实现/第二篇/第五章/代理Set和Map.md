@@ -102,6 +102,7 @@ Map和Set这两个数据类型的操作方法相似。它们之间最大的不�
 
     return proxy
   }
+  
   // 在createReactive里封装用于代理Set/Map类型数据的逻辑
   function createReactive(obj, isShallow = false, isReadonly = false) {
     return new Proxy(obj, {
@@ -156,17 +157,15 @@ Map和Set这两个数据类型的操作方法相似。它们之间最大的不�
 
   function createReactive(obj, isShallow = false, isReadonly = false) {
     return new Proxy(obj, {
+      // 如果读取的是raw属性，则返回原始数据对象target
       get(target, key, receiver) {
-        // 如果读取的是raw属性，则返回原始数据对象target
-        get(target, key, receiver) {
-          if (key === 'raw') return target
-          if (key === 'size') {
-            track(target, ITERATE_KEY) // 建立响应联系
-            return Reflect.get(target, key, target)
-          }
-          // 返回定义在mutableInstrumentations对象下的方法
-          return mutableInstrumentations[key]
+        if (key === 'raw') return target
+        if (key === 'size') {
+          track(target, ITERATE_KEY) // 建立响应联系
+          return Reflect.get(target, key, target)
         }
+        // 返回定义在mutableInstrumentations对象下的方法
+        return mutableInstrumentations[key]
       }
     })
   }
@@ -525,10 +524,53 @@ Map和Set这两个数据类型的操作方法相似。它们之间最大的不�
 
       effectsToRun.forEach(effectFn => {
         if (effectFn.options.scheduler) {
-          ffectFn.options.scheduler(effectFn)
+          effectFn.options.scheduler(effectFn)
         } else {
           effectFn()
         }
       })
     }
+  ```
+  5. 迭代器方法
+  集合类型的迭代器方法：
+  - entries
+  - keys
+  - value
+  调用这些方法会得到相应的迭代器，并且可以使用for...of进行循环迭代，例如：
+  ```javascript
+    const m = new Map([
+      ['key1', 'value1'],
+      ['key2', 'value2']
+    ])
+
+    for(const [key, value] of m.entries()) {
+      console.log(key, value)
+    }
+
+    // 输出：
+    // key1 value1
+    // key2 value2
+  ```
+  由于Map或者Set类型本身部署了Symbol.iterator方法，因此他们可以使用for...of进行迭代：
+  ```javascript
+    for(const [key, value] of m) {
+      console.log(key, value)
+    }
+
+    // 输出：
+    // key1 value1
+    // key2 value2
+  ```
+  发现，for...of循环迭代m.entries和m会得到同样的结果。
+  ```javascript
+    const p = reactive(new Map[
+      ['key1', 'value1'],
+      ['key2', 'value2']
+    ])
+    effect(() => {
+      for(const [key, value] of p) {
+        console.log(key, value)
+      }
+    })
+    p.set('key3', 'value3')
   ```

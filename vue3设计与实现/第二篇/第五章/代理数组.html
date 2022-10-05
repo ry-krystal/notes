@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>代理数组.md</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+
+<style>
+/* https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/media/markdown.css */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+body {
+	font-family: var(--vscode-markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif);
+	font-size: var(--vscode-markdown-font-size, 14px);
+	padding: 0 26px;
+	line-height: var(--vscode-markdown-line-height, 22px);
+	word-wrap: break-word;
+}
+
+#code-csp-warning {
+	position: fixed;
+	top: 0;
+	right: 0;
+	color: white;
+	margin: 16px;
+	text-align: center;
+	font-size: 12px;
+	font-family: sans-serif;
+	background-color:#444444;
+	cursor: pointer;
+	padding: 6px;
+	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+}
+
+#code-csp-warning:hover {
+	text-decoration: none;
+	background-color:#007acc;
+	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
+}
+
+body.scrollBeyondLastLine {
+	margin-bottom: calc(100vh - 22px);
+}
+
+body.showEditorSelection .code-line {
+	position: relative;
+}
+
+body.showEditorSelection .code-active-line:before,
+body.showEditorSelection .code-line:hover:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: -12px;
+	height: 100%;
+}
+
+body.showEditorSelection li.code-active-line:before,
+body.showEditorSelection li.code-line:hover:before {
+	left: -30px;
+}
+
+.vscode-light.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.vscode-light.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.40);
+}
+
+.vscode-light.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-dark.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.vscode-dark.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.60);
+}
+
+.vscode-dark.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-high-contrast.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 160, 0, 0.7);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 160, 0, 1);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+a {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 1px solid -webkit-focus-ring-color;
+	outline-offset: -1px;
+}
+
+hr {
+	border: 0;
+	height: 2px;
+	border-bottom: 2px solid;
+}
+
+h1 {
+	padding-bottom: 0.3em;
+	line-height: 1.2;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+h1, h2, h3 {
+	font-weight: normal;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table > thead > tr > th {
+	text-align: left;
+	border-bottom: 1px solid;
+}
+
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td {
+	padding: 5px 10px;
+}
+
+table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+blockquote {
+	margin: 0 7px 0 5px;
+	padding: 0 16px 0 10px;
+	border-left-width: 5px;
+	border-left-style: solid;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 1em;
+	line-height: 1.357em;
+}
+
+body.wordWrap pre {
+	white-space: pre-wrap;
+}
+
+pre:not(.hljs),
+pre.hljs code > div {
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+pre code {
+	color: var(--vscode-editor-foreground);
+	tab-size: 4;
+}
+
+/** Theming */
+
+.vscode-light pre {
+	background-color: rgba(220, 220, 220, 0.4);
+}
+
+.vscode-dark pre {
+	background-color: rgba(10, 10, 10, 0.4);
+}
+
+.vscode-high-contrast pre {
+	background-color: rgb(0, 0, 0);
+}
+
+.vscode-high-contrast h1 {
+	border-color: rgb(0, 0, 0);
+}
+
+.vscode-light table > thead > tr > th {
+	border-color: rgba(0, 0, 0, 0.69);
+}
+
+.vscode-dark table > thead > tr > th {
+	border-color: rgba(255, 255, 255, 0.69);
+}
+
+.vscode-light h1,
+.vscode-light hr,
+.vscode-light table > tbody > tr + tr > td {
+	border-color: rgba(0, 0, 0, 0.18);
+}
+
+.vscode-dark h1,
+.vscode-dark hr,
+.vscode-dark table > tbody > tr + tr > td {
+	border-color: rgba(255, 255, 255, 0.18);
+}
+
+</style>
+
+<style>
+/* Tomorrow Theme */
+/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+/* Original theme - https://github.com/chriskempson/tomorrow-theme */
+
+/* Tomorrow Comment */
+.hljs-comment,
+.hljs-quote {
+	color: #8e908c;
+}
+
+/* Tomorrow Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+	color: #c82829;
+}
+
+/* Tomorrow Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+	color: #f5871f;
+}
+
+/* Tomorrow Yellow */
+.hljs-attribute {
+	color: #eab700;
+}
+
+/* Tomorrow Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+	color: #718c00;
+}
+
+/* Tomorrow Blue */
+.hljs-title,
+.hljs-section {
+	color: #4271ae;
+}
+
+/* Tomorrow Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+	color: #8959a8;
+}
+
+.hljs {
+	display: block;
+	overflow-x: auto;
+	color: #4d4d4c;
+	padding: 0.5em;
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: bold;
+}
+</style>
+
+<style>
+/*
+ * Markdown PDF CSS
+ */
+
+ body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "Meiryo";
+	padding: 0 12px;
+}
+
+pre {
+	background-color: #f8f8f8;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+pre:not(.hljs) {
+	padding: 23px;
+	line-height: 19px;
+}
+
+blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.emoji {
+	height: 1.4em;
+}
+
+code {
+	font-size: 14px;
+	line-height: 19px;
+}
+
+/* for inline code */
+:not(pre):not(.hljs) > code {
+	color: #C9AE75; /* Change the old color so it seems less like an error */
+	font-size: inherit;
+}
+
+/* Page Break : use <div class="page"/> to insert page break
+-------------------------------------------------------- */
+.page {
+	page-break-after: always;
+}
+
+</style>
+
+<script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
+</head>
+<body>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: document.body.classList.contains('vscode-dark') || document.body.classList.contains('vscode-high-contrast')
+          ? 'dark'
+          : 'default'
+    });
+  </script>
+<!--
+ * @Description: 代理数组
+-->
+<h4 id="%E4%BB%A3%E7%90%86%E6%95%B0%E7%BB%84">代理数组</h4>
+<p>在JavaScript中，数组只是一个特殊的对象而已，因此想要更好地实现对数组的代理，就有必要了解相比普通对象，数组到底有何特殊之处。</p>
+<p>数组也是一个异质对象，这是因为数组对象的[[DefineOwnProperty]]内部方法与常规对象不同。换句话说，数组对象除了[[DefineOwnProperty
+]]这个内部方法之外，其他内部方法的逻辑都与常规对象相同。因此，当实现对数组的代理时，用于代理普通对象的大部分代码可以继续使用，示例：</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> arr = reactive([<span class="hljs-string">'foo'</span>])
+
+  effect(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
+    <span class="hljs-built_in">console</span>.log(arr[<span class="hljs-number">0</span>]) <span class="hljs-comment">// ’foo‘</span>
+  })
+
+  arr[<span class="hljs-number">0</span>] = <span class="hljs-string">'bar'</span> <span class="hljs-comment">// 能触发响应</span>
+</div></code></pre>
+<p>当我们通过索引读取或设置数组元素的值时，代理对象的get/set拦截函数也会执行，因此我们不需要做任何额外的工作，也就能让数组索引的读取和设置操作是响应式的了。
+但是对数组的操作与对普通对象的操作仍然存在不同，下面总结了所有对数组元素或属性的“读取&quot;操作。</p>
+<ul>
+<li>通过索引访问数组元素值: arr[0]</li>
+<li>访问数组的长度: arr.length</li>
+<li>把数组作为对象，使用for...in循环遍历</li>
+<li>使用for...of迭代遍历数组</li>
+<li>数组的原型方法，如concat/join/every/some/find/findIndex/includes等，以及其他所有不改变原数组的原型方法。</li>
+</ul>
+<p>可以看到，对数组的读取操作要比普通对象丰富得多。我们再来看对数组元素或属性的设置操作有哪些。</p>
+<ul>
+<li>通过索引修改数组元素值: arr[1] = 3。</li>
+<li>修改数组长度: arr.length = 0。</li>
+<li>数组的栈方法: push/pop/shift/unshift</li>
+<li>修改原数组的原型方法: splice/fill/sort等。</li>
+</ul>
+<p>除了通过数组索引修改数组元素值这种基本操作之外，数组本身还有很多会修改原数组的原型方法。调用这些方法也属于对数组的操作，有些方法的操作语义是”读取“，而有些方法的操作语义是”设置“。因此，当这些操作发生时，也应该正确地建立响应联系或触发响应。</p>
+<ol>
+<li>数组的索引与length
+通过索引设置数组的元素值与设置对象的属性值仍然存在根本上的不同，这是因为数组对象部署的内部方法[[DefineOwnProperty]]不同于常规对象。实际上，当我们通过索引设置数组元素的值时，会执行数组对象部署的内部方法[[Set]],这一步与设置常规对象的属性值一样。根据规范可以知道，<strong>内部方法[[Set]]其实依赖于[[DefineOwnProperty]],到了这里就体现出了差异。</strong>
+如果设置的索引值大于数组当前的长度，那么要更新数组的length属性。所以当通过索引设置元素值时，可能会隐式地修改length的属性值。因此在触发响应时，也应该触发与length属性相关联的副作用函数重新执行，示例:</li>
+</ol>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> arr = reactive([<span class="hljs-string">'foo'</span>]) <span class="hljs-comment">// 数组的原长度为1</span>
+
+  effect(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
+    <span class="hljs-built_in">console</span>.log(arr.length) <span class="hljs-comment">// 1</span>
+  })
+  <span class="hljs-comment">// 设置索引1的值，会导致数组的长度变为2</span>
+  arr[<span class="hljs-number">1</span>] = <span class="hljs-string">'bar'</span>
+</div></code></pre>
+<p>在这段代码中，数组的原长度为1，并且在副作用函数中访问了length属性。然后设置数组的索引1的元素值，这会导致数组的长度变为2，因此应该触发副作用函数重新执行。但目前的实现还做不到这一点，为了实现目标，我们需要修改set拦截函数，如下所示：</p>
+<pre class="hljs"><code><div>  <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">createReactive</span>(<span class="hljs-params">obj, isShallow = false, isReadonly = false</span>) </span>{
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Proxy</span>(obj, {
+      <span class="hljs-keyword">set</span>(target, key, newVal, receiver) {
+        <span class="hljs-keyword">if</span> (isReadonly) {
+          <span class="hljs-built_in">console</span>.warn(<span class="hljs-string">`属性<span class="hljs-subst">${key}</span>是只读的`</span>);
+          <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>
+        }
+
+        <span class="hljs-keyword">const</span> oldVal = target[key]
+        <span class="hljs-comment">// 如果属性不存在，则说明是在添加新的属性，否则是设置已有属性</span>
+        <span class="hljs-keyword">const</span> type = <span class="hljs-built_in">Array</span>.isArray(target)
+          <span class="hljs-comment">// 如果代理目标是数组，则检测被设置的索引值是否小于数组长度，如果是，则视为SET操作，否则是ADD操作</span>
+          ? <span class="hljs-built_in">Number</span>(key) &lt; target.length ? <span class="hljs-string">'SET'</span> : <span class="hljs-string">'ADD'</span>
+          : <span class="hljs-built_in">Object</span>.prototype.hasOwnProperty.call(target, key) ? <span class="hljs-string">'SET'</span> : <span class="hljs-string">'ADD'</span>
+
+        <span class="hljs-keyword">const</span> res = <span class="hljs-built_in">Reflect</span>.set(target, key, newVal, receiver)
+        <span class="hljs-keyword">if</span> (target === receiver.raw) {
+          <span class="hljs-keyword">if</span> (oldVal !== newVal &amp;&amp; (oldVal === oldVal || newVal === newVal)) {
+            trigger(target, key, type)
+          }
+        }
+
+        <span class="hljs-keyword">return</span> res
+      }
+    })
+  }
+</div></code></pre>
+<p>我们在判断操作类型时，新增了对数组类型的判断。如果代理的目标对象是数组，那么对于操作类型的判断会有所区别。即被设置的索引值如果小于数组的长度，就视为SET操作，因为它不会改变数组的长度；数组设置的索引值大于数组的当前长度，则视为ADD操作，因为这会隐式地改变数组的length属性值。有了这些信息，我们就可以在trigger函数中正确地触发与数组对象的length属性相关联的副作用函数重新执行了:</p>
+<pre class="hljs"><code><div>  <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">trigger</span>(<span class="hljs-params">target, key, type</span>) </span>{
+    <span class="hljs-keyword">const</span> depsMap = bucket.get(target)
+    <span class="hljs-keyword">if</span> (!depsMap) <span class="hljs-keyword">return</span>
+    <span class="hljs-comment">// 省略部分内容</span>
+
+    <span class="hljs-comment">// 当操作类型为ADD并且目标对象是数组时，应该取出并执行那些与length属性相关联的副作用函数</span>
+    <span class="hljs-keyword">if</span> (type === <span class="hljs-string">'ADD'</span> &amp;&amp; <span class="hljs-built_in">Array</span>.isArray(target)) {
+      <span class="hljs-comment">// 取出与length相关联的副作用函数</span>
+      <span class="hljs-keyword">const</span> lengthEffects = depsMap.get(<span class="hljs-string">'length'</span>)
+      <span class="hljs-comment">// 将这些副作用函数添加到effectsToRun中，待执行</span>
+      lengthEffects?.forEach(<span class="hljs-function"><span class="hljs-params">effectFn</span> =&gt;</span> {
+        <span class="hljs-keyword">if</span> (effectFn !== activeEffect) {
+          effectToRun.add(effectFn)
+        }
+      });
+    }
+
+    effectToRun.forEach(<span class="hljs-function"><span class="hljs-params">effectFn</span> =&gt;</span> {
+      <span class="hljs-keyword">if</span> (effectFn.options.scheduler) {
+        effectFn.options.scheduler(effectFn)
+      } <span class="hljs-keyword">else</span> {
+        effectFn()
+      }
+    })
+  }
+</div></code></pre>
+<p>但是反过来思考，其实修改数组的length属性也会隐式地影响数组元素，例如：</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> arr = reactive([<span class="hljs-string">'foo'</span>])
+
+  effect(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
+    <span class="hljs-comment">// 访问数组的第0个元素</span>
+    <span class="hljs-built_in">console</span>.log(arr[<span class="hljs-number">0</span>]) <span class="hljs-comment">// foo</span>
+  })
+  <span class="hljs-comment">// 将数组长度修改为0, 导致第0个元素被删除，因此应该触发响应</span>
+  arr.length = <span class="hljs-number">0</span>
+</div></code></pre>
+<p>并非所有对length属性修改都会影响数组中的已有元素，如果我们将length属性设置为100, 并不会影响第0个元素，所以也就不需要触发副作用函数重新执行。这让我们意识到，当修改length属性值时，只有那些索引值大于或等于新的length属性值的元素才需要触发响应。为了实现目标，我们需要修改set拦截函数。在调用trigger函数触发响应时，应该把新的属性值传递过去：</p>
+<pre class="hljs"><code><div>  <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">createReactive</span>(<span class="hljs-params">obj, isShallow = false, isReadonly = false</span>) </span>{
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Proxy</span>(obj, {
+      <span class="hljs-keyword">set</span>(target, key, newVal, receiver) {
+        <span class="hljs-keyword">if</span> (isReadonly) {
+          <span class="hljs-built_in">console</span>.warn(<span class="hljs-string">`属性<span class="hljs-subst">${key}</span>是只读的`</span>);
+          <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>
+        }
+
+        <span class="hljs-keyword">const</span> oldVal = target[key]
+        <span class="hljs-comment">// 如果属性不存在，则说明是在添加新的属性，否则是设置已有属性</span>
+        <span class="hljs-keyword">const</span> type = <span class="hljs-built_in">Array</span>.isArray(target)
+          <span class="hljs-comment">// 如果代理目标是数组，则检测被设置的索引值是否小于数组长度，如果是，则视为SET操作，否则是ADD操作</span>
+          ? <span class="hljs-built_in">Number</span>(key) &lt; target.length ? <span class="hljs-string">'SET'</span> : <span class="hljs-string">'ADD'</span>
+          : <span class="hljs-built_in">Object</span>.prototype.hasOwnProperty.call(target, key) ? <span class="hljs-string">'SET'</span> : <span class="hljs-string">'ADD'</span>
+
+        <span class="hljs-keyword">const</span> res = <span class="hljs-built_in">Reflect</span>.set(target, key, newVal, receiver)
+        <span class="hljs-keyword">if</span> (target === receiver.raw) {
+          <span class="hljs-keyword">if</span> (oldVal !== newVal &amp;&amp; (oldVal === oldVal || newVal === newVal)) {
+            <span class="hljs-comment">// 增加第四个参数，即出发响应的新值</span>
+            trigger(target, key, type, newVal)
+          }
+        }
+
+        <span class="hljs-keyword">return</span> res
+      }
+    })
+  }
+</div></code></pre>
+<p>接着，还需修改trigger函数：</p>
+<pre class="hljs"><code><div> <span class="hljs-comment">// 为trigger函数新增第四个参数，newVal,即新值</span>
+ <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">trigger</span>(<span class="hljs-params">target, key, type, newVal</span>) </span>{
+   <span class="hljs-keyword">const</span> depsMap = bucket.get(target)
+   <span class="hljs-keyword">if</span> (!depsMap) <span class="hljs-keyword">return</span>
+   <span class="hljs-comment">// 省略部分内容</span>
+
+   <span class="hljs-comment">// 如果操作目标是数组，并且修改了数组的length属性</span>
+   <span class="hljs-keyword">if</span> (<span class="hljs-built_in">Array</span>.isArray(target) &amp;&amp; key === <span class="hljs-string">'length'</span>) {
+     <span class="hljs-comment">// 对于索引大于或等于新的length值的元素</span>
+     <span class="hljs-comment">// 需要把所有相关联的副作用函数取出并添加到effectsToRun中待执行</span>
+     depsMap.forEach(<span class="hljs-function">(<span class="hljs-params">effects, key</span>) =&gt;</span> {
+       <span class="hljs-keyword">if</span> (key &gt;= newVal) {
+         effects.forEach(<span class="hljs-function"><span class="hljs-params">effectFn</span> =&gt;</span> {
+           <span class="hljs-keyword">if</span> (effectFn !== activeEffect) {
+             effectToRun.add(effectFn)
+           }
+         })
+       }
+     })
+   }
+
+   effectToRun.forEach(<span class="hljs-function"><span class="hljs-params">effectFn</span> =&gt;</span> {
+     <span class="hljs-keyword">if</span> (effectFn.options.scheduler) {
+       effectFn.options.scheduler(effectFn)
+     } <span class="hljs-keyword">else</span> {
+       effectFn()
+     }
+   })
+ }
+</div></code></pre>
+<p>为trigger函数增加第四个参数，即触发响应时的新值。本例中，新值指的就是新的length属性值，它代表新的数组长度。接着，我们判断操作的目标是否是数组，如果是，则需要找到所有索引值大于或等于新的length值的元素，然后把它们与相关联的副作用函数取出并执行。</p>
+<ol start="2">
+<li>遍历数组
+既然数组也是对象，就意味着同样可以使用for...in循环遍历。</li>
+</ol>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> arr = reactive([<span class="hljs-string">'foo'</span>])
+  effect(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
+    <span class="hljs-keyword">for</span>(<span class="hljs-keyword">const</span> key <span class="hljs-keyword">in</span> arr) {
+      <span class="hljs-built_in">console</span>.log(key) <span class="hljs-comment">// 0</span>
+    }
+  })
+</div></code></pre>
+<p>我们应该尽量比避免使用for...in循环遍历数组。但既然在语法上是可行的，那么当然也需要考虑。前面我们提到，数组对象和常规对象的不同仅体现在[[DefineOwnProperty]]这个内部方法上，也就是说，使用for...in循环遍历数组与遍历常规对象并无差异，因此同样可以使用ownKeys拦截函数进行拦截。下面是之前实现的ownKeys拦截函数：</p>
+<pre class="hljs"><code><div>  <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">createReactive</span>(<span class="hljs-params">obj, isShallow = false, isReadonly = false</span>) </span>{
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Proxy</span>(obj, {
+      <span class="hljs-comment">// 省略其他拦截函数</span>
+      ownKeys(target) {
+        track(target, ITERATE_KEY)
+        <span class="hljs-keyword">return</span> <span class="hljs-built_in">Reflect</span>.ownKeys(target)
+      }
+    })
+  }
+</div></code></pre>
+<p>这段代码取自前文，当初我们为了追踪对普通对象的for...in操作，人为创造了ITERATE_KEY作为追踪的key。但这是为了代理普通对象而考虑的，对于一个普通对象来说，只有当添加或删除属性值时才会影响for...in循环的结果。所以当添加或删除属性操作发生时，我们需要取出与ITERATE_KEY想关联的副作用函数重新执行。不过，对于数组来说情况有所不同，我们看看哪些操作会影响for...in循环对数组的遍历。</p>
+<ul>
+<li>添加新元素：arr[100] = 'bar'</li>
+<li>修改数组长度：arr.length = 0</li>
+</ul>
+<p>其实，无论是为数组添加新元素，还是直接修改数组的长度，本质上都是因为修改了数组的length属性。一旦数组的length属性被修改，那么for...in循环对数组的遍历结果就会改变，所以在这种情况下我们应该触发响应。很自然的，我们可以在ownKeys拦截函数内，判断当前操作目标target是否是数组，如果是，则使用length作为key去建立响应联系：</p>
+<pre class="hljs"><code><div>  <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">createReactive</span>(<span class="hljs-params">obj, isShallow = false, isReadonly = false</span>) </span>{
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Proxy</span>(obj, {
+      <span class="hljs-comment">// 省略其他拦截函数</span>
+      ownKeys(target) {
+        <span class="hljs-comment">// 如果操作目标target是数组，则使用length属性作为key并建立响应联系</span>
+        track(target, <span class="hljs-built_in">Array</span>.isArray(target) ? <span class="hljs-string">'length'</span> : ITERATE_KEY)
+        <span class="hljs-keyword">return</span> <span class="hljs-built_in">Reflect</span>.ownKeys(target)
+      }
+    })
+  }
+</div></code></pre>
+<p>这样无论是数组添加元素，还是直接修改length属性，都能够正确地触发响应了：</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> arr = reactive([<span class="hljs-string">'foo'</span>])
+
+  effect(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
+    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> key <span class="hljs-keyword">in</span> arr) {
+      <span class="hljs-built_in">console</span>.log(key)
+    }
+  })
+  arr[<span class="hljs-number">1</span>] = <span class="hljs-string">'bar'</span> <span class="hljs-comment">// 能够触发副作用函数重新执行</span>
+  arr.length = <span class="hljs-number">0</span> <span class="hljs-comment">// 能够触发副作用函数重新执行</span>
+</div></code></pre>
+<p>接下来看看使用for...of遍历数组的情况。与for...in不同，for...of是用来遍历可迭代对象(iterate object)的,因此我们需要先搞清楚什么是可迭代对象。具体来说，一个对象能否被迭代，取决于该对象或者该对象的原型是否实现了@@iterator方法。这里的@@[name]标志在es规范里用来指代js内建的symbols值，例如@@iterator指的就是Symbol.iterator这个值。如果一个对象实现了Symbol.iterator方法，那么这个对象就是可迭代的，例如：</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> obj = {
+    <span class="hljs-attr">val</span>: <span class="hljs-number">0</span>,
+    [<span class="hljs-built_in">Symbol</span>.iterator]() {
+      next() {
+        <span class="hljs-keyword">return</span> {
+          <span class="hljs-attr">value</span>: obj.val++,
+          <span class="hljs-attr">done</span>: obj.val &gt; <span class="hljs-number">10</span>
+        }
+      }
+    }
+  }
+</div></code></pre>
+<p>该对象实现Symbol.iterator方法，因此可以使用for...of循环遍历它：</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">for</span>(<span class="hljs-keyword">const</span> value <span class="hljs-keyword">of</span> obj) {
+    <span class="hljs-built_in">console</span>.log(value) <span class="hljs-comment">// 0, 1, 2, 3, ... , 9</span>
+  }
+</div></code></pre>
+<p>数组内建了Symbol.iterator方法的实现，我们可以做一个实现：</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> arr = [<span class="hljs-number">1</span>, <span class="hljs-number">2</span>, <span class="hljs-number">3</span>]
+  <span class="hljs-comment">// 获取并调用数组内建的迭代器方法</span>
+  <span class="hljs-keyword">const</span> itr = arr[<span class="hljs-built_in">Symbol</span>.iterator]()
+
+  <span class="hljs-built_in">console</span>.log(itr.next()) <span class="hljs-comment">// {value: 1, done: false}</span>
+  <span class="hljs-built_in">console</span>.log(itr.next()) <span class="hljs-comment">// {value: 2, done: false}</span>
+  <span class="hljs-built_in">console</span>.log(itr.next()) <span class="hljs-comment">// {value: 3, done: false}</span>
+  <span class="hljs-built_in">console</span>.log(itr.next()) <span class="hljs-comment">// {value: undefined, done: false}</span>
+</div></code></pre>
+<p>可以看到，我们能够通过将Symbol.iterator作为键，获取数组内建的迭代器方法。然后手动执行迭代器的next函数，这样也可以得到期望的结果。这也是默认情况下数组可以使用for...of遍历的原因：</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> arr = [<span class="hljs-number">1</span>, <span class="hljs-number">2</span>, <span class="hljs-number">3</span>]
+
+  <span class="hljs-keyword">for</span>(<span class="hljs-keyword">const</span> val <span class="hljs-keyword">of</span> arr) {
+    <span class="hljs-built_in">console</span>.log(val) <span class="hljs-comment">// 1, 2, 3</span>
+  }
+</div></code></pre>
+<p>实际上，想要实现对数组进行for...of遍历操作的拦截，关键点在于找到for...of操作依赖的基本语义，根据规范可以知道，数组迭代器的执行会读取数组的length属性。如果迭代的是数组元素值，还会读取数组的索引。其实我们可以给出一个数组迭代器的模拟实现：</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> arr = [<span class="hljs-number">1</span>, <span class="hljs-number">2</span>, <span class="hljs-number">3</span>, <span class="hljs-number">4</span>, <span class="hljs-number">5</span>]
+
+  arr[<span class="hljs-built_in">Symbol</span>.iterator] = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+    <span class="hljs-keyword">const</span> target = <span class="hljs-keyword">this</span>
+    <span class="hljs-keyword">const</span> len = target.length
+    <span class="hljs-keyword">let</span> index = <span class="hljs-number">0</span>
+
+    <span class="hljs-keyword">return</span> {
+      next() {
+        <span class="hljs-keyword">return</span> {
+          <span class="hljs-attr">value</span>: index &lt; len ? target[index] : <span class="hljs-literal">undefined</span>
+          <span class="hljs-attr">done</span>: index++ &gt;= len
+        }
+      }
+    }
+  }
+</div></code></pre>
+<p>在这个例子中，迭代数组时，只需要在副作用函数与数组长度和索引之间建立响应联系，就能够实现响应式的for...of迭代：</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> arr = reactive([<span class="hljs-number">1</span>, <span class="hljs-number">2</span>, <span class="hljs-number">3</span>, <span class="hljs-number">4</span>, <span class="hljs-number">5</span>])
+
+  effect(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
+    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> val <span class="hljs-keyword">of</span> arr) {
+      <span class="hljs-built_in">console</span>.log(val)
+    }
+  })
+
+  arr[<span class="hljs-number">1</span>] = <span class="hljs-string">'bar'</span> <span class="hljs-comment">// 能够触发响应</span>
+  arr.length = <span class="hljs-number">0</span> <span class="hljs-comment">// 能够触发响应</span>
+</div></code></pre>
+<p>可以看到，不需要增加任何代码就能够使其正确地工作。这是因为只要数组的长度和元素值发生改变，副作用函数自然会重新执行。</p>
+<p>这里不得不提的一点是，数组的values方法的返回值实际上就是数组内建的迭代器:</p>
+<pre class="hljs"><code><div>  <span class="hljs-built_in">console</span>.log(<span class="hljs-built_in">Array</span>.prototype.values === <span class="hljs-built_in">Array</span>.prototype[<span class="hljs-built_in">Symbol</span>.iterator])
+</div></code></pre>
+<p>换句话说，在不增加任何代码的情况下，我们也能够让数组的迭代器方法正确地工作：</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> arr = reactive([<span class="hljs-number">1</span>, <span class="hljs-number">2</span>, <span class="hljs-number">3</span>, <span class="hljs-number">4</span>, <span class="hljs-number">5</span>])
+
+  effect(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
+    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> val <span class="hljs-keyword">of</span> arr) {
+      <span class="hljs-built_in">console</span>.log(val)
+    }
+  })
+
+  arr[<span class="hljs-number">1</span>] = <span class="hljs-string">'bar'</span> <span class="hljs-comment">// 能够触发响应</span>
+  arr.length = <span class="hljs-number">0</span> <span class="hljs-comment">// 能够触发响应</span>
+</div></code></pre>
+<p>最后需要指出的是，无论是使用for...of循环，还是调用values等方法，它们都会读取数组的Symbol.iterator属性。该属性是一个Symbol值，为了避免发生意外的错误，以及性能上的考虑，我们不应该在副作用函数与Symbol.iterator这类symbol值之间建立响应联系，因此需要修改get拦截函数，如下：</p>
+<pre class="hljs"><code><div>  <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">createReactive</span>(<span class="hljs-params">obj, isShallow = false, isReadonly = false</span>) </span>{
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Proxy</span>(obj, {
+      <span class="hljs-comment">// 拦截读取操作</span>
+      <span class="hljs-keyword">get</span>(target, key, receiver) {
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'get: '</span>, key)
+        <span class="hljs-keyword">if</span> (key === <span class="hljs-string">'raw'</span>) {
+          <span class="hljs-keyword">return</span> target
+        }
+
+        <span class="hljs-comment">// 添加判断，如果key的类型是symbol,则不进行追踪</span>
+        <span class="hljs-keyword">if</span> (!isReadonly &amp;&amp; <span class="hljs-keyword">typeof</span> key !== <span class="hljs-string">'symbol'</span>) {
+          track(target, key)
+        }
+
+        <span class="hljs-keyword">const</span> res = <span class="hljs-built_in">Reflect</span>.get(target, key, receiver)
+
+        <span class="hljs-keyword">if</span> (isShallow) {
+          <span class="hljs-keyword">return</span> res
+        }
+
+        <span class="hljs-keyword">if</span> (<span class="hljs-keyword">typeof</span> res === <span class="hljs-string">'object'</span> &amp;&amp; res !== <span class="hljs-literal">null</span>) {
+          <span class="hljs-keyword">return</span> isReadonly ? readonly(res) : reactive(res)
+        }
+
+        <span class="hljs-keyword">return</span> res
+      }
+    })
+  }
+</div></code></pre>
+<p>在调用track函数进行追踪之前，需要添加一个判断条件，即只有当key的类型不是symbol时才进行追踪，这样就避免了上诉问题。</p>
+<ol start="3">
+<li>数组的查找方法
+数组的方法内部其实都依赖了对象的基本语义。所以大多数情况下，我们不需要做特殊处理即可让这些方法按预期工作，例如：</li>
+</ol>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> arr = reactive([<span class="hljs-number">1</span>, <span class="hljs-number">2</span>])
+
+  effect(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
+    <span class="hljs-built_in">console</span>.log(arr.includes(<span class="hljs-number">1</span>))
+  })
+  
+  arr[<span class="hljs-number">0</span>] = <span class="hljs-number">3</span> <span class="hljs-comment">// 副作用函数重新执行，并打印false</span>
+</div></code></pre>
+<p>这是因为includes方法为了找到给定的值，它内部会访问数组的length属性以及数组的索引，因此当我们修改某个索引指向的元素值后能够触发响应。
+然而includes方法并不总是按照预期工作，例如：</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> obj = {}
+  <span class="hljs-keyword">const</span> arr = reactive([obj])
+
+  <span class="hljs-built_in">console</span>.log(arr.includes(arr[<span class="hljs-number">0</span>])) <span class="hljs-comment">// false</span>
+</div></code></pre>
+<p>我们首先定义一个对象obj,并将其作为数组的第一个元素，然后调用reactive函数为其创建一个响应式对象，接着尝试调用includes方法在数组中进行查找，看看其中是否包含了第一个元素。很显然，这个操作应该返回true，但是却返回了false。</p>
+<p>在arr.includes(arr[0])语句中，arr是代理对象，所以includes函数执行时的this指向的是代理对象，即arr。接着我们看到includes方法会通过索引读取数组元素的值,通过代理对象来访问元素值时，如果值仍然是可以被代理的，那么得到的值就是新的代理对象而非原始对象。下面的set拦截函数内的代码可以证明这一点：</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">if</span> (<span class="hljs-keyword">typeof</span> res === <span class="hljs-string">'object'</span> &amp;&amp; res !== <span class="hljs-literal">null</span>) {
+    <span class="hljs-comment">// 如果值可以被代理，则返回代理对象</span>
+    <span class="hljs-keyword">return</span> isReadonly ? readonly(res) : reactive(res)
+  }
+</div></code></pre>
+<p>我们回过头来看：arr.includes(arr[0]),其中，arr[0]得到的是一个代理对象，而在includes方法内部也会通过arr访问数组元素，从而也得到一个代理对象，问题是这两个代理对象是不同的，因为每次调用reactive函数时都会创建一个新的代理对象：</p>
+<pre class="hljs"><code><div>  <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">reactive</span>(<span class="hljs-params">obj</span>) </span>{
+    <span class="hljs-comment">// 每次调用reactive时，都会创建新的代理对象</span>
+    <span class="hljs-keyword">return</span> createReactive(obj)
+  }
+</div></code></pre>
+<p>即使参数obj是相同的，每次调用reactive函数时，也都会创建新的代理对象。解决方案如下：</p>
+<pre class="hljs"><code><div>  <span class="hljs-comment">// 定义一个Map实例，存储原始对象到代理对象的映射</span>
+  <span class="hljs-keyword">const</span> reactiveMap = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Map</span>()
+
+  <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">reactive</span>(<span class="hljs-params">obj</span>) </span>{
+    <span class="hljs-comment">// 优先通过原始对象obj寻找之前创建的代理对象，如果找到了，直接返回已有的代理对象</span>
+    <span class="hljs-keyword">const</span> existionProxy = reactiveMap.get(obj)
+    <span class="hljs-keyword">if</span> (existionProxy) <span class="hljs-keyword">return</span> existionProxy
+
+    <span class="hljs-comment">// 否则，创建新的代理对象</span>
+    <span class="hljs-keyword">const</span> proxy = createReactive(obj)
+    <span class="hljs-comment">// 存储到Map中，从而避免重复创建</span>
+    reactiveMap.set(obj, proxy)
+
+    <span class="hljs-keyword">return</span> proxy
+  }
+</div></code></pre>
+<p>上面的代码中，<strong>我们定义了reactiveMap, 用来存储原始对象到代理对象的映射。每次调用reactive函数创建代理对象之前，优先检查是否已经存在相应的代理对象，如果存在，则直接返回已有的代理对象，这样就避免了为同一个原始对象多次创建代理对象的问题。</strong></p>
+<p>还不能高兴太早，再来看下面的代码：</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> obj = {}
+  <span class="hljs-keyword">const</span> arr = reactive([obj])
+
+  <span class="hljs-built_in">console</span>.log(arr.includes(obj)) <span class="hljs-comment">// false</span>
+</div></code></pre>
+<p>从用户的角度来看，自己明明把obj作为数组的第一个元素了，为什么在数组中却仍然找不到obj对象呢?其实原因很简单，因为includes内部的this指向的是代理对象arr,并且在获取数组元素时得到的值也是代理对象，所以拿原始对象obj去查找肯定找不到，因此返回false。为此，我们需要重写数组的includes方法并实现自定义的行为，才能解决这个问题。
+重写includes方法：</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> arrayInstrumentations = {
+    <span class="hljs-attr">includes</span>: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{<span class="hljs-comment">/*  */</span>}
+  }
+  <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">createReactive</span>(<span class="hljs-params">obj, isShallow = false, isReadonly = false</span>) </span>{
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Proxy</span>(obj, {
+      <span class="hljs-comment">// 拦截读取操作</span>
+      <span class="hljs-keyword">get</span>(target, key, receiver) {
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'get: '</span>, key)
+        <span class="hljs-keyword">if</span> (key === <span class="hljs-string">'raw'</span>) {
+          <span class="hljs-keyword">return</span> target
+        }
+
+        <span class="hljs-comment">// 如果操作的目标对象是数组，并且key存在于arrayInstrumentations上，那么返回定义在arrayInstrumentations上的值</span>
+        <span class="hljs-keyword">if</span> (<span class="hljs-built_in">Array</span>.isArray(target) &amp;&amp; arrayInstrumentations.hasOwnProperty(key)) {
+          <span class="hljs-keyword">return</span> <span class="hljs-built_in">Reflect</span>.get(arrayInstrumentations, key, receiver)
+        }
+
+        <span class="hljs-comment">// 添加判断，如果key的类型是symbol,则不进行追踪</span>
+        <span class="hljs-keyword">if</span> (!isReadonly &amp;&amp; <span class="hljs-keyword">typeof</span> key !== <span class="hljs-string">'symbol'</span>) {
+          track(target, key)
+        }
+
+        <span class="hljs-keyword">const</span> res = <span class="hljs-built_in">Reflect</span>.get(target, key, receiver)
+
+        <span class="hljs-keyword">if</span> (isShallow) {
+          <span class="hljs-keyword">return</span> res
+        }
+
+        <span class="hljs-keyword">if</span> (<span class="hljs-keyword">typeof</span> res === <span class="hljs-string">'object'</span> &amp;&amp; res !== <span class="hljs-literal">null</span>) {
+          <span class="hljs-keyword">return</span> isReadonly ? readonly(res) : reactive(res)
+        }
+
+        <span class="hljs-keyword">return</span> res
+      }
+    })
+  }
+</div></code></pre>
+<p>如果是数组并且读取的键值存在于arrayInstrumentations上，则返回定义在arrayInstrumentations对象上相应的值。也就是说，当执行arr.includes时，实际执行的是定义在arrayInstrumentations上的includes函数，这样就实现了重写。
+接下来就可以实现自定义includes函数了：</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> originMethod = <span class="hljs-built_in">Array</span>.prototype.includes
+  <span class="hljs-keyword">const</span> arrayInstrumentations = {
+    <span class="hljs-attr">includes</span>: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">...args</span>) </span>{
+      <span class="hljs-comment">// this为代理对象，先在代理对象中查找，将结果存储到res中</span>
+      <span class="hljs-keyword">let</span> res = originMethod.apply(<span class="hljs-keyword">this</span>, args)
+
+      <span class="hljs-keyword">if</span> (res === <span class="hljs-literal">false</span>) {
+        <span class="hljs-comment">// res为false说明没找到，通过this.raw拿到原始数组，再去其中查找并更新res值</span>
+        res = originMethod.apply(<span class="hljs-keyword">this</span>.raw, args)
+      }
+
+      <span class="hljs-comment">// 返回最终结果</span>
+      <span class="hljs-keyword">return</span> res
+    }
+  }
+</div></code></pre>
+<p>除了includes方法之外，还需要做类似处理的数组方法有indexOf和lastIndexOf，因为它们都属于根据给定的值返回查找结果的方法。</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> arrayInstrumentations = {}
+
+  ;[<span class="hljs-string">'includes'</span>, <span class="hljs-string">'indexOf'</span>, <span class="hljs-string">'lastIndexOf'</span>].forEach(<span class="hljs-function"><span class="hljs-params">method</span> =&gt;</span> {
+    <span class="hljs-keyword">const</span> originMethod = <span class="hljs-built_in">Array</span>.prototype[method]
+
+    arrayInstrumentations[method] = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">...args</span>) </span>{
+      <span class="hljs-comment">// this为代理对象，先在代理对象中查找，将结果存储到res中</span>
+      <span class="hljs-keyword">let</span> res = originMethod.apply(<span class="hljs-keyword">this</span>, args)
+
+      <span class="hljs-keyword">if</span> (res === <span class="hljs-literal">false</span>) {
+        <span class="hljs-comment">// res 为false说明没找到，通过this.raw拿到原始数组，再去其中查找，并更新res</span>
+        res = originMethod.apply(<span class="hljs-keyword">this</span>.raw, args)
+      }
+
+      <span class="hljs-comment">// 返回最终结果</span>
+      <span class="hljs-keyword">return</span> res
+    }
+  })
+</div></code></pre>
+<ol start="4">
+<li>隐式修改数组长度的原型方法
+如何处理那些会隐式修改数组长度的方法，主要指的是数组的栈方法，例如push/pop/shift/unshift。除此之外，splice方法也会隐式地修改数组长度，我们可以查阅规范证实这一点。以push方法为例：当调用push方法向数组中添加元素时，既会读取数组的length属性值，也会设置数组的length属性值。这会导致两个独立的副作用函数互相影响。</li>
+</ol>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> arr = reactive([])
+  <span class="hljs-comment">// 第一个副作用函数</span>
+  effect(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
+    arr.push(<span class="hljs-number">1</span>)
+  })
+  <span class="hljs-comment">// 第二个副作用函数</span>
+  effect(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
+    arr.push(<span class="hljs-number">1</span>)
+  })
+</div></code></pre>
+<p>如果你尝试在浏览器中运行上面的代码，会得到栈溢出的错误。</p>
+<p>为什么会这样呢？ 我们来详细分析上面这段代码的执行过程。</p>
+<ul>
+<li>第一个副作用函数执行。在该函数内，调用arr.push方法向数组中添加一个元素。我们知道，调用数组的push方法会间接读取数组的length属性。所以当第一个副作用函数执行完毕后，会与length属性建立响应联系。</li>
+<li>接着，执行第二个副作用函数。 同样，它也会与length属性建立响应联系。但不要忘记，调用arr.length方法不仅会间接读取数组的length属性，还会间接设置length属性的值。</li>
+<li>第二个函数内的arr.push方法的调用设置了数组的length属性值。于是，响应系统尝试把与length属性相关联的副作用函数全部取出并执行，其中就包括第一个副作用函数。问题就出在这里，可以发现，第二个副作用函数还未执行完毕，就要再次执行第一个副作用函数了。</li>
+<li>第一个副作用函数再次执行，同样，这会间接设置数组的length属性。于是，响应系统又要尝试把所有与length属性相关联的副作用函数取出来并执行，其中就包含第二个副作用函数。</li>
+<li>如此往复，就导致了栈溢出。</li>
+</ul>
+<p>问题的原因是push方法的调用会间接读取length属性。所以，只要我们&quot;屏蔽&quot;对length属性的读取，从而避免在它与副作用函数之间建立响应联系，问题就迎刃而解了。这个思路是正确的，因为数组的push方法在语义上是修改操作，而非读取操作，所以避免建立响应联系并不会产生其他副作用。有了解决思路之后，需要重写数组的push方法，如下所示：</p>
+<pre class="hljs"><code><div>  <span class="hljs-comment">// 一个标记变量，代表是否进行追踪，默认值为true,即允许追踪</span>
+  <span class="hljs-keyword">let</span> shouldTrack = <span class="hljs-literal">true</span>
+  <span class="hljs-comment">// 重写数组的push方法</span>
+  ;[<span class="hljs-string">'push'</span>].forEach(<span class="hljs-function"><span class="hljs-params">method</span> =&gt;</span> {
+    <span class="hljs-comment">// 取得原始push方法</span>
+    <span class="hljs-keyword">const</span> originMethod = <span class="hljs-built_in">Array</span>.prototype[method]
+    <span class="hljs-comment">// 重写</span>
+    arrayInstrumentations[method] = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">...args</span>) </span>{
+      <span class="hljs-comment">// 在调用原始方法之前，禁止追踪</span>
+      shouldTrack = <span class="hljs-literal">false</span>
+      <span class="hljs-comment">// push 方法的默认行为</span>
+      <span class="hljs-keyword">let</span> res = originMethod.apply(<span class="hljs-keyword">this</span>, args)
+      <span class="hljs-comment">// 在调用原始方法之后，恢复原来的行为，即允许追踪</span>
+      shouldTrack = <span class="hljs-literal">true</span>
+      <span class="hljs-keyword">return</span> res
+    }
+  })
+</div></code></pre>
+<p>在这段代码中，我们定义了一个标记变量shouldTrack, 它是一个布尔值，代表是否允许追踪。接着，我们重写了数组的push方法，利用前文介绍的arrayInstrumentations对象。重写后的push方法保留了默认行为，只不过在执行默认行为之前，先将标记变量shouldTrack的值设置为false,即禁止追踪。当push方法的默认行为执行完毕后，再将标记变量shouldTrack的值还原为true，代表允许追踪。最后，我们还需修改track函数，如下所示：</p>
+<pre class="hljs"><code><div>  <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">track</span>(<span class="hljs-params">target, key</span>) </span>{
+    <span class="hljs-comment">// 当禁止追踪时，直接返回</span>
+    <span class="hljs-keyword">if</span> (!activeEffect || !shouldTrack) <span class="hljs-keyword">return</span>
+    <span class="hljs-comment">// 省略部分代码</span>
+  }
+</div></code></pre>
+<p>可以看到，当标记变量shouldTrack的值为false时，即禁止追踪时，track函数会直接返回。这样，当push方法间接读取length属性值时，由于此时是禁止追踪的状态，所以length属性与副作用函数之间不会建立响应联系。</p>
+<p>除了push方法之外，pop、shift、unshift和splice等方法都需要做类似的处理。代码如下：</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">let</span> shouldTrack = <span class="hljs-literal">true</span>
+  <span class="hljs-comment">// 重写数组的push、pop、shift、unshift以及splice方法</span>
+  ;[<span class="hljs-string">'push'</span>, <span class="hljs-string">'pop'</span>, <span class="hljs-string">'shift'</span>, <span class="hljs-string">'unshift'</span>, <span class="hljs-string">'splice'</span>].forEach(<span class="hljs-function"><span class="hljs-params">method</span> =&gt;</span> {
+    <span class="hljs-keyword">const</span> originMethod = <span class="hljs-built_in">Array</span>.prototype[method]
+    arrayInstrumentations[method] = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">...args</span>) </span>{
+      shouldTrack = <span class="hljs-literal">false</span>
+      <span class="hljs-keyword">let</span> res = originMethod.apply(<span class="hljs-keyword">this</span>, args)
+      shouldTrack = <span class="hljs-literal">true</span>
+      <span class="hljs-keyword">return</span> res
+    }
+  })
+</div></code></pre>
+
+</body>
+</html>
