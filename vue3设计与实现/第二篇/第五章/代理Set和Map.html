@@ -463,6 +463,7 @@ code {
 
     <span class="hljs-keyword">return</span> proxy
   }
+  
   <span class="hljs-comment">// 在createReactive里封装用于代理Set/Map类型数据的逻辑</span>
   <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">createReactive</span>(<span class="hljs-params">obj, isShallow = false, isReadonly = false</span>) </span>{
     <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Proxy</span>(obj, {
@@ -515,17 +516,15 @@ code {
 
   <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">createReactive</span>(<span class="hljs-params">obj, isShallow = false, isReadonly = false</span>) </span>{
     <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Proxy</span>(obj, {
+      <span class="hljs-comment">// 如果读取的是raw属性，则返回原始数据对象target</span>
       <span class="hljs-keyword">get</span>(target, key, receiver) {
-        <span class="hljs-comment">// 如果读取的是raw属性，则返回原始数据对象target</span>
-        <span class="hljs-keyword">get</span>(target, key, receiver) {
-          <span class="hljs-keyword">if</span> (key === <span class="hljs-string">'raw'</span>) <span class="hljs-keyword">return</span> target
-          <span class="hljs-keyword">if</span> (key === <span class="hljs-string">'size'</span>) {
-            track(target, ITERATE_KEY) <span class="hljs-comment">// 建立响应联系</span>
-            <span class="hljs-keyword">return</span> <span class="hljs-built_in">Reflect</span>.get(target, key, target)
-          }
-          <span class="hljs-comment">// 返回定义在mutableInstrumentations对象下的方法</span>
-          <span class="hljs-keyword">return</span> mutableInstrumentations[key]
+        <span class="hljs-keyword">if</span> (key === <span class="hljs-string">'raw'</span>) <span class="hljs-keyword">return</span> target
+        <span class="hljs-keyword">if</span> (key === <span class="hljs-string">'size'</span>) {
+          track(target, ITERATE_KEY) <span class="hljs-comment">// 建立响应联系</span>
+          <span class="hljs-keyword">return</span> <span class="hljs-built_in">Reflect</span>.get(target, key, target)
         }
+        <span class="hljs-comment">// 返回定义在mutableInstrumentations对象下的方法</span>
+        <span class="hljs-keyword">return</span> mutableInstrumentations[key]
       }
     })
   }
@@ -906,11 +905,268 @@ Map数据类型拥有get和set这两个方法，当调用get方法读取数据�
     [<span class="hljs-string">'key2'</span>, <span class="hljs-string">'value2'</span>]
   ])
   effect(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
+    <span class="hljs-comment">// TypeError: p is not iterable</span>
     <span class="hljs-keyword">for</span>(<span class="hljs-keyword">const</span> [key, value] <span class="hljs-keyword">of</span> p) {
       <span class="hljs-built_in">console</span>.log(key, value)
     }
   })
   p.set(<span class="hljs-string">'key3'</span>, <span class="hljs-string">'value3'</span>)
+</div></code></pre>
+<p>我们知道一个对象能否迭代，取决于该对象是否实现了迭代协议，如果一个对象正确地实现Symbol.iterator方法，那么它就是可迭代的。很显然，代理对象p没有实现Symbol.iterator方法。</p>
+<p>实际上，当我们使用for...of循环迭代一个代理对象时，内部会试图从代理对象p上读取p[Symbol.iterator]属性，这个操作会触发get拦截函数，所以我们仍然可以把Symbol.iterator方法的实现放到mutableInstrumentations中。</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> mutableInstrumentations = {
+    [<span class="hljs-built_in">Symbol</span>.iterator]() {
+      <span class="hljs-comment">// 获取原始数据对象target</span>
+      <span class="hljs-keyword">const</span> target = <span class="hljs-keyword">this</span>.raw
+      <span class="hljs-comment">// 获取原始迭代器方法</span>
+      <span class="hljs-keyword">const</span> itr = target[<span class="hljs-built_in">Symbol</span>.iterator]()
+      <span class="hljs-comment">// 将其返回</span>
+      <span class="hljs-keyword">return</span> itr
+    }
+  }
+</div></code></pre>
+<p>实现很简单，不过是把原始的迭代器对象返回而已，这样就能够使用for...of循环迭代代理对象p了，然而事情不可能那么简单。在forEach方法时我们提到过，传递给callback的参数是包装后的响应式数据。</p>
+<pre class="hljs"><code><div>  p.forEach(<span class="hljs-function">(<span class="hljs-params">value, key</span>) =&gt;</span> {
+    <span class="hljs-comment">// value和key如果可以被代理，那么它们就是代理对象，即响应式数据。</span>
+  })
+</div></code></pre>
+<p>同理，使用for...of循环迭代集合时，如果迭代产生的值也是可以被代理的，那么也应该将其包装成响应式数据，例如：</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">for</span>(<span class="hljs-keyword">const</span> [key, value] <span class="hljs-keyword">of</span> p) {
+    <span class="hljs-comment">// 期望key和value是响应式数据</span>
+  }
+</div></code></pre>
+<p>因此，我们需要修改代码：</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> mutableInstrumentations = {
+    [<span class="hljs-built_in">Symbol</span>.iterator]() {
+      <span class="hljs-comment">// 获取原始数据对象target</span>
+      <span class="hljs-keyword">const</span> target = <span class="hljs-keyword">this</span>.raw
+      <span class="hljs-comment">// 获取原始迭代器方法</span>
+      <span class="hljs-keyword">const</span> itr = target[<span class="hljs-built_in">Symbol</span>.iterator]()
+
+      <span class="hljs-keyword">const</span> wrap = <span class="hljs-function">(<span class="hljs-params">val</span>) =&gt;</span> <span class="hljs-keyword">typeof</span> val === <span class="hljs-string">'object'</span> &amp;&amp; val !== <span class="hljs-literal">null</span> ? reactive(val) : val
+
+      <span class="hljs-comment">// 返回自定义的迭代器</span>
+      <span class="hljs-keyword">return</span> {
+        next() {
+          <span class="hljs-comment">// 调用原始迭代器的next方法获取value和done</span>
+          <span class="hljs-keyword">const</span> { value, done } = itr.next()
+          <span class="hljs-keyword">return</span> {
+            <span class="hljs-comment">// 如果value不是undefined,则对其进行包裹</span>
+            <span class="hljs-attr">value</span>: value ? [wrap(value[<span class="hljs-number">0</span>]), wrap(value[<span class="hljs-number">1</span>])] : value
+            done
+          }
+        }
+      }
+    }
+  }
+</div></code></pre>
+<p>最后，为了追踪for...of对数据的迭代操作，我们还需要调用track函数，让副作用函数与ITERATE_KEY建立联系：</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> mutableInstrumentations = {
+    [<span class="hljs-built_in">Symbol</span>.iterator]() {
+      <span class="hljs-keyword">const</span> target = <span class="hljs-keyword">this</span>.raw
+      <span class="hljs-keyword">const</span> itr = target[<span class="hljs-built_in">Symbol</span>.iterator]()
+
+      <span class="hljs-keyword">const</span> wrap = <span class="hljs-function">(<span class="hljs-params">val</span>) =&gt;</span> <span class="hljs-keyword">typeof</span> val === <span class="hljs-string">'object'</span> &amp;&amp; val !== <span class="hljs-literal">null</span> ? reactive(val) : val
+
+      <span class="hljs-comment">// 调用track函数建立响应联系</span>
+      track(target, ITERATE_KEY)
+
+      <span class="hljs-keyword">return</span> {
+        next() {
+          <span class="hljs-keyword">const</span> { value, done } = itr.next()
+          <span class="hljs-keyword">return</span> {
+            <span class="hljs-attr">value</span>: value ? [wrap(value[<span class="hljs-number">0</span>]), wrap(value[<span class="hljs-number">1</span>])] : value,
+            done
+          }
+        }
+      }
+    }
+  }
+</div></code></pre>
+<p>由于迭代操作与集合中元素的数量有关，所以只要集合的size发生变化，就应该触发迭代操作重新执行。因此，我们在调用track函数时让ITERATE_KEY与副作用函数建立联系。完成这一步后，集合的响应式数据功能就相对完整了。</p>
+<p>由于p.entries与p[Symbol.iterator]等价，所以我们可以使用同样的代码来实现对p.entries函数的拦截，如下所示：</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> mutableInstrumentations = {
+    <span class="hljs-comment">// 共用iterationMethod方法</span>
+    [<span class="hljs-built_in">Symbol</span>.iterator]: iterationMethod,
+    <span class="hljs-attr">entries</span>: iterationMethod
+  }
+  <span class="hljs-comment">// 抽离为独立的函数，便于复用</span>
+  <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">iterationMethod</span>(<span class="hljs-params"></span>) </span>{
+    <span class="hljs-keyword">const</span> target = <span class="hljs-keyword">this</span>.raw
+    <span class="hljs-keyword">const</span> itr = target[<span class="hljs-built_in">Symbol</span>.iterator]()
+
+    <span class="hljs-keyword">const</span> wrap = <span class="hljs-function">(<span class="hljs-params">val</span>) =&gt;</span> <span class="hljs-keyword">typeof</span> val === <span class="hljs-string">'object'</span> &amp;&amp; val !== <span class="hljs-literal">null</span> ? reactive(val) : val
+
+    track(target, ITERATE_KEY)
+
+    <span class="hljs-keyword">return</span> {
+      next() {
+        <span class="hljs-keyword">const</span> { value, done } = itr.next()
+        <span class="hljs-keyword">return</span> {
+          <span class="hljs-attr">value</span>: value ? [wrap(value[<span class="hljs-number">0</span>]), wrap(value[<span class="hljs-number">1</span>])] : value,
+          done
+        }
+      }
+    }
+  }
+</div></code></pre>
+<p>这里会得到一个错误：</p>
+<pre class="hljs"><code><div>  <span class="hljs-comment">// TypeError: p.entries is not a function or its return value is not iterable</span>
+  <span class="hljs-keyword">for</span>(<span class="hljs-keyword">const</span> [key, value] <span class="hljs-keyword">of</span> p.entries()) {
+    <span class="hljs-built_in">console</span>.log(key, value)
+  }
+</div></code></pre>
+<p>p.entries函数的返回值时一个对象，该对象带有next方法，但不具有Symbol.iterator方法，因此它确实不是一个可迭代对象。
+切勿把可迭代协议与迭代器协议搞混。可迭代协议指的是一个对象实现了Symbol.iterator方法，而迭代器协议指的是一个对象实现了next方法。但一个对象可以同时实现可迭代协议和迭代器协议，例如：</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> obj = {
+    <span class="hljs-comment">// 迭代器协议</span>
+    next() {
+      <span class="hljs-comment">// ...</span>
+    }
+
+    <span class="hljs-comment">// 可迭代协议</span>
+    [<span class="hljs-built_in">Symbol</span>.iterator]() {
+      <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>
+    }
+  }
+</div></code></pre>
+<p>所以解决问题的方法自然而然地出现了：</p>
+<pre class="hljs"><code><div>  <span class="hljs-comment">// 抽离为独立的函数，便于复用</span>
+  <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">iterationMethod</span>(<span class="hljs-params"></span>) </span>{
+    <span class="hljs-keyword">const</span> target = <span class="hljs-keyword">this</span>.raw
+    <span class="hljs-keyword">const</span> itr = target[<span class="hljs-built_in">Symbol</span>.iterator]()
+
+    <span class="hljs-keyword">const</span> wrap = <span class="hljs-function">(<span class="hljs-params">val</span>) =&gt;</span> <span class="hljs-keyword">typeof</span> val === <span class="hljs-string">'object'</span> &amp;&amp; val !== <span class="hljs-literal">null</span> ? reactive(val) : val
+
+    track(target, ITERATE_KEY)
+
+    <span class="hljs-keyword">return</span> {
+      next() {
+        <span class="hljs-keyword">const</span> { value, done } = itr.next()
+        <span class="hljs-keyword">return</span> {
+          <span class="hljs-attr">value</span>: value ? [wrap(value[<span class="hljs-number">0</span>]), wrap(value[<span class="hljs-number">1</span>])] : value,
+          done
+        }
+      }
+
+      <span class="hljs-comment">// 实现可迭代协议</span>
+      [<span class="hljs-built_in">Symbol</span>.iterator]() {
+        <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>
+      }
+    }
+  }
+</div></code></pre>
+<ol start="6">
+<li>values与keys方法
+values方法的实现与entries方法类似，不同的是，当使用for...of迭代values时，得到的仅仅是Map数据的值，而非键值对：</li>
+</ol>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">for</span>(<span class="hljs-keyword">const</span> value <span class="hljs-keyword">of</span> p.values()) {
+    <span class="hljs-built_in">console</span>.log(value)
+  }
+</div></code></pre>
+<p>values方法的实现如下：</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> mutableInstrumentations = {
+    <span class="hljs-comment">// 共用iterationMethod方法</span>
+    [<span class="hljs-built_in">Symbol</span>.iterator]: iterationMethod,
+    <span class="hljs-attr">entries</span>: iterationMethod,
+    <span class="hljs-attr">values</span>: valuesIterationMethod
+  }
+  <span class="hljs-comment">// 抽离为独立的函数，便于复用</span>
+  <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">valuesIterationMethod</span>(<span class="hljs-params"></span>) </span>{
+    <span class="hljs-keyword">const</span> target = <span class="hljs-keyword">this</span>.raw
+    <span class="hljs-comment">// 通过target.values获取原始迭代器方法</span>
+    <span class="hljs-keyword">const</span> itr = target.values()
+
+    <span class="hljs-keyword">const</span> wrap = <span class="hljs-function">(<span class="hljs-params">val</span>) =&gt;</span> <span class="hljs-keyword">typeof</span> val === <span class="hljs-string">'object'</span> ? reactive(val) : val
+
+    track(target, ITERATE_KEY)
+
+    <span class="hljs-keyword">return</span> {
+      next() {
+        <span class="hljs-keyword">const</span> { value, done } = itr.next()
+        <span class="hljs-keyword">return</span> {
+          <span class="hljs-comment">// value是值，而非键值对，所以只需要包裹value即可</span>
+          <span class="hljs-attr">value</span>: wrap(value),
+          done
+        }
+      }
+
+      [<span class="hljs-built_in">Symbol</span>.iterator]() {
+        <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>
+      }
+    }
+  }
+</div></code></pre>
+<p>keys方法与values方法非常类似，不同点在于，前者处理的是键而非值。因此，我们只需要修改valuesIterationMethod方法中的一行代码，即可实现对keys方法的代理。把下面这句代码:</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> itr = target.values()
+</div></code></pre>
+<p>替换成</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> itr = target.keys()
+</div></code></pre>
+<p>这么做的确能够达到目的，但如果我们尝试运行如下测试用例，就会发现存在缺陷：</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> p = reative(<span class="hljs-keyword">new</span> <span class="hljs-built_in">Map</span>[
+    [<span class="hljs-string">'key1'</span>, <span class="hljs-string">'value1'</span>],
+    [<span class="hljs-string">'key2'</span>, <span class="hljs-string">'value2'</span>]
+  ])
+
+  effect(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
+    <span class="hljs-keyword">for</span>(<span class="hljs-keyword">const</span> value <span class="hljs-keyword">of</span> p.keys()) {
+      <span class="hljs-built_in">console</span>.log(value) <span class="hljs-comment">// key1 key2</span>
+    }
+  })
+  p.set(<span class="hljs-string">'key2'</span>, <span class="hljs-string">'value3'</span>) <span class="hljs-comment">// 修改key2的值</span>
+</div></code></pre>
+<p>我们期望副作用函数不执行，但发现副作用函数重新执行了。</p>
+<p>这是因为，我们对Map类型的数据进行了特殊处理。前面提到，即使操作类型为SET，也会触发那些与ITERATR_KEY相关联的副作用函数重新执行，trigger函数的代码可以证明这一点,这对于values或entries等方法来说是必需的，但对于keys方法来说则没有必要，因为keys方法只关心Map类型数据的键的变化，而不关心值的变化，解决办法：</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> MAP_KEY_ITERATR_KEY = <span class="hljs-built_in">Symbol</span>()
+
+  <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">keysIterationMethod</span>(<span class="hljs-params"></span>) </span>{
+    <span class="hljs-comment">// 获取原始数据对象target</span>
+    <span class="hljs-keyword">const</span> target = <span class="hljs-keyword">this</span>.raw
+    <span class="hljs-comment">// 获取原始迭代器方法</span>
+    <span class="hljs-keyword">const</span> itr = target.keys()
+
+    <span class="hljs-keyword">const</span> wrap = <span class="hljs-function">(<span class="hljs-params">val</span>) =&gt;</span> <span class="hljs-keyword">typeof</span> val === <span class="hljs-string">'object'</span> ? reative(val) : val
+
+    <span class="hljs-comment">// 调用track函数进行追踪依赖，在副作用函数与 MAP_KEY_ITERATR_KEY之间建立响应联系</span>
+    track(target, MAP_KEY_ITERATR_KEY)
+
+    <span class="hljs-comment">// 将其返回</span>
+    <span class="hljs-keyword">return</span> {
+      next() {
+        <span class="hljs-keyword">const</span> { value, done } = itr.next()
+        <span class="hljs-keyword">return</span> {
+          <span class="hljs-attr">value</span>: wrap(value),
+          done
+        }
+      },
+      [<span class="hljs-built_in">Symbol</span>.iterator]() {
+        <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>
+      }
+    }
+  }
+</div></code></pre>
+<p>还需要修改trigger函数：</p>
+<pre class="hljs"><code><div>  <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">trigger</span>(<span class="hljs-params">target, key, type, newVal</span>) </span>{
+    <span class="hljs-comment">// ...</span>
+
+    <span class="hljs-keyword">if</span> (
+      <span class="hljs-comment">// 操作类型是ADD或DELETE</span>
+      (type === <span class="hljs-string">'ADD'</span> || type === <span class="hljs-string">'DELETE'</span>) &amp;&amp; 
+      <span class="hljs-comment">// 并且是Map类型的数据</span>
+      <span class="hljs-built_in">Object</span>.prototype.toString.call(target) === <span class="hljs-string">'[object Map]'</span>
+    ) {
+      <span class="hljs-comment">// 取出那些与 MAP_KEY_ITERATR_KEY 相关联的副作用函数并执行</span>
+      <span class="hljs-keyword">const</span> iterateEffects = depsMap.get(MAP_KEY_ITERATR_KEY)
+      iterateEffects?.forEach(<span class="hljs-function"><span class="hljs-params">effectFn</span> =&gt;</span> {
+        <span class="hljs-keyword">if</span> (effectFn !== activeEffect) {
+          effectsToRun.add(effectFn)
+        }
+      })
+    }
+
+    <span class="hljs-comment">// ...</span>
+  }
 </div></code></pre>
 
 </body>
