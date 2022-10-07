@@ -568,9 +568,284 @@ Map和Set这两个数据类型的操作方法相似。它们之间最大的不�
       ['key2', 'value2']
     ])
     effect(() => {
+      // TypeError: p is not iterable
       for(const [key, value] of p) {
         console.log(key, value)
       }
     })
     p.set('key3', 'value3')
   ```
+  我们知道一个对象能否迭代，取决于该对象是否实现了迭代协议，如果一个对象正确地实现Symbol.iterator方法，那么它就是可迭代的。很显然，代理对象p没有实现Symbol.iterator方法。
+
+  实际上，当我们使用for...of循环迭代一个代理对象时，内部会试图从代理对象p上读取p[Symbol.iterator]属性，这个操作会触发get拦截函数，所以我们仍然可以把Symbol.iterator方法的实现放到mutableInstrumentations中。
+  ```javascript
+    const mutableInstrumentations = {
+      [Symbol.iterator]() {
+        // 获取原始数据对象target
+        const target = this.raw
+        // 获取原始迭代器方法
+        const itr = target[Symbol.iterator]()
+        // 将其返回
+        return itr
+      }
+    }
+  ```
+  实现很简单，不过是把原始的迭代器对象返回而已，这样就能够使用for...of循环迭代代理对象p了，然而事情不可能那么简单。在forEach方法时我们提到过，传递给callback的参数是包装后的响应式数据。
+  ```javascript
+    p.forEach((value, key) => {
+      // value和key如果可以被代理，那么它们就是代理对象，即响应式数据。
+    })
+  ```
+  同理，使用for...of循环迭代集合时，如果迭代产生的值也是可以被代理的，那么也应该将其包装成响应式数据，例如：
+  ```javascript
+    for(const [key, value] of p) {
+      // 期望key和value是响应式数据
+    }
+  ```
+  因此，我们需要修改代码：
+  ```javascript
+    const mutableInstrumentations = {
+      [Symbol.iterator]() {
+        // 获取原始数据对象target
+        const target = this.raw
+        // 获取原始迭代器方法
+        const itr = target[Symbol.iterator]()
+
+        const wrap = (val) => typeof val === 'object' && val !== null ? reactive(val) : val
+
+        // 返回自定义的迭代器
+        return {
+          next() {
+            // 调用原始迭代器的next方法获取value和done
+            const { value, done } = itr.next()
+            return {
+              // 如果value不是undefined,则对其进行包裹
+              value: value ? [wrap(value[0]), wrap(value[1])] : value
+              done
+            }
+          }
+        }
+      }
+    }
+  ```
+  最后，为了追踪for...of对数据的迭代操作，我们还需要调用track函数，让副作用函数与ITERATE_KEY建立联系：
+  ```javascript
+    const mutableInstrumentations = {
+      [Symbol.iterator]() {
+        const target = this.raw
+        const itr = target[Symbol.iterator]()
+
+        const wrap = (val) => typeof val === 'object' && val !== null ? reactive(val) : val
+
+        // 调用track函数建立响应联系
+        track(target, ITERATE_KEY)
+
+        return {
+          next() {
+            const { value, done } = itr.next()
+            return {
+              value: value ? [wrap(value[0]), wrap(value[1])] : value,
+              done
+            }
+          }
+        }
+      }
+    }
+  ```
+  由于迭代操作与集合中元素的数量有关，所以只要集合的size发生变化，就应该触发迭代操作重新执行。因此，我们在调用track函数时让ITERATE_KEY与副作用函数建立联系。完成这一步后，集合的响应式数据功能就相对完整了。
+
+  由于p.entries与p[Symbol.iterator]等价，所以我们可以使用同样的代码来实现对p.entries函数的拦截，如下所示：
+  ```javascript
+    const mutableInstrumentations = {
+      // 共用iterationMethod方法
+      [Symbol.iterator]: iterationMethod,
+      entries: iterationMethod
+    }
+    // 抽离为独立的函数，便于复用
+    function iterationMethod() {
+      const target = this.raw
+      const itr = target[Symbol.iterator]()
+
+      const wrap = (val) => typeof val === 'object' && val !== null ? reactive(val) : val
+
+      track(target, ITERATE_KEY)
+
+      return {
+        next() {
+          const { value, done } = itr.next()
+          return {
+            value: value ? [wrap(value[0]), wrap(value[1])] : value,
+            done
+          }
+        }
+      }
+    }
+  ```
+  这里会得到一个错误：
+  ```javascript
+    // TypeError: p.entries is not a function or its return value is not iterable
+    for(const [key, value] of p.entries()) {
+      console.log(key, value)
+    }
+  ```
+  p.entries函数的返回值时一个对象，该对象带有next方法，但不具有Symbol.iterator方法，因此它确实不是一个可迭代对象。
+  切勿把可迭代协议与迭代器协议搞混。可迭代协议指的是一个对象实现了Symbol.iterator方法，而迭代器协议指的是一个对象实现了next方法。但一个对象可以同时实现可迭代协议和迭代器协议，例如：
+  ```javascript
+    const obj = {
+      // 迭代器协议
+      next() {
+        // ...
+      }
+
+      // 可迭代协议
+      [Symbol.iterator]() {
+        return this
+      }
+    }
+  ```
+  所以解决问题的方法自然而然地出现了：
+  ```javascript
+    // 抽离为独立的函数，便于复用
+    function iterationMethod() {
+      const target = this.raw
+      const itr = target[Symbol.iterator]()
+
+      const wrap = (val) => typeof val === 'object' && val !== null ? reactive(val) : val
+
+      track(target, ITERATE_KEY)
+
+      return {
+        next() {
+          const { value, done } = itr.next()
+          return {
+            value: value ? [wrap(value[0]), wrap(value[1])] : value,
+            done
+          }
+        }
+
+        // 实现可迭代协议
+        [Symbol.iterator]() {
+          return this
+        }
+      }
+    }
+  ```
+  6. values与keys方法
+  values方法的实现与entries方法类似，不同的是，当使用for...of迭代values时，得到的仅仅是Map数据的值，而非键值对：
+  ```javascript
+    for(const value of p.values()) {
+      console.log(value)
+    }
+  ```
+  values方法的实现如下：
+  ```javascript
+    const mutableInstrumentations = {
+      // 共用iterationMethod方法
+      [Symbol.iterator]: iterationMethod,
+      entries: iterationMethod,
+      values: valuesIterationMethod
+    }
+    // 抽离为独立的函数，便于复用
+    function valuesIterationMethod() {
+      const target = this.raw
+      // 通过target.values获取原始迭代器方法
+      const itr = target.values()
+
+      const wrap = (val) => typeof val === 'object' ? reactive(val) : val
+
+      track(target, ITERATE_KEY)
+
+      return {
+        next() {
+          const { value, done } = itr.next()
+          return {
+            // value是值，而非键值对，所以只需要包裹value即可
+            value: wrap(value),
+            done
+          }
+        }
+
+        [Symbol.iterator]() {
+          return this
+        }
+      }
+    }
+  ```
+  keys方法与values方法非常类似，不同点在于，前者处理的是键而非值。因此，我们只需要修改valuesIterationMethod方法中的一行代码，即可实现对keys方法的代理。把下面这句代码:
+  ```javascript
+    const itr = target.values()
+  ```
+  替换成
+  ```javascript
+    const itr = target.keys()
+  ```
+  这么做的确能够达到目的，但如果我们尝试运行如下测试用例，就会发现存在缺陷：
+  ```javascript
+    const p = reative(new Map[
+      ['key1', 'value1'],
+      ['key2', 'value2']
+    ])
+
+    effect(() => {
+      for(const value of p.keys()) {
+        console.log(value) // key1 key2
+      }
+    })
+    p.set('key2', 'value3') // 修改key2的值
+  ```
+  我们期望副作用函数不执行，但发现副作用函数重新执行了。
+
+  这是因为，我们对Map类型的数据进行了特殊处理。前面提到，即使操作类型为SET，也会触发那些与ITERATR_KEY相关联的副作用函数重新执行，trigger函数的代码可以证明这一点,这对于values或entries等方法来说是必需的，但对于keys方法来说则没有必要，因为keys方法只关心Map类型数据的键的变化，而不关心值的变化，解决办法：
+  ```javascript
+    const MAP_KEY_ITERATR_KEY = Symbol()
+
+    function keysIterationMethod() {
+      // 获取原始数据对象target
+      const target = this.raw
+      // 获取原始迭代器方法
+      const itr = target.keys()
+
+      const wrap = (val) => typeof val === 'object' ? reative(val) : val
+
+      // 调用track函数进行追踪依赖，在副作用函数与 MAP_KEY_ITERATR_KEY之间建立响应联系
+      track(target, MAP_KEY_ITERATR_KEY)
+
+      // 将其返回
+      return {
+        next() {
+          const { value, done } = itr.next()
+          return {
+            value: wrap(value),
+            done
+          }
+        },
+        [Symbol.iterator]() {
+          return this
+        }
+      }
+    }
+  ```
+  还需要修改trigger函数：
+  ```javascript
+    function trigger(target, key, type, newVal) {
+      // ...
+
+      if (
+        // 操作类型是ADD或DELETE
+        (type === 'ADD' || type === 'DELETE') && 
+        // 并且是Map类型的数据
+        Object.prototype.toString.call(target) === '[object Map]'
+      ) {
+        // 取出那些与 MAP_KEY_ITERATR_KEY 相关联的副作用函数并执行
+        const iterateEffects = depsMap.get(MAP_KEY_ITERATR_KEY)
+        iterateEffects?.forEach(effectFn => {
+          if (effectFn !== activeEffect) {
+            effectsToRun.add(effectFn)
+          }
+        })
+      }
+
+      // ...
+    }
+  ```
+  
