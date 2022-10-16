@@ -1,5 +1,5 @@
 <!--
- * @Description: Chrome架构
+ * @Description: Chrome架构：仅仅打开了1个页面，为什么有4个进程
 -->
 ### Chrome架构：仅仅打开了1个页面，为什么有4个进程？
 
