@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>TCP协议：如何保证页面文件能被完整送达浏览器.md</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+
+<style>
+/* https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/media/markdown.css */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+body {
+	font-family: var(--vscode-markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif);
+	font-size: var(--vscode-markdown-font-size, 14px);
+	padding: 0 26px;
+	line-height: var(--vscode-markdown-line-height, 22px);
+	word-wrap: break-word;
+}
+
+#code-csp-warning {
+	position: fixed;
+	top: 0;
+	right: 0;
+	color: white;
+	margin: 16px;
+	text-align: center;
+	font-size: 12px;
+	font-family: sans-serif;
+	background-color:#444444;
+	cursor: pointer;
+	padding: 6px;
+	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+}
+
+#code-csp-warning:hover {
+	text-decoration: none;
+	background-color:#007acc;
+	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
+}
+
+body.scrollBeyondLastLine {
+	margin-bottom: calc(100vh - 22px);
+}
+
+body.showEditorSelection .code-line {
+	position: relative;
+}
+
+body.showEditorSelection .code-active-line:before,
+body.showEditorSelection .code-line:hover:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: -12px;
+	height: 100%;
+}
+
+body.showEditorSelection li.code-active-line:before,
+body.showEditorSelection li.code-line:hover:before {
+	left: -30px;
+}
+
+.vscode-light.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.vscode-light.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.40);
+}
+
+.vscode-light.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-dark.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.vscode-dark.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.60);
+}
+
+.vscode-dark.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-high-contrast.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 160, 0, 0.7);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 160, 0, 1);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+a {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 1px solid -webkit-focus-ring-color;
+	outline-offset: -1px;
+}
+
+hr {
+	border: 0;
+	height: 2px;
+	border-bottom: 2px solid;
+}
+
+h1 {
+	padding-bottom: 0.3em;
+	line-height: 1.2;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+h1, h2, h3 {
+	font-weight: normal;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table > thead > tr > th {
+	text-align: left;
+	border-bottom: 1px solid;
+}
+
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td {
+	padding: 5px 10px;
+}
+
+table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+blockquote {
+	margin: 0 7px 0 5px;
+	padding: 0 16px 0 10px;
+	border-left-width: 5px;
+	border-left-style: solid;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 1em;
+	line-height: 1.357em;
+}
+
+body.wordWrap pre {
+	white-space: pre-wrap;
+}
+
+pre:not(.hljs),
+pre.hljs code > div {
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+pre code {
+	color: var(--vscode-editor-foreground);
+	tab-size: 4;
+}
+
+/** Theming */
+
+.vscode-light pre {
+	background-color: rgba(220, 220, 220, 0.4);
+}
+
+.vscode-dark pre {
+	background-color: rgba(10, 10, 10, 0.4);
+}
+
+.vscode-high-contrast pre {
+	background-color: rgb(0, 0, 0);
+}
+
+.vscode-high-contrast h1 {
+	border-color: rgb(0, 0, 0);
+}
+
+.vscode-light table > thead > tr > th {
+	border-color: rgba(0, 0, 0, 0.69);
+}
+
+.vscode-dark table > thead > tr > th {
+	border-color: rgba(255, 255, 255, 0.69);
+}
+
+.vscode-light h1,
+.vscode-light hr,
+.vscode-light table > tbody > tr + tr > td {
+	border-color: rgba(0, 0, 0, 0.18);
+}
+
+.vscode-dark h1,
+.vscode-dark hr,
+.vscode-dark table > tbody > tr + tr > td {
+	border-color: rgba(255, 255, 255, 0.18);
+}
+
+</style>
+
+<style>
+/* Tomorrow Theme */
+/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+/* Original theme - https://github.com/chriskempson/tomorrow-theme */
+
+/* Tomorrow Comment */
+.hljs-comment,
+.hljs-quote {
+	color: #8e908c;
+}
+
+/* Tomorrow Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+	color: #c82829;
+}
+
+/* Tomorrow Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+	color: #f5871f;
+}
+
+/* Tomorrow Yellow */
+.hljs-attribute {
+	color: #eab700;
+}
+
+/* Tomorrow Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+	color: #718c00;
+}
+
+/* Tomorrow Blue */
+.hljs-title,
+.hljs-section {
+	color: #4271ae;
+}
+
+/* Tomorrow Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+	color: #8959a8;
+}
+
+.hljs {
+	display: block;
+	overflow-x: auto;
+	color: #4d4d4c;
+	padding: 0.5em;
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: bold;
+}
+</style>
+
+<style>
+/*
+ * Markdown PDF CSS
+ */
+
+ body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "Meiryo";
+	padding: 0 12px;
+}
+
+pre {
+	background-color: #f8f8f8;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+pre:not(.hljs) {
+	padding: 23px;
+	line-height: 19px;
+}
+
+blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.emoji {
+	height: 1.4em;
+}
+
+code {
+	font-size: 14px;
+	line-height: 19px;
+}
+
+/* for inline code */
+:not(pre):not(.hljs) > code {
+	color: #C9AE75; /* Change the old color so it seems less like an error */
+	font-size: inherit;
+}
+
+/* Page Break : use <div class="page"/> to insert page break
+-------------------------------------------------------- */
+.page {
+	page-break-after: always;
+}
+
+</style>
+
+<script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
+</head>
+<body>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: document.body.classList.contains('vscode-dark') || document.body.classList.contains('vscode-high-contrast')
+          ? 'dark'
+          : 'default'
+    });
+  </script>
+<h4 id="tcp%E5%8D%8F%E8%AE%AE%E5%A6%82%E4%BD%95%E4%BF%9D%E8%AF%81%E9%A1%B5%E9%9D%A2%E6%96%87%E4%BB%B6%E8%83%BD%E8%A2%AB%E5%AE%8C%E6%95%B4%E9%80%81%E8%BE%BE%E6%B5%8F%E8%A7%88%E5%99%A8">TCP协议：如何保证页面文件能被完整送达浏览器</h4>
+<p>在衡量 Web 页面性能的时候有一个重要的指标叫“<strong>FP（First Paint）</strong>”，是 <strong>指从页面加载到首次开始绘制的时长</strong>。这个指标直接影响了用户的跳出率，更快的页面响应意味着更多的 PV、更高的参与度，以及更高的转化率。那什么影响 FP 指标呢？其中一个重要的因素是 <strong>网络加载速度</strong>。</p>
+<p>要想优化 Web 页面的加载速度，你需要对网络有充分的了解。而理解网络的关键是要对网络协议有深刻的认识，不管你是使用 HTTP，还是使用 WebSocket，它们都是基于 TCP/IP 的，如果你对这些原理有足够了解，也就清楚如何去优化 Web 性能，或者能更轻松地定位 Web 问题了。此外，TCP/IP 的设计思想还有助于拓宽你的知识边界，从而在整体上提升你对项目的理解和解决问题的能力。</p>
+<p><strong>重点介绍在 Web 世界中的 TCP/IP 是如何工作的。</strong></p>
+<p>在网络中，一个文件通常会被拆分为很多数据包来进行传输，而数据包在传输的过程中又有很大概率丢失或者出错。<strong>那么如何保证页面文件能被完整地送达浏览器呢？</strong></p>
+<p><strong>一个数据包的&quot;旅程&quot;</strong>
+下面将分别从“数据包如何送达主机”“主机如何将数据包转交给应用”和“数据是如何被完整地送达应用程序”这三个角度来为你讲述数据的传输过程。</p>
+<p><strong>互联网，实际上是一套理念和协议组成的体系架构。</strong> 其中，协议是一套众所周知的规则和标准，如果各方都同意使用，那么它们之间的通信将变得毫无障碍。
+互联网中的数据是通过数据包来传输的。如果发送的数据很大，那么该数据就会被拆分为很多小数据包来传输。比如你听的音频数据，是拆分成一个个小的数据包来传输的，并不是一个大的文件一次传输过来的。</p>
+<p><strong>1. IP: 把数据包送达目的主机</strong>
+数据包要在互联网上进行传输，就要符合 <strong>网际协议(Internet Protocol,简称 <strong>IP</strong>)</strong> 标准。互联网上不同的在线设备都有唯一的地址，地址只是一个数字，这和大部分家庭收件地址类似，你只需要知道一个家庭的具体地址，就可以往这个地址发送包裹，这样物流系统就能把物品送到目的地。</p>
+<p><strong>计算机的地址就称为IP地址，访问任何网站实际上只有你的计算机向另外一台计算机请求信息。</strong></p>
+<p>如果要想把一个数据包从主机A发送给主机B，那么在传输之前，数据包上会被附加上主机B的IP地址信息，这样在传输过程中才能正确寻址。额外地，数据包上还会附加上主机A本身的IP地址，有了这些信息主机B才可以回复信息给主机A。这些附加的信息会被装进一个叫IP头的数据结构里。IP头是 IP 数据包开头的信息，包含 IP 版本、源 IP 地址、目标 IP 地址、生存时间等信息。</p>
+<p>为了方便理解，我先把网络简单分为三层结构，如下图：</p>
+<p><img src="./images2/img1.webp" alt="简化的IP网络三层传输模型" title="简化的IP网络三层传输模型"></p>
+<p>下面我们一起来看下一个数据包从主机A到主机B的旅程：</p>
+<ul>
+<li>上层将含有“极客时间”的数据包交给网络层</li>
+<li>网络层再将IP头附加到数据包上，组成新的 <strong>IP数据包</strong>，并交给底层。</li>
+<li>底层通过物理网络将数据包传输给主机B；</li>
+<li>数据包被传输到主机B的网络层，在这里主机B拆开数据包的IP头信息，并将拆开来的数据部分交给上层；</li>
+<li>最终，含有”极客时间“信息的数据包就到达了主机B的上层了。</li>
+</ul>
+<p><strong>2. UDP: 把数据包送达应用程序</strong></p>
+<p>IP 是非常底层的协议，只负责把数据包传送到对方电脑，但是对方电脑并不知道把数据包交给哪个程序，是交给浏览器还是交给王者荣耀？因此，需要基于IP之上开发能和应用打交道的协议，最常见的是&quot;<strong>用户数据包协议</strong>(User Datagram Protocol)&quot;, 简称 <strong>UDP</strong>。</p>
+<p>UDP中一个最重要的信息是 <strong>端口号</strong>，端口号其实就是一个数字，每个想访问网络的程序都需要绑定一个端口号。通过端口号UDP就能把指定的数据包发送给指定的程序了，所以 <strong>IP通过IP地址信息把数据包发送给指定的电脑，而UDP通过端口号把数据包分发给正确地程序。</strong> 和IP头一样，端口号会被装进UDP头里面，UDP头再和原始数据包合并组成新的UDP包。UDP头中除了目的端口，还有源端口号等信息。</p>
+<p>为了支持 UDP 协议，我把前面的三层结构扩充为四层结构，在网络层和上层之间增加了传输层，如下图所示：</p>
+<p><img src="./images2/img2.webp" alt="简化的UDP网络四层传输模型" title="简化的UDP网络四层传输模型"></p>
+<p>下面我们一起来看下一个数据包从主机 A 旅行到主机 B 的路线：</p>
+<ul>
+<li>上层将含有“极客时间”的数据包交给传输层；</li>
+<li>传输层会在数据包前面附加上 UDP 头，组成新的 UDP 数据包，再将新的 UDP 数据包交给网络层；</li>
+<li>网络层再将 IP 头附加到数据包上，组成新的 IP 数据包，并交给底层；</li>
+<li>数据包被传输到主机 B 的网络层，在这里主机 B 拆开 IP 头信息，并将拆开来的数据部分交给传输层；</li>
+<li>在传输层，数据包中的 UDP 头会被拆开，<strong>并根据 UDP 中所提供的端口号，把数据部分交给上层的应用程序；</strong></li>
+<li>最终，含有“极客时间”信息的数据包就旅行到了主机 B 上层应用程序这里。</li>
+</ul>
+<p>在使用UDP发送数据时，有各种因素会导致数据包出错，虽然UDP可以校验数据是否正确，但是对于错误的数据包，UDP并不提供重发机制，只是丢弃当前的包，而且UDP在发送之后也无法知道是否能达到目的地。</p>
+<p>虽说 <strong>UDP不能保证数据可靠性，但是传输速度却非常快,</strong> 所以UDP会应用在一些关注速度、但不那么严格要求数据完整性的领域，如在线视频、互动游戏等。</p>
+<p><strong>3. TCP：把数据完整地送达应用程序</strong>
+对于浏览器请求，或者邮件这类要求数据传输可靠性的应用，如果使用UDP来传输会存在 <strong>两个问题：</strong></p>
+<ul>
+<li>数据包在传输过程中容易丢失；</li>
+<li>大文件会被拆分成很多小的数据包来传输，这些小的数据包会经过不同的路由，并在不同的时间到达接收端，而UDP协议并不知道如何组装这些数据包，从而把这些数据包还原成完整地文件。</li>
+</ul>
+<p>基于这两个问题，我们引入TCP协议。<strong>TCP（Transmission Control Protocol，传输控制协议）是一种面向连接的、可靠的、基于字节流的传输层通信协议。</strong> 相对于 UDP，TCP 有下面两个特点:</p>
+<ul>
+<li>对于数据包丢失的情况，TCP提供重传机制</li>
+<li>TCP引入了数据包排序机制，用来保证把乱序的数据包组合成一个完整的文件。</li>
+</ul>
+<p>和 UDP 头一样，TCP 头除了包含了目标端口和本机端口号外，还提供了用于排序的序列号，以便接收端通过序号来重排数据包。</p>
+<p>下面看看 TCP 下的单个数据包的传输流程：</p>
+<p><img src="./images2/img3.webp" alt="简化的TCP网络四层传输模型" title="简化的TCP网络四层传输模型"></p>
+<p>通过上图，可以了解一个数据包是如何通过TCP来传输的。TCP单个数据包的传输流程和UDP流程差不多，不同在于，通过TCP头的信息保证了一块大的数据传输的完整性。</p>
+<p>下面我们再看下完整的 TCP 连接过程，通过这个过程你可以明白 TCP 是如何保证重传机制和数据包的排序功能的。</p>
+<p>从下图可以看出，一个完整的 TCP 连接的生命周期包括了“建立连接”“传输数据”和“断开连接”三个阶段。</p>
+<p><img src="./images2/img4.webp" alt="一个TCP连接的生命周期" title="一个TCP连接的生命周期"></p>
+<ul>
+<li><strong>首先，建立连接阶段。</strong> 这个阶段是通过“三次握手”来建立客户端和服务器之间的连接。TCP 提供面向连接的通信传输。<strong>面向连接</strong> 是指在数据通信开始之前先做好两端之间的准备工作。所谓 <strong>三次握手</strong>，是指在建立一个 TCP 连接时，客户端和服务器总共要发送三个数据包以确认连接的建立。</li>
+<li><strong>其次，传输数据阶段</strong>。在该阶段，<strong>接收端需要对每个数据包进行确认操作，</strong> 也就是接收端在接受到数据包之后，需要发送确认数据包给发送端。所以当发送端发送一个数据包之后，在规定的时间内没有接收到接收端反馈的确认消息，则判断为数据包丢失，并触发发送端的重发机制。同样，一个大的文件在传输过程中会被拆分成很多小的数据包，这些数据包到达接收端后，接收端会按照TCP头中的序号为其排序，从而保证组成完整的数据。</li>
+<li><strong>最后，断开连接阶段。</strong> 数据传输完毕后，就要终止连接了，涉及到最后一个阶段&quot;四次挥手&quot;来保证双方都能断开连接。</li>
+</ul>
+<p>到这里你应该就明白了，TCP 为了保证数据传输的可靠性，牺牲了数据包的传输速度，因为“三次握手”和“数据包校验机制”等把传输过程中的数据包的数量提高了一倍。</p>
+
+</body>
+</html>
