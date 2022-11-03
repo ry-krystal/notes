@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>渲染器的基本概念.md</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+
+<style>
+/* https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/media/markdown.css */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+body {
+	font-family: var(--vscode-markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif);
+	font-size: var(--vscode-markdown-font-size, 14px);
+	padding: 0 26px;
+	line-height: var(--vscode-markdown-line-height, 22px);
+	word-wrap: break-word;
+}
+
+#code-csp-warning {
+	position: fixed;
+	top: 0;
+	right: 0;
+	color: white;
+	margin: 16px;
+	text-align: center;
+	font-size: 12px;
+	font-family: sans-serif;
+	background-color:#444444;
+	cursor: pointer;
+	padding: 6px;
+	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+}
+
+#code-csp-warning:hover {
+	text-decoration: none;
+	background-color:#007acc;
+	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
+}
+
+body.scrollBeyondLastLine {
+	margin-bottom: calc(100vh - 22px);
+}
+
+body.showEditorSelection .code-line {
+	position: relative;
+}
+
+body.showEditorSelection .code-active-line:before,
+body.showEditorSelection .code-line:hover:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: -12px;
+	height: 100%;
+}
+
+body.showEditorSelection li.code-active-line:before,
+body.showEditorSelection li.code-line:hover:before {
+	left: -30px;
+}
+
+.vscode-light.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.vscode-light.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.40);
+}
+
+.vscode-light.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-dark.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.vscode-dark.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.60);
+}
+
+.vscode-dark.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-high-contrast.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 160, 0, 0.7);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 160, 0, 1);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+a {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 1px solid -webkit-focus-ring-color;
+	outline-offset: -1px;
+}
+
+hr {
+	border: 0;
+	height: 2px;
+	border-bottom: 2px solid;
+}
+
+h1 {
+	padding-bottom: 0.3em;
+	line-height: 1.2;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+h1, h2, h3 {
+	font-weight: normal;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table > thead > tr > th {
+	text-align: left;
+	border-bottom: 1px solid;
+}
+
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td {
+	padding: 5px 10px;
+}
+
+table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+blockquote {
+	margin: 0 7px 0 5px;
+	padding: 0 16px 0 10px;
+	border-left-width: 5px;
+	border-left-style: solid;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 1em;
+	line-height: 1.357em;
+}
+
+body.wordWrap pre {
+	white-space: pre-wrap;
+}
+
+pre:not(.hljs),
+pre.hljs code > div {
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+pre code {
+	color: var(--vscode-editor-foreground);
+	tab-size: 4;
+}
+
+/** Theming */
+
+.vscode-light pre {
+	background-color: rgba(220, 220, 220, 0.4);
+}
+
+.vscode-dark pre {
+	background-color: rgba(10, 10, 10, 0.4);
+}
+
+.vscode-high-contrast pre {
+	background-color: rgb(0, 0, 0);
+}
+
+.vscode-high-contrast h1 {
+	border-color: rgb(0, 0, 0);
+}
+
+.vscode-light table > thead > tr > th {
+	border-color: rgba(0, 0, 0, 0.69);
+}
+
+.vscode-dark table > thead > tr > th {
+	border-color: rgba(255, 255, 255, 0.69);
+}
+
+.vscode-light h1,
+.vscode-light hr,
+.vscode-light table > tbody > tr + tr > td {
+	border-color: rgba(0, 0, 0, 0.18);
+}
+
+.vscode-dark h1,
+.vscode-dark hr,
+.vscode-dark table > tbody > tr + tr > td {
+	border-color: rgba(255, 255, 255, 0.18);
+}
+
+</style>
+
+<style>
+/* Tomorrow Theme */
+/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+/* Original theme - https://github.com/chriskempson/tomorrow-theme */
+
+/* Tomorrow Comment */
+.hljs-comment,
+.hljs-quote {
+	color: #8e908c;
+}
+
+/* Tomorrow Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+	color: #c82829;
+}
+
+/* Tomorrow Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+	color: #f5871f;
+}
+
+/* Tomorrow Yellow */
+.hljs-attribute {
+	color: #eab700;
+}
+
+/* Tomorrow Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+	color: #718c00;
+}
+
+/* Tomorrow Blue */
+.hljs-title,
+.hljs-section {
+	color: #4271ae;
+}
+
+/* Tomorrow Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+	color: #8959a8;
+}
+
+.hljs {
+	display: block;
+	overflow-x: auto;
+	color: #4d4d4c;
+	padding: 0.5em;
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: bold;
+}
+</style>
+
+<style>
+/*
+ * Markdown PDF CSS
+ */
+
+ body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "Meiryo";
+	padding: 0 12px;
+}
+
+pre {
+	background-color: #f8f8f8;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+pre:not(.hljs) {
+	padding: 23px;
+	line-height: 19px;
+}
+
+blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.emoji {
+	height: 1.4em;
+}
+
+code {
+	font-size: 14px;
+	line-height: 19px;
+}
+
+/* for inline code */
+:not(pre):not(.hljs) > code {
+	color: #C9AE75; /* Change the old color so it seems less like an error */
+	font-size: inherit;
+}
+
+/* Page Break : use <div class="page"/> to insert page break
+-------------------------------------------------------- */
+.page {
+	page-break-after: always;
+}
+
+</style>
+
+<script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
+</head>
+<body>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: document.body.classList.contains('vscode-dark') || document.body.classList.contains('vscode-high-contrast')
+          ? 'dark'
+          : 'default'
+    });
+  </script>
+<!--
+ * @Description: 渲染器的基本概念
+-->
+<h4 id="%E6%B8%B2%E6%9F%93%E5%99%A8%E7%9A%84%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5">渲染器的基本概念</h4>
+<ol>
+<li><strong>渲染器的作用是把虚拟DOM渲染为特定平台上的真实元素。在浏览器平台上，渲染器会把虚拟DOM渲染为真实DOM元素。</strong></li>
+<li><strong>渲染器把虚拟DOM节点渲染为真实DOM节点的过程叫做挂载。</strong></li>
+<li>渲染器把真实DOM挂载到哪里呢？其实渲染器并不知道应该把真实DOM挂载掉哪里。因此，<strong>渲染器通常需要接收一个挂载点作为参数，用来指定具体的挂载位置。这里的“挂载点”其实就是一个DOM元素，渲染器会把该DOM元素作为容器元素，并把内容渲染到其中。</strong>
+为了便于理解，举例说明：</li>
+</ol>
+<pre class="hljs"><code><div>  <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">createRenderer</span>(<span class="hljs-params"></span>) </span>{
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">render</span>(<span class="hljs-params">vnode, container</span>) </span>{
+      <span class="hljs-comment">// ...</span>
+    }
+    <span class="hljs-keyword">return</span> render
+  }
+</div></code></pre>
+<p>为什么需要createRenderer函数呢？直接定义render不就好了吗？其实不然，正如上文提到的，渲染器与渲染不同的。渲染器是更加宽泛的概念，它包含渲染。<strong>渲染器不仅可以用来渲染，还可以用来激活已有的DOM元素，这个过程通常发生在同构渲染的情况下</strong>,如下所示：</p>
+<pre class="hljs"><code><div>  <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">createRenderer</span>(<span class="hljs-params"></span>) </span>{
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">render</span>(<span class="hljs-params">vnode, container</span>) </span>{
+      <span class="hljs-comment">// ...</span>
+    }
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">hydrate</span>(<span class="hljs-params">vnode, container</span>) </span>{
+      <span class="hljs-comment">// ...</span>
+    }
+
+    <span class="hljs-keyword">return</span> {
+      render,
+      hydrate
+    }
+  }
+</div></code></pre>
+<p>可以看到，当调用createRenderer函数创建渲染器时，<strong>渲染器不仅包含render函数，还包含hydrate函数。这个例子说明，渲染器的内容非常广泛，而用来把vnode渲染为真实DOM的render函数只是其中一部分。</strong> 实际上，在Vue.js 3中，甚至连创建应用的createApp函数也是渲染器的一部分。
+有了渲染器，我们就可以用它来执行任务了：</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> renderer = createRenderer()
+  <span class="hljs-comment">// 首次渲染</span>
+  renderer.render(vnode, <span class="hljs-built_in">document</span>.querySelector(<span class="hljs-string">'#app'</span>))
+</div></code></pre>
+<p>当首次调用renderer.render函数时，只需要创建新的DOM元素即可，这个过程只涉及挂载。
+而当多次在同一个container上调用renderer.render函数进行渲染时，渲染器除了要执行挂载动作外，还要执行更新动作。</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> renderer = createRenderer()
+  <span class="hljs-comment">// 首次渲染</span>
+  renderer.render(oldVNode, <span class="hljs-built_in">document</span>.querySelector(<span class="hljs-string">'#app'</span>))
+  <span class="hljs-comment">// 再次渲染</span>
+  renderer.render(newVNode, <span class="hljs-built_in">document</span>.querySelector(<span class="hljs-string">'#app'</span>))
+</div></code></pre>
+<p>由于首次渲染时已经把oldVNode渲染到container内了，所以当再次调用renderer.render函数并尝试渲染newVNode时，就不能简单地执行挂载动作了。在这种情况下，<strong>渲染器会使用newVNode与上一次渲染的oldVNode进行比较，试图找到并更新变更点。这个过程叫作“打补丁”（或更新），英文通常叫patch。但实际上，挂载动作本身也可以看作一种特殊的打补丁，它的特殊之处在与旧的vnode是不存在的。</strong> 所以我们不必过于纠结“挂载”和“打补丁”这两个概念。代码如下：</p>
+<pre class="hljs"><code><div>  <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">createRenderer</span>(<span class="hljs-params"></span>) </span>{
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">render</span>(<span class="hljs-params">vnode, container</span>) </span>{
+      <span class="hljs-keyword">if</span> (vnode) {
+        <span class="hljs-comment">// 新vnode存在，将其与旧vnode一起传递给patch函数，进行打补丁</span>
+        patch(container._vnode, vnode, container)
+      } <span class="hljs-keyword">else</span> {
+        <span class="hljs-comment">// 旧vnode存在，且新vnode不存在，说明是卸载（unmount）操作</span>
+        <span class="hljs-comment">// 只需要将container内的DOM清空即可</span>
+        container.innerHTML = <span class="hljs-string">''</span>
+      }
+      <span class="hljs-comment">// 把vnode存储到container._vnode下，即后续渲染中的旧vnode</span>
+      container._vnode = vnode
+    }
+
+    <span class="hljs-keyword">return</span> {
+      render
+    }
+  }
+</div></code></pre>
+<p>我们可以配合下面的代码分析其执行流程，从而更好地理解render函数的实现思路。假设我们连续三次调用renderer.render函数来执行渲染：</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> renderer = createRenderer()
+  <span class="hljs-keyword">const</span> app = <span class="hljs-built_in">document</span>.querySelector(<span class="hljs-string">'#app'</span>)
+  <span class="hljs-comment">// 首次渲染</span>
+  renderer.render(vnode1, app)
+  <span class="hljs-comment">// 第二次渲染</span>
+  renderer.render(vnode2, app)
+  <span class="hljs-comment">// 第三次渲染</span>
+  renderer.render(vnode3, app)
+</div></code></pre>
+<ul>
+<li>在首次渲染时，渲染器会将vnode1渲染为真实DOM。渲染完成后，vnode1会存储到容器元素的container._vnode属性中，它会在后续渲染中作为旧vnode使用。</li>
+<li>在第二次渲染时，旧vnode存在，此时渲染器会把vnode2作为新vnode,并将新旧vnode一同传递给patch函数进行打补丁。</li>
+<li>在第三次渲染时，新vnode的值为null,即什么都不渲染。但此时容器中渲染的是vnode2所描述的内容，所以渲染器需要清空容器。我们使用container.innerHTML= ''来清空容器。需要注意的是，这样清空容器是有问题的，不过这里我们暂时使用它来达到目的。</li>
+</ul>
+<p>我们并没有给出patch的具体实现，但仍然可以窥探patch函数的部分细节。实际上，patch函数是整个渲染器的核心入口，它承载了最重要的渲染逻辑。这里对它做一些初步的解释。patch函数至少接收三个参数：</p>
+<pre class="hljs"><code><div>  <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">patch</span>(<span class="hljs-params">n1, n2, container</span>) </span>{
+    <span class="hljs-comment">// ...</span>
+  }
+</div></code></pre>
+<ul>
+<li>第一个参数n1: 旧vnode</li>
+<li>第二个参数n2: 新vnode</li>
+<li>第三个参数container: 容器</li>
+</ul>
+<p>在首次渲染时，容器元素的container._vnode属性是不存在，即undefined。这意味着，在首次渲染时传递给patch函数的第一个参数n1也是undefined。这时，patch函数会执行挂载动作，它会忽略n1, 并直接将n2所描述的内容渲染到容器中。从这一点可以看出，patch函数不仅可以用来完成打补丁，也可以用来执行挂载。</p>
+
+</body>
+</html>

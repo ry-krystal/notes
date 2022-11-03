@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>原始值的响应式方案.md</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+
+<style>
+/* https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/media/markdown.css */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+body {
+	font-family: var(--vscode-markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif);
+	font-size: var(--vscode-markdown-font-size, 14px);
+	padding: 0 26px;
+	line-height: var(--vscode-markdown-line-height, 22px);
+	word-wrap: break-word;
+}
+
+#code-csp-warning {
+	position: fixed;
+	top: 0;
+	right: 0;
+	color: white;
+	margin: 16px;
+	text-align: center;
+	font-size: 12px;
+	font-family: sans-serif;
+	background-color:#444444;
+	cursor: pointer;
+	padding: 6px;
+	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+}
+
+#code-csp-warning:hover {
+	text-decoration: none;
+	background-color:#007acc;
+	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
+}
+
+body.scrollBeyondLastLine {
+	margin-bottom: calc(100vh - 22px);
+}
+
+body.showEditorSelection .code-line {
+	position: relative;
+}
+
+body.showEditorSelection .code-active-line:before,
+body.showEditorSelection .code-line:hover:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: -12px;
+	height: 100%;
+}
+
+body.showEditorSelection li.code-active-line:before,
+body.showEditorSelection li.code-line:hover:before {
+	left: -30px;
+}
+
+.vscode-light.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.vscode-light.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.40);
+}
+
+.vscode-light.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-dark.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.vscode-dark.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.60);
+}
+
+.vscode-dark.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-high-contrast.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 160, 0, 0.7);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 160, 0, 1);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+a {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 1px solid -webkit-focus-ring-color;
+	outline-offset: -1px;
+}
+
+hr {
+	border: 0;
+	height: 2px;
+	border-bottom: 2px solid;
+}
+
+h1 {
+	padding-bottom: 0.3em;
+	line-height: 1.2;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+h1, h2, h3 {
+	font-weight: normal;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table > thead > tr > th {
+	text-align: left;
+	border-bottom: 1px solid;
+}
+
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td {
+	padding: 5px 10px;
+}
+
+table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+blockquote {
+	margin: 0 7px 0 5px;
+	padding: 0 16px 0 10px;
+	border-left-width: 5px;
+	border-left-style: solid;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 1em;
+	line-height: 1.357em;
+}
+
+body.wordWrap pre {
+	white-space: pre-wrap;
+}
+
+pre:not(.hljs),
+pre.hljs code > div {
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+pre code {
+	color: var(--vscode-editor-foreground);
+	tab-size: 4;
+}
+
+/** Theming */
+
+.vscode-light pre {
+	background-color: rgba(220, 220, 220, 0.4);
+}
+
+.vscode-dark pre {
+	background-color: rgba(10, 10, 10, 0.4);
+}
+
+.vscode-high-contrast pre {
+	background-color: rgb(0, 0, 0);
+}
+
+.vscode-high-contrast h1 {
+	border-color: rgb(0, 0, 0);
+}
+
+.vscode-light table > thead > tr > th {
+	border-color: rgba(0, 0, 0, 0.69);
+}
+
+.vscode-dark table > thead > tr > th {
+	border-color: rgba(255, 255, 255, 0.69);
+}
+
+.vscode-light h1,
+.vscode-light hr,
+.vscode-light table > tbody > tr + tr > td {
+	border-color: rgba(0, 0, 0, 0.18);
+}
+
+.vscode-dark h1,
+.vscode-dark hr,
+.vscode-dark table > tbody > tr + tr > td {
+	border-color: rgba(255, 255, 255, 0.18);
+}
+
+</style>
+
+<style>
+/* Tomorrow Theme */
+/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+/* Original theme - https://github.com/chriskempson/tomorrow-theme */
+
+/* Tomorrow Comment */
+.hljs-comment,
+.hljs-quote {
+	color: #8e908c;
+}
+
+/* Tomorrow Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+	color: #c82829;
+}
+
+/* Tomorrow Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+	color: #f5871f;
+}
+
+/* Tomorrow Yellow */
+.hljs-attribute {
+	color: #eab700;
+}
+
+/* Tomorrow Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+	color: #718c00;
+}
+
+/* Tomorrow Blue */
+.hljs-title,
+.hljs-section {
+	color: #4271ae;
+}
+
+/* Tomorrow Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+	color: #8959a8;
+}
+
+.hljs {
+	display: block;
+	overflow-x: auto;
+	color: #4d4d4c;
+	padding: 0.5em;
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: bold;
+}
+</style>
+
+<style>
+/*
+ * Markdown PDF CSS
+ */
+
+ body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "Meiryo";
+	padding: 0 12px;
+}
+
+pre {
+	background-color: #f8f8f8;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+pre:not(.hljs) {
+	padding: 23px;
+	line-height: 19px;
+}
+
+blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.emoji {
+	height: 1.4em;
+}
+
+code {
+	font-size: 14px;
+	line-height: 19px;
+}
+
+/* for inline code */
+:not(pre):not(.hljs) > code {
+	color: #C9AE75; /* Change the old color so it seems less like an error */
+	font-size: inherit;
+}
+
+/* Page Break : use <div class="page"/> to insert page break
+-------------------------------------------------------- */
+.page {
+	page-break-after: always;
+}
+
+</style>
+
+<script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
+</head>
+<body>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: document.body.classList.contains('vscode-dark') || document.body.classList.contains('vscode-high-contrast')
+          ? 'dark'
+          : 'default'
+    });
+  </script>
+<!--
+ * @Description: 原始值的响应式方案
+-->
+<h4 id="%E5%8E%9F%E5%A7%8B%E5%80%BC%E7%9A%84%E5%93%8D%E5%BA%94%E5%BC%8F%E6%96%B9%E6%A1%88">原始值的响应式方案</h4>
+<p>原始值值的是Boolean、Number、BigInt、String、Symbol、undefined和null等类型的值。在JavaScript中，原始值是按值传递的，而非按引用传递。这意味着，如果一个函数接收原始值作为参数，那么形参和实参之间没有引用关系，它们是两个完全独立的值，对形参的修改不会影响实参。另外，JavaScript中的Proxy无法提供对原始值的代理，因此想要将原始值变成响应式数据，就必须对其做一层包裹，也就是我们接下来的ref。</p>
+<p><strong>1. 引入ref的概念</strong>
+由于Proxy的代理目标必须是非原始值，所以我们没有任何手段拦截对原始值的操作，例如：</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">let</span> str = <span class="hljs-string">'vue'</span>
+  <span class="hljs-comment">// 无法拦截对值的修改</span>
+  str = <span class="hljs-string">'vue3'</span>
+</div></code></pre>
+<p>对于这个问题，我们能想到的唯一办法是，使用一个非原始值去‘包裹’原始值，例如使用一个对象包裹原始值：</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> wrapper = {
+    <span class="hljs-attr">value</span>: <span class="hljs-string">'vue'</span>
+  }
+  <span class="hljs-comment">// 可以使用Proxy代理wrapper，间接实现对原始值的拦截</span>
+  <span class="hljs-keyword">const</span> name = reactive(wrapper)
+  name.value <span class="hljs-comment">// vue</span>
+  <span class="hljs-comment">// 修改值可以触发响应</span>
+  name.value = <span class="hljs-string">'vue3'</span>
+</div></code></pre>
+<p>但这样做会导致两个问题：</p>
+<ul>
+<li>用户为了创建一个响应式的原始值，不得不顺带创建一个包裹对象；</li>
+<li>包裹对象由用户定义，而这意味着不规范。用户可以随意命名，例如：wrapper.value、 wrapper.val都是可以的。</li>
+</ul>
+<p>为了解决这两个问题，我们可以封装一个函数，将包裹对象的创建工作都封装到该函数中：</p>
+<pre class="hljs"><code><div>  <span class="hljs-comment">// 封装一个ref函数</span>
+  <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">ref</span>(<span class="hljs-params">val</span>) </span>{
+    <span class="hljs-comment">// 在ref函数内部创建包裹对象</span>
+    <span class="hljs-keyword">const</span> wrapper = {
+      <span class="hljs-attr">value</span>: val
+    }
+    <span class="hljs-comment">// 将包裹对戏那个变成响应式</span>
+    <span class="hljs-keyword">return</span> reactive(wrapper)
+  }
+</div></code></pre>
+<p>我们把创建wrapper对象的工作封装到ref函数内部，然后使用reactive函数将包裹对象变成响应式数据并返回。这样我们就解决了上述两个问题。运行如下测试代码：</p>
+<pre class="hljs"><code><div>  <span class="hljs-comment">// 创建原始值的响应式数据</span>
+  <span class="hljs-keyword">const</span> refVal = ref(<span class="hljs-number">1</span>)
+
+  effect(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
+    <span class="hljs-comment">// 在副作用函数内通过value属性获取原始值</span>
+    <span class="hljs-built_in">console</span>.log(refVal.value)
+  })
+  <span class="hljs-comment">// 修改值能够触发副作用函数重新执行</span>
+  refVal.value = <span class="hljs-number">2</span>
+</div></code></pre>
+<p>现在是否一切都完美了呢？并不是，接下来我们面临的第一个问题是，如何区分refVal到底是原始值的包裹对象，还是一个非原始值的响应式数据，如以下代码所示：</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> refVal1 = ref(<span class="hljs-number">1</span>)
+  <span class="hljs-keyword">const</span> refVal2 = reactive({ <span class="hljs-attr">value</span>: <span class="hljs-number">1</span> })
+</div></code></pre>
+<p>refVal1和refVal2有什么区别呢？从我们实现来看，它们没有任何区别。但是，我们有必要区分一个数据到底是不是ref,因为涉及自动脱ref能力。
+要想区分一个数据是否是ref很简单：</p>
+<pre class="hljs"><code><div>  <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">ref</span>(<span class="hljs-params">val</span>) </span>{
+    <span class="hljs-keyword">const</span> wrapper = {
+      <span class="hljs-attr">value</span>: val
+    }
+    <span class="hljs-comment">// 使用Object.defineProperty在wrapper对象上定义一个不可枚举的属性__v_isRef, 并且值为true</span>
+    <span class="hljs-built_in">Object</span>.defineProperty(wrapper, <span class="hljs-string">'__v_isRef'</span>, {
+      <span class="hljs-attr">value</span>: <span class="hljs-literal">true</span>
+    })
+
+    <span class="hljs-keyword">return</span> reactive(wrapper)
+  }
+</div></code></pre>
+<p>我们使用Object.defineProperty为包裹对象wrapper定义了一个不可枚举且不可写的属性__v_isRef，它的值为true,代表这个对象是一个ref,而非普通对象。</p>
+<p><strong>2. 响应丢失问题</strong>
+ref除了能够用于原始值的响应式方案之外，还能用来解决响应丢失的问题。首先，我们来看什么是响应丢失问题。在Vue组件中，我们通常把数据暴露到模板中使用，例如：</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> {
+    setup() {
+      <span class="hljs-comment">// 响应式数据</span>
+      <span class="hljs-keyword">const</span> obj = reactive({
+        <span class="hljs-attr">foo</span>: <span class="hljs-number">1</span>,
+        <span class="hljs-attr">bar</span>: <span class="hljs-number">2</span>
+      })
+      
+      <span class="hljs-comment">// 将数据暴露到模板中</span>
+      <span class="hljs-keyword">return</span> {
+        ...obj
+      }
+    }
+  }
+</div></code></pre>
+<p>接着我们就可以在模板中访问从setup中暴露出来的数据：</p>
+<pre class="hljs"><code><div>  <span class="hljs-tag">&lt;<span class="hljs-name">template</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>{{ foo }} / {{ bar }}<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-name">template</span>&gt;</span>
+</div></code></pre>
+<p>然而，这么做会导致响应丢失。其表现是，当我们修改响应式数据的值时，不会触发重新渲染：</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> {
+    setup() {
+      <span class="hljs-comment">// 响应式数据</span>
+      <span class="hljs-keyword">const</span> obj = reactive({
+        <span class="hljs-attr">foo</span>: <span class="hljs-number">1</span>,
+        <span class="hljs-attr">bar</span>: <span class="hljs-number">2</span>
+      })
+
+      <span class="hljs-comment">// 1s后修改响应式数据的值，不会触发重新渲染</span>
+      setTimeout(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
+        obj.foo = <span class="hljs-number">100</span>
+      }, <span class="hljs-number">1000</span>)
+
+      <span class="hljs-keyword">return</span> {
+        ...obj
+      }
+    }
+  }
+</div></code></pre>
+<p>为什么会导致响应丢失呢？这是由展开运算符(...)导致的。实际上，下面代码：</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">return</span> {
+    ...obj
+  }
+  
+  <span class="hljs-comment">// 等价于</span>
+
+  <span class="hljs-keyword">return</span> {
+    <span class="hljs-attr">foo</span>: <span class="hljs-number">1</span>,
+    <span class="hljs-attr">bar</span>: <span class="hljs-number">2</span>
+  }
+</div></code></pre>
+<p>可以发现，这其实就是返回的一个普通对象，它不具有任何响应式能力。把一个普通对象暴露到模板中使用，是不会在渲染函数与响应式数据之间建立响应联系的。所以当我们尝试在一个定时器中修改obj.foo的值时，不会触发重新渲染。我们可以用另一种方式来描述响应丢失问题：</p>
+<pre class="hljs"><code><div>  <span class="hljs-comment">// obj 是响应式数据</span>
+  <span class="hljs-keyword">const</span> obj = reactive({
+    <span class="hljs-attr">foo</span>: <span class="hljs-number">1</span>,
+    <span class="hljs-attr">bar</span>: <span class="hljs-number">2</span>
+  })
+
+  <span class="hljs-comment">// 将响应式数据展开到一个新的对象newObj</span>
+  <span class="hljs-keyword">const</span> newObj = {
+    ...obj
+  }
+
+  effect(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
+    <span class="hljs-comment">// 在副作用函数内通过新的对新的对象newObj读取foo的属性值</span>
+    <span class="hljs-built_in">console</span>.log(newObj.foo)
+  })
+
+  <span class="hljs-comment">// 很显然，此时修改obj.foo并不会触发响应</span>
+  obj.foo = <span class="hljs-number">100</span>
+</div></code></pre>
+<p>副作用函数内访问的是普通对象newObj，它没有任何响应能力。</p>
+<p>如何解决这个问题呢？换句话说。有没有办法能够帮助我们实现：在副作用函数内，即使通过普通对象newObj来访问属性值，也能建立响应联系？其实是可以的，代码如下：</p>
+<pre class="hljs"><code><div>  <span class="hljs-comment">// obj是响应式数据</span>
+  <span class="hljs-keyword">const</span> obj = reactive({
+    <span class="hljs-attr">foo</span>: <span class="hljs-number">1</span>,
+    <span class="hljs-attr">bar</span>: <span class="hljs-number">2</span>
+  })
+
+  <span class="hljs-comment">// newObj对象下具有与obj对象同名的属性，并且每个属性都是一个对象</span>
+  <span class="hljs-comment">// 该对象具有一个访问器属性value,当读取value的值时，其实读取的是obj对象下的相应的属性值</span>
+  <span class="hljs-keyword">const</span> newObj = {
+    <span class="hljs-attr">foo</span>: {
+      <span class="hljs-keyword">get</span> value() {
+        <span class="hljs-keyword">return</span> obj.foo
+      }
+    },
+    <span class="hljs-attr">bar</span>: {
+      <span class="hljs-keyword">get</span> value() {
+        <span class="hljs-keyword">return</span> obj.bar
+      }
+    }
+  }
+
+  effect(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
+    <span class="hljs-comment">// 在副作用那函数内通过新的对象newObj读取foo属性值</span>
+    <span class="hljs-built_in">console</span>.log(newObj.foo)
+  })
+
+  <span class="hljs-comment">// 这时能够触发响应了</span>
+  obj.foo = <span class="hljs-number">100</span>
+</div></code></pre>
+<p>在上面这段代码中，我们修改了newObj对象的实现方式。可以看到，在现在的newObj对象下，具有与obj对象同名的属性，而且每个属性的值都是一个对象，例如foo属性的值是：</p>
+<pre class="hljs"><code><div>  {
+    <span class="hljs-keyword">get</span> value() {
+      <span class="hljs-keyword">return</span> obj.foo
+    }
+  }
+</div></code></pre>
+<p>该对戏那个有一个访问器属性value，当读取value的值时，最终读取的是响应式数据obj下的同名属性值。也就是说，当在副作用函数内读取newObj.foo时，等价于间接读取了obj.foo的值。这样响应式数据自然能够与副作用函数建立响应联系。于是，当我们尝试修改obj.foo的值时，能够触发副作用函数重新执行。</p>
+<p>foo和bar这两个属性的结构非常像，这启发我们将这种抽象出来并封装成函数，如下所示：</p>
+<pre class="hljs"><code><div>  <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">toRef</span>(<span class="hljs-params">obj, key</span>) </span>{
+    <span class="hljs-keyword">const</span> wrapper = {
+      <span class="hljs-keyword">get</span> value() {
+        <span class="hljs-keyword">return</span> obj[key]
+      }
+    }
+    <span class="hljs-keyword">return</span> wrapper
+  }
+</div></code></pre>
+<p>toRef函数接收两个参数，第一个参数obj是一个响应式数据，第二个参数是obj对象的一个键。该函数会返回一个类似于ref结构的wrapper对象。有了toRef函数后，我们就可以重新实现newObj对象了：</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> newObj = {
+    <span class="hljs-attr">foo</span>: toRef(obj, <span class="hljs-string">'foo'</span>),
+    <span class="hljs-attr">bar</span>: toRef(obj, <span class="hljs-string">'bar'</span>)
+  }
+</div></code></pre>
+<p>可以看到，代码非常简洁。但如果响应式数据obj的键非常多，我们还是要花费很大力气来做这一层转换。为此，我们可以封装toRefs函数，来批量地完成转换：</p>
+<pre class="hljs"><code><div>  <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">toRefs</span>(<span class="hljs-params">obj</span>) </span>{
+    <span class="hljs-keyword">const</span> ret = {}
+    <span class="hljs-comment">// 使用for...in循环遍历对象</span>
+    <span class="hljs-keyword">for</span>(<span class="hljs-keyword">const</span> key <span class="hljs-keyword">in</span> obj) {
+      <span class="hljs-comment">// 逐个调用toRef完成转换</span>
+      ret[key] = toRef(obj, key)
+    }
+    <span class="hljs-keyword">return</span> ret
+  }
+</div></code></pre>
+<p>现在，我们只需要一步操作即可完成对一个对象的转换：</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> newObj = {
+    ...toRefs(obj)
+  }
+</div></code></pre>
+<p>测试代码：</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> obj = reactive({
+    <span class="hljs-attr">foo</span>: <span class="hljs-number">1</span>, 
+    <span class="hljs-attr">bar</span>: <span class="hljs-number">2</span>
+  })
+
+  <span class="hljs-keyword">const</span> newObj = {
+    ...toRefs(obj)
+  }
+  <span class="hljs-built_in">console</span>.log(newObj.foo.value) <span class="hljs-comment">// 1</span>
+  <span class="hljs-built_in">console</span>.log(newObj.bar.value) <span class="hljs-comment">// 2</span>
+</div></code></pre>
+<p>现在，响应丢失问题被我们彻底解决了。<strong>解决问题的思路是，将响应式数据转换成类似于ref结构的数据。</strong> 但为了概念上的统一，我们会将通过toRef或toRefs转换后得到的结果视为真正的ref数据，为此我们需要为toRef函数增加一段代码：</p>
+<pre class="hljs"><code><div>  <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">toRef</span>(<span class="hljs-params">obj, key</span>) </span>{
+    <span class="hljs-keyword">const</span> wrapper = {
+      <span class="hljs-keyword">get</span> value() {
+        <span class="hljs-keyword">return</span> obj[key]
+      }
+    }
+    <span class="hljs-comment">// 定义__v_isRef属性</span>
+    <span class="hljs-built_in">Object</span>.defineProperty(wrapper, <span class="hljs-string">'__v_isRef'</span>, {
+      <span class="hljs-attr">value</span>: <span class="hljs-literal">true</span>
+    })
+
+    <span class="hljs-keyword">return</span> wrapper
+  }
+</div></code></pre>
+<p>可以看到，我们使用Object.defineProperty函数为wrapper对象定义了__v_isRef属性。这样，toRef函数的返回值就是真正意义上的ref了。通过上述讲解我们能注意到，<strong>ref的作用不仅仅是实现原始值的响应式方案，它还用来解决响应丢失的问题。</strong></p>
+<p>但实现的toRef函数存在缺陷，即 <strong>通过toRef函数创建的ref是只读的</strong>，如下面的代码所示：</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> obj = reactive({
+    <span class="hljs-attr">foo</span>: <span class="hljs-number">1</span>,
+    <span class="hljs-attr">bar</span>: <span class="hljs-number">2</span>
+  })
+  <span class="hljs-keyword">const</span> refFoo = toRef(obj, <span class="hljs-string">'foo'</span>)
+
+  refFoo.value = <span class="hljs-number">100</span> <span class="hljs-comment">// 无效</span>
+</div></code></pre>
+<p>这是因为toRef返回的wrapper对象的value属性只有getter,没有setter。我们应该为它加上setter函数，所以最终实现如下：</p>
+<pre class="hljs"><code><div>  <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">toRef</span>(<span class="hljs-params">obj, key</span>) </span>{
+    <span class="hljs-keyword">const</span> wrapper = {
+      <span class="hljs-keyword">get</span> value() {
+        <span class="hljs-keyword">return</span> obj[key]
+      },
+      <span class="hljs-comment">// 允许设置值</span>
+      <span class="hljs-keyword">set</span> value(val) {
+        obj[key] = val
+      }
+    }
+
+    <span class="hljs-comment">// 定义__v_isRef属性</span>
+    <span class="hljs-built_in">Object</span>.defineProperty(wrapper, <span class="hljs-string">'__v_isRef'</span>, {
+      <span class="hljs-attr">value</span>: <span class="hljs-literal">true</span>
+    })
+
+    <span class="hljs-keyword">return</span> wrapper
+  }
+</div></code></pre>
+<p>可以看到，当设置value属性的值时，最终设置的是响应式数据的同名属性的值，这样就能正确地触发响应了。</p>
+<p><strong>3. 自动脱ref</strong>
+toRefs函数的的确解决了响应丢失问题，但同时也带来了新的问题。由于toRefs会把响应式数据第一层属性值转换为ref，因此必须通过value属性访问值，如下所示：</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> obj = reactive({
+    <span class="hljs-attr">foo</span>: <span class="hljs-number">1</span>,
+    <span class="hljs-attr">bar</span>: <span class="hljs-number">2</span>
+  })
+  obj.foo <span class="hljs-comment">// 1</span>
+  obj.bar <span class="hljs-comment">// 2</span>
+
+  <span class="hljs-keyword">const</span> newObj = {
+    ...toRefs(obj)
+  }
+  <span class="hljs-comment">// 必须使用value访问值</span>
+  newObj.foo.value <span class="hljs-comment">// 1</span>
+  newObj.bar.value <span class="hljs-comment">// 2</span>
+</div></code></pre>
+<p>这其实增加了用户的心智负担，因为通常情况下用户是在模板中访问数据的，例如：</p>
+<pre class="hljs"><code><div>  <span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>{{foo}}/ {{bar}}<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
+</div></code></pre>
+<p>用户肯定不希望编写下面的代码：</p>
+<pre class="hljs"><code><div>  <span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>{{foo.value}}/ {{bar.value}}<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
+</div></code></pre>
+<p>因此，我们需要自动脱ref的能力，所谓自动脱ref,指的是属性的访问行为，即如果读取的属性是一个ref，直接将该ref对应的value属性值返回，例如：</p>
+<pre class="hljs"><code><div>  newObj.foo <span class="hljs-comment">// 1</span>
+</div></code></pre>
+<p>可以看到，即使newObj.foo是一个ref，也无须通过newObj.foo.value来访问它的值。要实现此功能，需要使用Proxy为newObj创建一个代理对象，通过代理来实现最终目标，这时就用到了上文中介绍的ref标识，即__v_isRef属性，如下所示：</p>
+<pre class="hljs"><code><div>  <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">proxyRefs</span>(<span class="hljs-params">target</span>) </span>{
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Proxy</span>(target, {
+      <span class="hljs-keyword">get</span>(target, key, receiver) {
+        <span class="hljs-keyword">const</span> value = <span class="hljs-built_in">Reflect</span>.get(target, key, receiver)
+        <span class="hljs-comment">// 自动脱ref实现：如果读取的值是ref，则返回它的value属性值</span>
+        <span class="hljs-keyword">return</span> value.__v_isRef ? value.value : value
+      }
+    })
+  }
+
+  <span class="hljs-comment">// 调用proxyRefs函数创建代理</span>
+  <span class="hljs-keyword">const</span> newObj = proxyRefs({
+    ...toRefs(obj)
+  })
+</div></code></pre>
+<p>我们定义了proxyRefs函数，该函数接收一个对象作为参数，并返回该对象的代理对象。代理对象的作用是拦截get操作，当读取的属性是一个ref时，则直接返回该ref的value属性值，这样就实现了自动脱ref：</p>
+<pre class="hljs"><code><div>  <span class="hljs-built_in">console</span>.log(newObj.foo) <span class="hljs-comment">// 1</span>
+  <span class="hljs-built_in">console</span>.log(newObj.bar) <span class="hljs-comment">// 2</span>
+</div></code></pre>
+<p>实际上，我们在编写Vue组件时，组件中的setup函数所返回的数据会传递给proxyRefs函数进行处理：</p>
+<pre class="hljs"><code><div>  <span class="hljs-keyword">const</span> MyComponent = {
+    setup() {
+      <span class="hljs-keyword">const</span> count = ref(<span class="hljs-number">0</span>)
+
+      <span class="hljs-comment">// 返回的这个对象会传递给proxyRefs</span>
+      <span class="hljs-keyword">return</span> {
+        count
+      }
+    }
+  }
+</div></code></pre>
+<p>这也是为什么我们在模板中可以直接访问一个ref的值，而无须通过value属性来访问:</p>
+<pre class="hljs"><code><div>  <span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>{{ foo }}<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
+</div></code></pre>
+<p>既然读取属性的值有自动脱ref的能力，对应地，设置属性的值也应该有自动为ref设置值的能力，例如：</p>
+<pre class="hljs"><code><div>  newObj.foo = <span class="hljs-number">100</span> <span class="hljs-comment">// 应该生效</span>
+</div></code></pre>
+<p>实现此功能很简单，只需要添加对应的set拦截函数即可：</p>
+<pre class="hljs"><code><div>  <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">proxyRefs</span>(<span class="hljs-params">target</span>) </span>{
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Proxy</span>(target, {
+      <span class="hljs-keyword">get</span>(target, key, receiver) {
+        <span class="hljs-keyword">const</span> value = <span class="hljs-built_in">Reflect</span>.get(target, key, receiver)
+        <span class="hljs-comment">// 自动脱ref实现：如果读取的值是ref，则返回它的value属性值</span>
+        <span class="hljs-keyword">return</span> value.__v_isRef ? value.value : value
+      },
+      <span class="hljs-keyword">set</span>(target, key, newValue, receiver) {
+        <span class="hljs-comment">// 通过target读取真实值</span>
+        <span class="hljs-keyword">const</span> value = target[key]
+        <span class="hljs-comment">// 如果值是ref,则设置其对应的value属性值</span>
+        <span class="hljs-keyword">if</span> (value.__v_isRef) {
+          value.value = newValue
+          <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>
+        }
+        <span class="hljs-keyword">return</span> <span class="hljs-built_in">Reflect</span>.set(target, key, newValue, receiver)
+      }
+    })
+  }
+</div></code></pre>
+<p>我们为proxyRefs函数返回的代理对象添加了set拦截函数。如果设置的属性是一个ref,则间接设置该ref的value属性值即可。
+实际上，自动脱ref不仅存在于上述场景。在Vue.js中，reactive函数也有自动脱ref的能力。在大部分情况下，用户并不知道一个值到底是不是ref。有了自动脱ref的能力后，用户在模板中使用响应式数据时，将不再需要关心哪些是ref,哪些不是ref。</p>
+
+</body>
+</html>
