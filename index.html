@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <style>
+    .width {
+      width: 100%;
+    }
+
+    .nav {
+      /* width: max-content; */
+      background-color: #cd0000;
+    }
+    .nav-a {
+      display: block;
+      margin: 0 10px;
+      padding: 9px 10px;
+      border-bottom: 1px solid #b70000;
+      border-top: 1px solid #de3636;
+      color: #fff;
+    }
+    .nav-a:first-child {
+      border-top: 0;
+    }
+    .nav-a + .nav-a + .nav-a {
+      border-bottom: 0;
+    }
+
+    .box {
+      width: 240px;
+      margin: 20px auto;
+    }
+
+    .ao,
+    .tu {
+      display: inline-block;
+      width: 0;
+      font-size: 14px;
+      line-height: 18px;
+      margin: 35px;
+      /* color: #fff; */
+    }
+    .ao:before,
+    .tu:before {
+      outline: 2px solid #cd0000;
+      font-family: Consolas, Monaca, monospace;
+    }
+    .ao:before {
+      content: 'love你love';
+    }
+    .tu:before {
+      content: '我love你'
+    }
+    .tu {
+      direction: rtl;
+    }
+
+    .wrap {
+      width: 300px;
+      height: 200px;
+      position: relative; 
+      overflow: hidden;
+    }
+    .wrap > ul {
+      position: absolute;
+      white-space: nowrap;
+    }
+    .wrap li {
+      display: inline-block;
+    }
+  </style>
+</head>
+<body>
+  <h4>无宽度，借助流动性</h4>
+  <div class="nav">
+    <a href="" class="nav-a">导航1</a>
+    <a href="" class="nav-a">导航2</a>
+    <a href="" class="nav-a">导航3</a>
+    <a href="" class="nav-a">导航4</a>
+  </div>
+
+  <h4>width:100%</h4>
+  <div class="nav">
+    <a href="" class="nav-a width">导航1</a>
+    <a href="" class="nav-a width">导航2</a>
+    <a href="" class="nav-a width">导航3</a>
+    <a href="" class="nav-a width">导航4</a>
+  </div>
+
+  <div class="box">
+    <button>按钮按钮按钮按钮按钮按钮按钮按钮按钮按钮按钮按钮按钮按钮按钮按钮</button>
+    <input type="button" value="按钮按钮按钮按钮按钮按钮按钮按钮按钮按钮按钮按钮按钮按钮按钮按钮"/>
+  </div>
+
+  <span class="ao"></span>
+  <span class="tu"></span>
+
+  <div class="wrap" id="wrap">
+    <ul>
+      <li><img src="./images/img1.jpeg" alt=""></li>
+      <li><img src="./images/img1.jpeg" alt=""></li>
+      <li><img src="./images/img1.jpeg" alt=""></li>
+      <li><img src="./images/img1.jpeg" alt=""></li>
+      <li><img src="./images/img1.jpeg" alt=""></li>
+      <li><img src="./images/img1.jpeg" alt=""></li>
+    </ul>
+  </div>
+
+  <script>
+    new IScroll('#wrap', {
+      scrollbars: true,
+      screenX: true,
+      screenY: false
+    })
+  </script>
+</body>
+</html>
