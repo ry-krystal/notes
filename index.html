@@ -1,120 +1,195 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
-  <style>
-    .width {
-      width: 100%;
-    }
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      .width {
+        width: 100%;
+      }
 
-    .nav {
-      /* width: max-content; */
-      background-color: #cd0000;
-    }
-    .nav-a {
-      display: block;
-      margin: 0 10px;
-      padding: 9px 10px;
-      border-bottom: 1px solid #b70000;
-      border-top: 1px solid #de3636;
-      color: #fff;
-    }
-    .nav-a:first-child {
-      border-top: 0;
-    }
-    .nav-a + .nav-a + .nav-a {
-      border-bottom: 0;
-    }
+      .nav {
+        /* width: max-content; */
+        background-color: #cd0000;
+      }
+      .nav-a {
+        display: block;
+        margin: 0 10px;
+        padding: 9px 10px;
+        border-bottom: 1px solid #b70000;
+        border-top: 1px solid #de3636;
+        color: #fff;
+      }
+      .nav-a:first-child {
+        border-top: 0;
+      }
+      .nav-a + .nav-a + .nav-a {
+        border-bottom: 0;
+      }
 
-    .box {
-      width: 240px;
-      margin: 20px auto;
-    }
+      .box {
+        width: 240px;
+        margin: 20px auto;
+      }
 
-    .ao,
-    .tu {
-      display: inline-block;
-      width: 0;
-      font-size: 14px;
-      line-height: 18px;
-      margin: 35px;
-      /* color: #fff; */
-    }
-    .ao:before,
-    .tu:before {
-      outline: 2px solid #cd0000;
-      font-family: Consolas, Monaca, monospace;
-    }
-    .ao:before {
-      content: 'love你love';
-    }
-    .tu:before {
-      content: '我love你'
-    }
-    .tu {
-      direction: rtl;
-    }
+      .ao,
+      .tu {
+        display: inline-block;
+        width: 0;
+        font-size: 14px;
+        line-height: 18px;
+        margin: 35px;
+        /* color: #fff; */
+      }
+      .ao:before,
+      .tu:before {
+        outline: 2px solid #cd0000;
+        font-family: Consolas, Monaca, monospace;
+      }
+      .ao:before {
+        content: "love你love";
+      }
+      .tu:before {
+        content: "我love你";
+      }
+      .tu {
+        direction: rtl;
+      }
 
-    .wrap {
-      width: 300px;
-      height: 200px;
-      position: relative; 
-      overflow: hidden;
-    }
-    .wrap > ul {
-      position: absolute;
-      white-space: nowrap;
-    }
-    .wrap li {
-      display: inline-block;
-    }
-  </style>
-</head>
-<body>
-  <h4>无宽度，借助流动性</h4>
-  <div class="nav">
-    <a href="" class="nav-a">导航1</a>
-    <a href="" class="nav-a">导航2</a>
-    <a href="" class="nav-a">导航3</a>
-    <a href="" class="nav-a">导航4</a>
-  </div>
+      .wrap {
+        width: 300px;
+        height: 200px;
+        position: relative;
+        overflow: hidden;
+      }
+      .wrap > ul {
+        position: absolute;
+        white-space: nowrap;
+      }
+      .wrap li {
+        display: inline-block;
+      }
+      /* img {
+        visibility: hidden;
+      } */
+      /* img[src] {
+        visibility: visible;
+      } */
+      /* img {
+        content: attr(alt);
+        display: block;
+        outline: 1px solid;
+      } */
+      /* img {
+        content: url("./images/img1.jpeg");
+        width: 100px;
+      } */
+      /* .counter {
+        counter-reset: renyong 2 lvfengcui 3;
+        font-size: 32px;
+        font-family: Arial Black;
+        color: #cd0000;
+      }
+      .counter:before {
+        content: counter(renyong);
+      }
+      .counter:after {
+        content: counter(lvfengcui);
+      } */
+      /* .counter {
+        counter-reset: renyong 2;
+        font-size: 32px;
+        font-family: Arial Black;
+        color: #cd0000;
+      }
+      .counter:before,
+      .counter:after {
+        content: counter(renyong);
+        counter-increment: renyong;
+      } */
 
-  <h4>width:100%</h4>
-  <div class="nav">
-    <a href="" class="nav-a width">导航1</a>
-    <a href="" class="nav-a width">导航2</a>
-    <a href="" class="nav-a width">导航3</a>
-    <a href="" class="nav-a width">导航4</a>
-  </div>
+      .reset {
+        counter-reset: renyong;
+        padding-left: 20px;
+      }
+      .counter:before {
+        content: counters(renyong, "-") ". ";
+        counter-increment: renyong;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- <h4>无宽度，借助流动性</h4>
+    <div class="nav">
+      <a href="" class="nav-a">导航1</a>
+      <a href="" class="nav-a">导航2</a>
+      <a href="" class="nav-a">导航3</a>
+      <a href="" class="nav-a">导航4</a>
+    </div>
 
-  <div class="box">
-    <button>按钮按钮按钮按钮按钮按钮按钮按钮按钮按钮按钮按钮按钮按钮按钮按钮</button>
-    <input type="button" value="按钮按钮按钮按钮按钮按钮按钮按钮按钮按钮按钮按钮按钮按钮按钮按钮"/>
-  </div>
+    <h4>width:100%</h4>
+    <div class="nav">
+      <a href="" class="nav-a width">导航1</a>
+      <a href="" class="nav-a width">导航2</a>
+      <a href="" class="nav-a width">导航3</a>
+      <a href="" class="nav-a width">导航4</a>
+    </div>
 
-  <span class="ao"></span>
-  <span class="tu"></span>
+    <div class="box">
+      <button>
+        按钮按钮按钮按钮按钮按钮按钮按钮按钮按钮按钮按钮按钮按钮按钮按钮
+      </button>
+      <input
+        type="button"
+        value="按钮按钮按钮按钮按钮按钮按钮按钮按钮按钮按钮按钮按钮按钮按钮按钮"
+      />
+    </div>
 
-  <div class="wrap" id="wrap">
-    <ul>
-      <li><img src="./images/img1.jpeg" alt=""></li>
-      <li><img src="./images/img1.jpeg" alt=""></li>
-      <li><img src="./images/img1.jpeg" alt=""></li>
-      <li><img src="./images/img1.jpeg" alt=""></li>
-      <li><img src="./images/img1.jpeg" alt=""></li>
-      <li><img src="./images/img1.jpeg" alt=""></li>
-    </ul>
-  </div>
+    <span class="ao"></span>
+    <span class="tu"></span> -->
 
-  <script>
-    new IScroll('#wrap', {
-      scrollbars: true,
-      screenX: true,
-      screenY: false
-    })
-  </script>
-</body>
+    <!-- <div class="wrap" id="wrap">
+      <ul>
+        <li><img src="./images/img1.jpeg" alt="img1" /></li>
+        <li><img src="./images/img1.jpeg" alt="img2" /></li>
+        <li><img src="./images/img1.jpeg" alt="img3" /></li>
+        <li><img src="./images/img1.jpeg" alt="img4" /></li>
+        <li><img src="./images/img1.jpeg" alt="img5" /></li>
+        <li><img src="./images/img1.jpeg" alt="img6" /></li>
+      </ul>
+    </div> -->
+    <!-- <img data-src="./images/img1.jpeg" alt="这是一张图片" /> -->
+    <!-- <img /> -->
+
+    <!-- <h1>css世界</h1> -->
+    <!-- <p>我叫王小二，字如其名，下面要出现的数字是：</p>
+    <p class="counter"></p> -->
+
+    <div class="reset">
+      <div class="counter">
+        我是王小二
+        <div class="reset">
+          <div class="counter">我是王小二的大儿子</div>
+          <div class="counter">
+            我是王小二的二儿子
+            <div class="reset">
+              <div class="counter">我是王小二的二儿子的大孙子</div>
+              <div class="counter">我是王小二的二儿子的二孙子</div>
+              <div class="counter">我是王小二的二儿子的小孙子</div>
+            </div>
+          </div>
+          <div class="counter">我是王小二的三儿子</div>
+        </div>
+      </div>
+      <div class="counter">我是王小三</div>
+      <div class="counter">
+        我是王小四
+        <div class="reset">
+          <div class="counter">我是王小四的大儿子</div>
+        </div>
+      </div>
+    </div>
+  </body>
 </html>
