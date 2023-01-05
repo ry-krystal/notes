@@ -1,3 +1,4 @@
+<!-- slide -->
 #### Fragment
 
 Fragment(片断)是Vue3中新增的一个vnode类型，在具体讨论Fragment的实现之前，我们有必要先了解为什么需要Fragment。请思考这样的场景，假设我们需要封装一组列表组件：
@@ -7,6 +8,7 @@ Fragment(片断)是Vue3中新增的一个vnode类型，在具体讨论Fragment�
     <Items></Items>
   </List>
 ```
+<!-- slide -->
 
 整体是两个组件构成，即\<List>组件和\<Items>组件。其中\<List>组件会渲染一个\<ul>标签作为包裹层：
 
@@ -19,6 +21,8 @@ Fragment(片断)是Vue3中新增的一个vnode类型，在具体讨论Fragment�
   </template>
 ```
 
+<!-- slide -->
+
 而\<Items>组件负责渲染一组\<li>列表：
 
 ```html
@@ -30,6 +34,8 @@ Fragment(片断)是Vue3中新增的一个vnode类型，在具体讨论Fragment�
   </template>
 ```
 
+<!-- slide -->
+
 这在Vue2中是无法实现的，Vue2中，组件模板不允许存在多个根节点。这意味着，一个\<Items>组件最多只能渲染一个\<li>标签：
 
 ```html
@@ -39,6 +45,8 @@ Fragment(片断)是Vue3中新增的一个vnode类型，在具体讨论Fragment�
   </template>
 ```
 
+<!-- slide -->
+
 因此，在Vue2中，我们通常需要配合v-for指令来达到目的：
 
 ```html
@@ -46,6 +54,8 @@ Fragment(片断)是Vue3中新增的一个vnode类型，在具体讨论Fragment�
     <items v-for="item in list"></items>
   </List>
 ```
+
+<!-- slide -->
 
 那么，Vue3是如何用vnode来描述多根节点模板的呢？答案是，使用Fragment,如下所示：
 
@@ -66,6 +76,7 @@ Fragment(片断)是Vue3中新增的一个vnode类型，在具体讨论Fragment�
     ]
   }
 ```
+<!-- slide -->
 
 有了Fragment之后，我们就可以用它来描述Items.vue组件中的模板了:
 
@@ -76,6 +87,8 @@ Fragment(片断)是Vue3中新增的一个vnode类型，在具体讨论Fragment�
     <li>3</li>
   </template>
 ```
+
+<!-- slide -->
 
 这段模板对应的虚拟节点是：
 
@@ -96,6 +109,8 @@ Fragment(片断)是Vue3中新增的一个vnode类型，在具体讨论Fragment�
   }
 ```
 
+<!-- slide -->
+
 类似地，如下模板：
 
 ```html
@@ -103,6 +118,8 @@ Fragment(片断)是Vue3中新增的一个vnode类型，在具体讨论Fragment�
     <Items></Items>
   </List>
 ```
+
+<!-- slide -->
 
 可以用虚拟节点来描述它：
 
@@ -128,17 +145,17 @@ Fragment(片断)是Vue3中新增的一个vnode类型，在具体讨论Fragment�
   }
 ```
 
-当渲染器渲染Fragment类型的虚拟节点时，由于Fragment本身并不会渲染任何内容，所以渲染器只会渲染Fragment的子节点：
+<!-- slide -->
 
+当渲染器渲染Fragment类型的虚拟节点时，由于Fragment本身并不会渲染任何内容，所以渲染器只会渲染Fragment的子节点：
+<!-- slide -->
 ```javascript
   function patch(n1, n2, container) {
     if (n1 && n1.type !== n2.type) {
       unmount(n1)
       n1 = null
     }
-
     const { type } = n2
-
     if (typeof type === Fragment) {
       if (!n1) {
         // 如果旧vnode不存在，则只需要将Fragment的children逐个挂载即可
@@ -150,6 +167,7 @@ Fragment(片断)是Vue3中新增的一个vnode类型，在具体讨论Fragment�
     }
   }
 ```
+<!-- slide -->
 
 从本质上来说，渲染Fragment与渲染普通元素的区别在于，Fragment本身并不渲染任何内容，所以只需要处理它的子节点即可。但仍然需要注意一点，unmount函数也需要支持Fragment类型的虚拟节点的卸载：
 
