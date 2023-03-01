@@ -191,5 +191,27 @@
         </div>
       </div>
     </div>
+
+    <script>
+      var removeDuplicates = function (nums) {
+        // 如果nums数组长度为零
+        if (!nums.length) return 0;
+        // 获取nums的长度
+        let len = nums.length;
+        // 定义左指针的索引为0
+        let left = 0;
+        // 定义右指针的索引为1
+        let right = 1;
+        for (; right < len; right++) {
+          if (nums[left] !== nums[right]) {
+            // 左指针索引的值和右指针索引对应的值不相等
+            left++;
+            nums[left] = nums[right];
+          }
+        }
+        return nums.slice(0, left + 1);
+      };
+      console.log(removeDuplicates([1, 1, 2, 4, 6, 6, 9, 10]));
+    </script>
   </body>
 </html>
