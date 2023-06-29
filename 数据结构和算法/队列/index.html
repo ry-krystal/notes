@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <script>
+      /* 
+        队列遵循FIFO(先进先出)原则
+      */
+
+      // 创建队列
+      class Queue {
+        constructor() {
+          // 控制队列的大小
+          this.count = 0;
+          // 用来追踪第一个元素
+          this.lowestCount = 0;
+          // 可以使用数组，但是使用对象效率更高
+          this.items = {};
+        }
+
+        // 向队列尾部添加一个(或多个)项
+        enqueue(element) {
+          this.items[this.count] = element;
+          this.count++;
+        }
+
+        // 从队列移除元素
+        dequeue() {
+          if (this.isEmpty()) return;
+          // 找到队列头部的元素
+          const result = this.items[this.lowestCount];
+          // 删除队列头部元素
+          delete this.items[this.lowestCount];
+          this.lowestCount++;
+          return result;
+        }
+
+        // 查看队列头元素
+        peek() {
+          if (this.isEmpty()) return;
+          return this.items[this.lowestCount];
+        }
+
+        // 检验队列是否为空
+        isEmpty() {
+          return this.size() === 0;
+        }
+
+        // 获取队列的长度
+        size() {
+          return this.count - this.lowestCount;
+        }
+
+        // 清空队列
+        clear() {
+          this.items = {};
+          this.count = 0;
+          this.lowestCount = 0;
+        }
+
+        // toString方法
+        toString() {
+          if (this.isEmpty()) return;
+
+          let objString = `${this.items[this.lowestCount]}`;
+          for (let i = this.lowestCount + 1; i < this.count; i++) {
+            objString += `${objString},${this.items[i]}`;
+          }
+
+          return objString;
+        }
+      }
+
+      // 对象有顺序问题
+      // const obj = {
+      //   2: "2",
+      // };
+      // obj["1"] = 1;
+      // obj["b"] = "b";
+      // obj["a"] = "a";
+
+      // map没有
+      // const map = new Map();
+      // map.set(2, "2");
+      // map.set(1, "1");
+      // map.set("a", "a");
+      // console.log(obj);
+      // console.log(map);
+    </script>
+  </body>
+</html>

@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <script>
+      /*
+        栈 - 基于js对象的Stack类
+        push(element(s)): 添加一个(或几个)新元素到栈顶。
+        pop(): 移除栈顶的元素，同时返回被移除的元素。
+        peek(): 返回栈顶的元素，不对栈做任何修改(改方法不会移除栈顶元素，仅仅返回它)
+        isEmpty(): 如果栈里没有任何元素就返回true, 否则返回false
+        clear(): 移除栈里的所有元素。
+        size(): 返回栈里的元素个数。该方法和数组的length属性很类似。
+      */
+
+      class Stack {
+        constructor() {
+          this._count = 0; // 记录元素的数量
+          this._items = {};
+        }
+
+        // 插入元素
+        push(element) {
+          this._items[this._count] = element;
+          this._count++; // 数量+1
+        }
+
+        // 栈的大小
+        size() {
+          return this._count;
+        }
+
+        // 栈是否为空
+        isEmpty() {
+          return this._count === 0;
+        }
+
+        // 从栈中弹出元素
+        pop() {
+          // 首先判断栈中有无元素
+          if (this.isEmpty()) return;
+          this._count--; // 每弹出一个元素，数量-1
+          const result = this._items[this._count]; // 找到要弹出的元素
+          delete this._items[this._count]; // 删除元素
+          return result;
+        }
+
+        // 查看栈顶的值
+        peek() {
+          if (this.isEmpty()) {
+            // 是否为空
+            return;
+          }
+          // 返回栈顶元素
+          return this._items[this._count - 1];
+        }
+
+        // 清空该栈
+        clear() {
+          this._items = {};
+          this._count = 0;
+
+          // 也可以遵循LIFO原则，使用下面的逻辑来移除栈中的所有元素
+          // while (!this.isEmpty()) {
+          //   this.pop();
+          // }
+        }
+
+        // 创建toString()方法
+        toString() {
+          if (this.isEmpty()) {
+            return "";
+          }
+          const { 0: firstItem } = this._items;
+          let objString = `${firstItem}`;
+          for (let i = 1; i < this._count; i++) {
+            objString += `,${this._items[i]}`;
+          }
+
+          return objString;
+        }
+      }
+      /*
+        用栈解决问题:
+          可以存储访问过的任务或者路径、撤销操作
+      */
+
+      // 从十进制到二进制
+      // 要把十进制转化为二进制，我们可以将该十进制数除以2并对商取整，直到结果是0为止。
+
+      const decimalToBinary = (decNumber) => {
+        const remStack = new Stack();
+        // 存储十进制数字
+        let number = decNumber;
+        // 存储余数
+        let rem;
+        // 二进制字符串
+        let binaryString = "";
+
+        /*
+          10进制转化为2进制
+          10 / 2 = 5 rem = 0
+          5 / 2 = 2 rem = 1
+          2 / 2 = 1 rem = 0
+          1 / 2 = 0 rem = 1
+        */
+        while (number > 0) {
+          rem = Math.floor(number % 2); // 取余数
+          remStack.push(rem); // 将余数压入栈中
+          number = Math.floor(number / 2); // 取商
+        }
+
+        // 出栈操作
+        while (!remStack.isEmpty()) {
+          binaryString += remStack.pop();
+        }
+
+        return binaryString;
+      };
+
+      // 测试
+      // console.log(decimalToBinary(233));
+      // console.log(decimalToBinary(10));
+      // console.log(decimalToBinary(1000));
+
+      /* 
+        把十进制转换为任意进制 基数为2-36。
+        十进制->二进制， 余数是0或1
+        十进制->八进制， 余数是0~7
+        十进制->十六进制 余数是0~9加上A~F(对应的10~15)
+
+        需要对栈中的数字做个转化
+        因此，从十一进制开始，字母表中的每个字母将表示相应的基数。字母A代表11，B代表12，以此类推...
+      */
+
+      const baseConverter = (decNumber, base) => {
+        const digits = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; // 36位
+        const remStack = new Stack();
+        let number = decNumber;
+        let rem;
+        let baseString = "";
+
+        if (!(base >= 2 && base <= 36)) {
+          // 不在2-36范围内
+          return "";
+        }
+
+        while (number > 0) {
+          // 先取余数
+          rem = Math.floor(number % base);
+          // 将余数压入栈中
+          remStack.push(rem);
+          // 再取商
+          number = Math.floor(number / base);
+        }
+
+        // 全部出栈：栈中不为空
+        while (!remStack.isEmpty()) {
+          baseString += digits[remStack.pop()];
+        }
+
+        //  返回baseString
+        return baseString;
+      };
+
+      // 测试
+      // console.log(baseConverter(100345, 2)); // 11000011111111001
+      // console.log(baseConverter(100345, 8)); // 303771
+      // console.log(baseConverter(100345, 16)); // 187F9
+      // console.log(baseConverter(100345, 35)); // 2BW0
+    </script>
+  </body>
+</html>
