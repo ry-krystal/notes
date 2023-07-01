@@ -8,9 +8,9 @@
   </head>
   <body>
     <script>
-      /* 
-        队列遵循FIFO(先进先出)原则
-      */
+      /*
+          队列遵循FIFO(先进先出)原则
+        */
 
       // 创建队列
       class Queue {
@@ -69,7 +69,7 @@
 
           let objString = `${this.items[this.lowestCount]}`;
           for (let i = this.lowestCount + 1; i < this.count; i++) {
-            objString += `${objString},${this.items[i]}`;
+            objString = `${objString},${this.items[i]}`;
           }
 
           return objString;
@@ -91,6 +91,228 @@
       // map.set("a", "a");
       // console.log(obj);
       // console.log(map);
+
+      // 实例化一个类
+      const queue = new Queue();
+      // console.log(queue.isEmpty());
+
+      queue.enqueue("John");
+      queue.enqueue("Jack");
+      queue.enqueue("Camlia");
+
+      // console.log(queue.toString());
+
+      /*
+          双端队列：(deque, 或者double-ended queue)，是一种允许我们同时从前端和后端添加
+          和移除元素的队列
+
+          双端队列一个常见的应用是存储一系列的撤销操作。双端队列进行先进先出，后进先出的原则，它是一种
+          把队列和栈相结合的一种数据结构
+      */
+
+      class Deque {
+        constructor() {
+          this.count = 0;
+          this.lowestCount = 0;
+          this.items = {};
+        }
+
+        // 在队列前端添加新的元素
+        addFront(element) {
+          if (this.isEmpty()) {
+            // 栈为空
+            this.addBack(element);
+          } else if (this.lowestCount > 0) {
+            // 第一个元素已经被队列的前端移除，也就是lowestCount >= 1
+            this.lowestCount--;
+            this.items[this.lowestCount] = element;
+          } else {
+            // this.lowestCount = 0 的情况
+            // 可以设置一个负值键，同时更新用于计算双端队列长度的逻辑，使其也能包含负值键。
+            // 在这种情况下，添加一个新元素的操作仍然能保持最低的计算成本。
+            // 将本场景看作数组，要在第一位添加一个新元素，我们需要将所有元素后移一位来空出第一个位置。
+            // 由于我们不想丢失任何已有的值，需要从最后一位开始迭代所有的值，并为元素赋上索引值减1位置的值。
+            // 所以，在所有元素都完成移动后，第一位将是空闲状态，这样就可以用需要添加的新元素来覆盖它了。
+
+            for (let i = this.count; i > 0; i--) {
+              this.items[i] = this.items[i - 1];
+            }
+
+            // 移动完成之后
+            this.count++;
+            this.lowestCount = 0;
+            this.items[0] = element;
+          }
+        }
+
+        // 向队列尾部添加一个(或多个)项
+        addBack(element) {
+          this.items[this.count] = element;
+          this.count++;
+        }
+
+        // 从队列头部移除元素
+        removeFront() {
+          if (this.isEmpty()) return;
+          // 找到队列头部的元素
+          const result = this.items[this.lowestCount];
+          // 删除队列头部元素
+          delete this.items[this.lowestCount];
+          this.lowestCount++;
+          return result;
+        }
+
+        // 从队列后端移除第一个元素
+        removeBack() {
+          // 首先判断队列中有无元素
+          if (this.isEmpty()) return;
+          this.count--; // 每弹出一个元素，数量-1
+          const result = this.items[this.count]; // 找到要弹出的元素
+          delete this.items[this.count]; // 删除元素
+          return result;
+        }
+
+        // 返回队列中的第一个元素
+        peekFront() {
+          if (this.isEmpty()) return;
+          return this.items[this.lowestCount];
+        }
+
+        // 返回队列中的最后一个元素
+        peekBack() {
+          if (this.isEmpty()) return;
+          // 返回栈顶元素
+          return this.items[this.count - 1];
+        }
+
+        // 检验队列是否为空
+        isEmpty() {
+          return this.size() === 0;
+        }
+
+        // 获取队列的长度
+        size() {
+          return this.count - this.lowestCount;
+        }
+
+        // 清空队列
+        clear() {
+          this.items = {};
+          this.count = 0;
+          this.lowestCount = 0;
+        }
+
+        // toString方法
+        toString() {
+          if (this.isEmpty()) return;
+
+          let objString = `${this.items[this.lowestCount]}`;
+          for (let i = this.lowestCount + 1; i < this.count; i++) {
+            objString = `${objString},${this.items[i]}`;
+          }
+
+          return objString;
+        }
+      }
+
+      // 使用Deque类
+      // const deque = new Deque();
+      // console.log(deque.isEmpty());
+      // deque.addBack("John");
+      // deque.addBack("Jack");
+      // console.log(deque.toString());
+      // deque.addBack("krystal");
+      // console.log(deque.size());
+      // console.log(deque.isEmpty());
+      // deque.removeFront();
+      // console.log(deque.toString());
+      // console.log(deque.peekFront());
+      // console.log(deque.peekBack());
+      // console.log(deque.toString());
+
+      /*
+          循环队列-击鼓传花游戏
+        */
+      const hotPotato = (elementList, num) => {
+        const queue = new Queue();
+        const eliminatedList = [];
+
+        // 将传入elementList放入队列
+        for (let i = 0, len = elementList.length; i < len; i++) {
+          queue.enqueue(elementList[i]);
+        }
+
+        // 循环队列
+        while (queue.size() > 1) {
+          for (let i = 0; i < num; i++) {
+            // 模拟击鼓传花，从队列开头移除一项添加到队列末尾
+            queue.enqueue(queue.dequeue());
+          }
+          eliminatedList.push(queue.dequeue());
+        }
+
+        // 最终队列中只剩一人
+        return {
+          eliminated: eliminatedList,
+          winner: queue.dequeue(),
+        };
+      };
+
+      // const names = ["John", "Jack", "Camila", "Ingrid", "Carl"];
+      // const result = hotPotato(names, 7);
+      // result.eliminated.forEach((name) => {
+      //   console.log(`${name}被淘汰`);
+      // });
+      // console.log(`胜利者：${result.winner}`);
+
+      /*
+        回文检查器
+        在不同的算法可以检查一个词组或字符串是否为回文。最简单的方式是将字符串反向排列并检查
+        它和原字符是否相同。如果两者相同，那么它就是一个回文。我们也可以用栈来完成，但是利用
+        数据结构来解决这个问题的最简单方式是使用双端队列。
+      */
+
+      const palindromeChecker = (aString) => {
+        // 判断边界情况
+        if (
+          aString === undefined ||
+          aString === null ||
+          (aString !== null && aString.length === 0)
+        ) {
+          return false;
+        }
+
+        // 创建双端队列
+        const deque = new Deque();
+        // 将所有字母转化为小写，同时移除所有空格，也可以移除所有特殊字符
+        const lowString = aString.toLocaleLowerCase().split(" ").join("");
+        // 判断是否相等
+        let isEqual = true;
+        // 定义第一个字符和最后一个字符
+        let firstChar, lastChar;
+
+        // 循环lowString，将每个字符加入到队列里面
+        for (let i = 0; i < lowString.length; i++) {
+          deque.addBack(lowString.charAt(i));
+        }
+
+        while (deque.size() > 1 && isEqual) {
+          // 取当前队列中的第一个元素
+          firstChar = deque.removeFront();
+          // 取当前队列中的最后一个元素
+          lastChar = deque.removeBack();
+          // 判断两个字符是否相等
+          isEqual = firstChar === lastChar;
+        }
+
+        return isEqual;
+      };
+
+      console.log(palindromeChecker("a"));
+      console.log(palindromeChecker("aa"));
+      console.log(palindromeChecker("kayak"));
+      console.log(palindromeChecker("level"));
+      console.log(palindromeChecker("Was it a car or a cat I saw"));
     </script>
   </body>
 </html>
