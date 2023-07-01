@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <script>
+      /*
+        链表
+        链表存储有序的节点集合，但不同于数组，链表中的节点在内存中并不是连续放置的。
+        每个节点由一个存储节点本身的节点和一个指向下一个节点的引用(也称指针或者链接)组成。
+
+        相对于传统数组，链表的一个好处在于，添加或移除节点的时候不需要移动其他节点，链表需要使用指针，实现链表时需要额外注意。
+        在大多数语言中，数组的大小是固定的，从数组的起点或者中间插入或者移动项的成本很高，因为需要移动节点。
+
+        但在数组中，我们可以直接访问任何位置的任何节点，而想要访问链表中间的一个节点，则需要从起点(表头)开始迭代链表直到
+        找到所需的节点
+      */
+      const defaultEquals = (a, b) => {
+        return a === b;
+      };
+
+      // 需要一个助手类，表示需要添加到链表中的项
+      class Node {
+        constructor(element) {
+          this.element = element; // 节点项
+          this.next = undefined; // 指向下一个节点的指针
+        }
+      }
+
+      class LinkedList {
+        constructor(equalsFn = defaultEquals) {
+          this.count = 0; // 存储链表中的节点个数
+          this.head = undefined; // 将第一个节点的引用保存下来
+          this.equalsFn = equalsFn; // 比较链表中的节点是否相等
+        }
+
+        // 向链表尾部添加节点
+        push(element) {
+          // 添加一个节点
+          const node = new Node(element);
+          let current; // 指向链表中的当前项
+          if (this.head == null) {
+            // 如果head指向的节点为undefined或者null, 就意味着在向链表添加第一个节点。
+            // 因此要做的就是让head节点指向node节点，下一个node节点会自动称为undefined
+            this.head = node;
+          } else {
+            current = this.head;
+            // 循环遍历，得到最后一个节点
+            while (current.next != null) {
+              current = current.next;
+            }
+            // 将其next赋值为新节点，建立链接
+            current.next = node;
+          }
+
+          // 每添加一个节点，count需要+1
+          this.count++;
+        }
+
+        // 从链表中移除节点(断开链接)
+        removeAt(index) {
+          // 检查越界值
+          if (index >= 0 && index < this.count) {
+            let current = this.head;
+
+            // 移除第一项
+            if (index === 0) {
+              this.head = current.next;
+            } else {
+              // let previous; // 前一项
+              // for (let i = 0; i < index; i++) {
+              //   previous = current; // 将当前项赋值给前一项指针
+              //   current = current.next; // 将下一项赋值给当前项的指针
+              // }
+
+              const previous = getElementAt(index - 1);
+              current = previous.next;
+              // 删除操作，将前一项与下一项链接,跳过current，从而移除它，current节点会被丢弃在内存中，等待被垃圾回收器清楚。
+              previous.next = current.next;
+            }
+
+            this.count--;
+            // 返回删除的节点
+            return current.element;
+          }
+          return undefined;
+        }
+
+        // 循环迭代链表直到目标位置
+        getElementAt(index) {
+          if (index >= 0 && index <= this.count) {
+            let node = this.head;
+            for (let i = 0; i < index && node != null; i++) {
+              node = node.next;
+            }
+            return node;
+          }
+          return undefined;
+        }
+
+        // 在任意位置插入节点
+        insert(element, index) {
+          if (index >= 0 && index <= this.count) {
+            const node = new Node(element);
+            if (index === 0) {
+              // 在第一个位置添加
+              const current = this.head;
+              node.next = current;
+              this.head = node;
+            } else {
+              // 前一个节点
+              const previous = this.getElementAt(index - 1);
+              // 当前节点
+              const current = previous.next;
+              // 将前一个节点的指针链接到插入的节点上
+              previous.next = node;
+              // 将插入节点的指针链接到current节点上
+              node.next = current;
+            }
+            this.count++; // 更新链表的长度
+            return true;
+          }
+          return false;
+        }
+
+        // 返回一个节点的位置
+        indexOf(element) {
+          let current = this.head;
+          for (let i = 0; i < this.count && current != null; i++) {
+            if (this.equalsFn(element, current.element)) {
+              // 匹配当前节点，就返回当前节点的索引值
+              return i;
+            }
+            current = current.next;
+          }
+
+          // 找不到返回-1
+          return -1;
+        }
+
+        // 从链表中移除元素
+        remove(element) {
+          const index = this.indexOf(element);
+          return this.removeAt(index);
+        }
+
+        // 链表大小
+        size() {
+          return this.count;
+        }
+
+        // 是否为空链表
+        isEmpty() {
+          return this.size() === 0;
+        }
+
+        // 如果要在类的实现外部迭代链表，就需要提供一种获取类的第一个元素的方法
+        geHead() {
+          return this.head;
+        }
+
+        toString() {
+          if (this.head == null) {
+            return "";
+          }
+
+          let objString = `${this.head.element}`;
+          let current = this.head.next;
+          for (let i = 1; i < this.size() && current != null; i++) {
+            objString = `${objString},${current.element}`;
+            current = current.next;
+          }
+
+          return objString;
+        }
+      }
+
+      const list = new LinkedList();
+      list.push(10);
+      list.push(15);
+    </script>
+  </body>
+</html>
