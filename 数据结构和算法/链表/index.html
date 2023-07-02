@@ -9,16 +9,16 @@
   <body>
     <script>
       /*
-        链表
-        链表存储有序的节点集合，但不同于数组，链表中的节点在内存中并不是连续放置的。
-        每个节点由一个存储节点本身的节点和一个指向下一个节点的引用(也称指针或者链接)组成。
+          链表
+          链表存储有序的节点集合，但不同于数组，链表中的节点在内存中并不是连续放置的。
+          每个节点由一个存储节点本身的节点和一个指向下一个节点的引用(也称指针或者链接)组成。
 
-        相对于传统数组，链表的一个好处在于，添加或移除节点的时候不需要移动其他节点，链表需要使用指针，实现链表时需要额外注意。
-        在大多数语言中，数组的大小是固定的，从数组的起点或者中间插入或者移动项的成本很高，因为需要移动节点。
+          相对于传统数组，链表的一个好处在于，添加或移除节点的时候不需要移动其他节点，链表需要使用指针，实现链表时需要额外注意。
+          在大多数语言中，数组的大小是固定的，从数组的起点或者中间插入或者移动项的成本很高，因为需要移动节点。
 
-        但在数组中，我们可以直接访问任何位置的任何节点，而想要访问链表中间的一个节点，则需要从起点(表头)开始迭代链表直到
-        找到所需的节点
-      */
+          但在数组中，我们可以直接访问任何位置的任何节点，而想要访问链表中间的一个节点，则需要从起点(表头)开始迭代链表直到
+          找到所需的节点
+        */
       const defaultEquals = (a, b) => {
         return a === b;
       };
@@ -31,11 +31,15 @@
         }
       }
 
+      // 实现链表类
       class LinkedList {
         constructor(equalsFn = defaultEquals) {
           this.count = 0; // 存储链表中的节点个数
           this.head = undefined; // 将第一个节点的引用保存下来
           this.equalsFn = equalsFn; // 比较链表中的节点是否相等
+
+          // 优化，新增一个tail指针，表示对最后一个节点的引用
+          this.tail = undefined;
         }
 
         // 向链表尾部添加节点
@@ -47,6 +51,7 @@
             // 如果head指向的节点为undefined或者null, 就意味着在向链表添加第一个节点。
             // 因此要做的就是让head节点指向node节点，下一个node节点会自动称为undefined
             this.head = node;
+            this.tail = node;
           } else {
             current = this.head;
             // 循环遍历，得到最后一个节点
@@ -55,6 +60,8 @@
             }
             // 将其next赋值为新节点，建立链接
             current.next = node;
+            // 此时，node为最后一个节点
+            this.tail = node;
           }
 
           // 每添加一个节点，count需要+1
@@ -70,6 +77,13 @@
             // 移除第一项
             if (index === 0) {
               this.head = current.next;
+            } else if (index === this.count - 1) {
+              // 最后一个元素
+              current = this.tail;
+              // 获取最后一个元素的前一个元素
+              const previous = this.getElementAt(index - 1);
+              this.tail = previous;
+              this.tail.next = undefined;
             } else {
               // let previous; // 前一项
               // for (let i = 0; i < index; i++) {
@@ -77,7 +91,7 @@
               //   current = current.next; // 将下一项赋值给当前项的指针
               // }
 
-              const previous = getElementAt(index - 1);
+              const previous = this.getElementAt(index - 1);
               current = previous.next;
               // 删除操作，将前一项与下一项链接,跳过current，从而移除它，current节点会被丢弃在内存中，等待被垃圾回收器清楚。
               previous.next = current.next;
@@ -179,9 +193,252 @@
         }
       }
 
-      const list = new LinkedList();
-      list.push(10);
-      list.push(15);
+      // const list = new LinkedList();
+      // list.push(10);
+      // list.push(15);
+
+      /*
+        双向链表
+          链表有多种不同的类型，本节介绍双向链表，双向链表和普通链表的区别在于，在链表中一个节点只有链向下一个节点的链接，
+          而双向链表中，链接是双向的，一个链向下一个节点，另一个链向前一个节点。
+          双向链表提供两种迭代的方法：从头到尾，或者从尾到头。
+          双向链表的优势：单向链表中，如果迭代时错过了要找的元素，就需要回到起点，重新开始迭代，双向链表不会
+      */
+
+      class DoublyNode extends Node {
+        constructor(element, next, prev) {
+          super(element, next);
+          this.prev = prev;
+        }
+      }
+      // 双向链表实现
+      class DoublyLinkedList extends LinkedList {
+        constructor(equalsFn = defaultEquals) {
+          super(equalsFn);
+          this.tail = undefined; // 保持对链表最后一个节点的引用
+        }
+
+        // 重写insert方法，插入新节点，双向链表要同时控制next和prev两个指针
+        insert(element, index) {
+          if (index >= 0 && index <= this.count) {
+            const node = new DoublyNode(element);
+            let current = this.head;
+            if (index === 0) {
+              // 在第一个位置插入
+              if (this.head == null) {
+                // 双向链表尾空
+                this.head = node;
+                this.tail = node;
+              } else {
+                // 双向链表不为空
+                node.next = this.head;
+                current.prev = node;
+                this.head = node;
+              }
+            } else if (index === this.count) {
+              // 最后一项
+              current = this.tail;
+              current.next = node;
+              node.prev = current;
+              this.tail = node;
+            } else {
+              // 在头部到尾部的中间某个位置
+              // 找到前一个节点
+              const previous = this.getElementAt(index - 1);
+              // 找到当前节点
+              current = previous.next;
+
+              node.next = current;
+              previous.next = node;
+              node.prev = previous;
+              current.prev = node;
+            }
+
+            this.count++;
+            return true;
+          }
+          return false;
+        }
+
+        // 重新removeAt方法，从任意位置移除节点（从头部、尾部和中间）
+        removeAt(index) {
+          if (index >= 0 && index < this.count) {
+            let current = this.head;
+            if (index === 0) {
+              this.head = current.next; // 指向当前要移除节点的下一个节点
+              // 如果只有一项
+              if (this.count === 1) {
+                this.tail = undefined;
+              } else {
+                this.head.prev = undefined;
+              }
+            } else if (index === this.count - 1) {
+              // 移除最后一个位置的节点
+              current = this.tail;
+              this.tail = current.prev;
+              this.tail.next = undefined;
+            } else {
+              // 移除中间的节点
+              current = this.getElementAt(index);
+              const previous = current.prev;
+              // 将previous与current的下一项链接起来-跳过current
+              previous.next = current.next;
+              current.next.prev = previous;
+            }
+            this.count--;
+            return current.element;
+          }
+          return undefined;
+        }
+      }
+
+      /*
+        循环链表就像链表一样只有单向引用，也可以像双向链表一样有双向引用。
+        循环链表和链表之间唯一的区别在于，最后一个元素指向下一个节点的指针(tail.next),不是引用undefined,
+        而是指向第一个节点(head)
+
+        双向循环链表有指向head节点的tail.next和指向tail节点的head.prev
+      */
+
+      // 创建循环链表 CircularLinkedList不需要任何额外的属性，所以直接扩展LinkedList类病覆盖需要改写的方法即可
+      class CircularLinkedList extends LinkedList {
+        constructor(equalsFn = defaultEquals) {
+          super(equalsFn);
+        }
+
+        // 在任意位置插入节点
+        insert(element, index) {
+          if (index >= 0 && index <= this.count) {
+            const node = new Node(element);
+            let current = this.head;
+            if (index === 0) {
+              if (this.head == null) {
+                this.head = node;
+                node.next = this.head;
+              } else {
+                node.next = current;
+                current = this.getElementAt(this.size());
+                // 更新最后一个元素
+                this.head = node;
+                current.next = this.head;
+              }
+            } else {
+              // 这种场景没有变化
+              const previous = this.getElementAt(index - 1);
+              node.next = previous.next;
+              previous.next = node;
+            }
+            this.count++;
+            return true;
+          }
+          return false;
+        }
+
+        // 从任意位置移除元素
+        removeAt(index) {
+          if (index >= 0 && index < this.count) {
+            let current = this.head;
+            if (index === 0) {
+              // 判断循环链表的长度
+              if (this.size() === 1) {
+                this.head = undefined;
+              } else {
+                const removed = this.head;
+                current = this.getElementAt(this.size());
+                this.head = this.head.next;
+                current.next = this.head;
+                current = removed;
+              }
+            } else {
+              // 不需要修改循环链表最后一个元素
+              const previous = this.getElementAt(index - 1);
+              current = previous.next;
+              previous.next = current.next;
+            }
+            this.count--;
+            return current.element;
+          }
+          return undefined;
+        }
+      }
+
+      /*
+        有序链表：保持节点有序的链表结构。除了使用排序算法之外，我们还可以将元素插入到正确位置来保证链表的有序性。
+      */
+      const Compare = {
+        LESS_THAN: -1,
+        BIGGER_THAN: 1,
+      };
+
+      const defaultCompare = (a, b) => {
+        if (a === b) return 0;
+
+        return a < b ? Compare.LESS_THAN : Compare.BIGGER_THAN;
+      };
+
+      // 创建有序链表
+      class SortedLinkedList extends LinkedList {
+        constructor(equalsFn = defaultEquals, compareFn = defaultCompare) {
+          super(equalsFn);
+          this.compareFn = compareFn;
+        }
+
+        // 重写insert方法
+        insert(element, index = 0) {
+          if (this.isEmpty()) {
+            return super.insert(element, 0);
+          }
+          const pos = this.getIndexNextSortedElement(element);
+          return super.insert(element, pos);
+        }
+
+        // 获取下一个排序节点的索引
+        getIndexNextSortedElement(element) {
+          let current = this.head;
+          let i = 0;
+          for (; i < this.size() && current; i++) {
+            const comp = this.compareFn(element, current.element);
+            if (comp === Compare.LESS_THAN) {
+              return i;
+            }
+            current = current.next;
+          }
+          return i;
+        }
+      }
+
+      /*
+        可以使用LinkedList类及其变种作为内部的数据结构来创建其他数据结构，
+        例如： 栈、队列和双端队列
+        在栈的实现内部使用链表数据结构会更加简单，因为不需要重新创建这些代码，也使代码的可读性更好。
+      */
+
+      // 创建栈数据结构
+      class StackLinkedList {
+        constructor() {
+          // 之所以使用DoublyLinkedList，而不使用LinkedList, DoublyLinkedList类有列表最后一个元素(tail)的引用，
+          // 无须迭代整个链表的节点就能获取它。双向链表可以直接获取头尾的节点，减少过程消耗。它的时间复杂度和原始的Stack实现相同。
+          // 建议：也可以对LinkedList类进行优化，保存一个指向尾部元素的引用，并使用这个优化版本来替代DoublyLinkedList
+          this.items = new DoublyLinkedList();
+        }
+        push(element) {
+          this.items.push(element);
+        }
+        pop(element) {
+          if (this.isEmpty()) return;
+          return this.item.removeAt(this.size() - 1);
+        }
+        peek() {
+          if (this.isEmpty()) return;
+          return this.items.getElementAt(this.size() - 1).element;
+        }
+        isEmpty() {
+          return this.items.isEmpty();
+        }
+        size() {
+          return this.items.size();
+        }
+      }
     </script>
   </body>
 </html>
