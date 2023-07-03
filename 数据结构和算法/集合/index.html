@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>集合</title>
+  </head>
+  <body>
+    <script>
+      /*
+        集合：这是一种不允许重复的顺序数据结构
+
+        集合是由一组无序且唯一的项组成。该数据结构使用了与有限集合相同的数学概念
+      */
+
+      class Set {
+        constructor() {
+          this.items = {};
+        }
+
+        // 元素在集合中
+        has(element) {
+          // in 表示对象在原型链上是否有特定属性的布尔值
+          // return element in this.items;
+          // 并不是所有对象都继承了Object.prototype,甚至继承了Object.prototype的对象上的hasOwnProperty方法也可能被覆盖，导致代码不能正常工作。
+          // 更好的实现方式
+          return Object.prototype.hasOwnProperty.call(this.items, element);
+        }
+
+        // 添加元素
+        add(element) {
+          if (!this.has(element)) {
+            this.items[element] = element;
+            return true;
+          }
+          return false;
+        }
+
+        // 删除元素
+        delete(element) {
+          if (this.has(element)) {
+            delete this.items[element];
+            return true;
+          }
+          return false;
+        }
+
+        // 移除所有值
+        clear() {
+          this.items = {};
+        }
+
+        // 集合长度
+        size() {
+          // 只能在现代浏览器上运行
+          return Object.keys(this.items).length;
+        }
+
+        // 在任何浏览器都能获取长度
+        sizeLegacy() {
+          let count = 0;
+          for (let key in this.items) {
+            if (this.has(key)) {
+              // 检查是否是自身属性，是的话就递增count的值
+              count++;
+            }
+          }
+          return count;
+        }
+
+        // 所有属性值
+        values() {
+          return Object.values(this.items);
+        }
+
+        // 在任何浏览器都能获取属性值
+        valuesLegacy() {
+          let values = [];
+          for (let key in this.items) {
+            if (this.has(key)) {
+              values.push(key);
+            }
+          }
+          return values;
+        }
+
+        // 并集
+        union(otherSet) {
+          const unionSet = new Set();
+          this.values().forEach((value) => unionSet.add(value));
+          otherSet.values().forEach((value) => unionSet.add(value));
+          return unionSet;
+        }
+
+        // 交集
+        intersection(otherSet) {
+          const interectionSet = new Set();
+
+          // const values = this.values();
+          // for (let i = 0; i < values.length; i++) {
+          //   if (otherSet.has(values[i])) {
+          //     // 判断是否存在于otherSet中
+          //     interectionSet.add(values[i]);
+          //   }
+          // }
+
+          // 优化代码: 使迭代次数更少
+          const values = this.values();
+          const otherValues = otherSet.values();
+          let biggerSet = values;
+          let smallerSet = otherValues;
+          if (otherValues.length - values.length > 0) {
+            biggerSet = otherValues;
+            smallerSet = values;
+          }
+
+          // 以最小长度去迭代
+          smallerSet.forEach((value) => {
+            if (biggerSet.includes(value)) {
+              interectionSet.add(value);
+            }
+          });
+
+          return interectionSet;
+        }
+
+        // 差集
+        difference(otherSet) {
+          const differenceSet = new Set();
+          this.values().forEach((value) => {
+            if (!otherSet.has(value)) {
+              differenceSet.add(value);
+            }
+          });
+          return differenceSet;
+        }
+
+        // 子集
+        isSubsetOf(otherSet) {
+          if (this.size() > otherSet.size()) {
+            return false;
+          }
+          let isSubset = true;
+          this.values().every((value) => {
+            if (!otherSet.has(value)) {
+              isSubset = false;
+              return false;
+            }
+            return true;
+          });
+          return isSubset;
+        }
+      }
+
+      // const set = new Set();
+      // set.add(1);
+      // set.add(2);
+      // console.log(set.items);
+      // console.log(set.values());
+      // console.log(set.has(2));
+      // console.log(set.size());
+      // set.delete(1);
+      // console.log(set.values());
+      // set.delete(2);
+      // console.log(set.values());
+
+      const setA = new Set();
+      setA.add(1);
+      setA.add(2);
+
+      const setB = new Set();
+      setB.add(2);
+      setB.add(3);
+      setB.add(1);
+
+      const setC = new Set();
+      setC.add(2);
+      setC.add(3);
+      setC.add(4);
+
+      console.log(setA.isSubsetOf(setB));
+      console.log(setA.isSubsetOf(setC));
+    </script>
+  </body>
+</html>
