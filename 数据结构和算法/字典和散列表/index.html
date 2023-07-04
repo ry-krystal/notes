@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <script>
+      /*
+        字典和散列表
+
+        字典：存储的是[键，值]对，其中键名是用来查询特定的元素的、
+        字典和集合很相似，集合以[值，值]的形式存储元素，字典以[键，值]的形式来存储元素。字典也称为映射、符号表或者关联数组。
+        字典经常用来保存对象的引用地址。把所有作为键名传入的对象转化为字符串
+
+        散列表：它是字典类的一种散列表实现形式
+          其中用到的散列算法的作用是尽可能快地在数据结构中找到一个值。如果使用散列函数，就知道值的具体位置，因此能够快速检索到该值。
+          散列算法的作用是给定一个键值，然后返回值在表中的地址。
+      */
+
+      const defaultToString = (item) => {
+        if (item === null) {
+          return "NULL";
+        } else if (item === undefined) {
+          return "UNDEFINED";
+        } else if (typeof item === "string" || item instanceof String) {
+          return `${item}`;
+        }
+        return item.toString();
+      };
+
+      class ValuePair {
+        constructor(key, value) {
+          this.key = key;
+          this.value = value;
+        }
+        toString() {
+          return `[#${this.key}: ${this.value}]`;
+        }
+      }
+
+      // 字典
+      class Dictionary {
+        constructor(toStrFn = defaultToString) {
+          this.toStrFn = toStrFn;
+          this.table = {};
+        }
+
+        // 检测一个键是否存在于字典中
+        hasKey(key) {
+          return this.table[this.toStrFn(key)] != null;
+        }
+
+        // 在字典和ValuePair类中设置键和值
+        set(key, value) {
+          if (key != null && value != null) {
+            const tableKey = this.toStrFn(key);
+            this.table[tableKey] = new ValuePair(key, value);
+            return true;
+          }
+          return false;
+        }
+
+        // 从字典移除一个值
+        remove(key) {
+          if (this.hasKey(key)) {
+            delete this.table[this.toStrFn(key)];
+            return true;
+          }
+          return false;
+        }
+
+        // 从字典中检索一个值
+        get(key) {
+          const valuePair = this.table[this.toStrFn(key)];
+          return valuePair == null ? undefined : valuePair.value;
+        }
+
+        // 获取key和value
+        keyValues() {
+          return Object.values(this.table);
+        }
+
+        // 获取keys
+        keys() {
+          return this.keyValues().map((valuePair) => valuePair.key);
+        }
+
+        // 获取values
+        values() {
+          return this.keyValues().map((valuePair) => valuePair.value);
+        }
+
+        // 用forEach迭代字典中每个键值对
+        forEach(callbackFn) {
+          const valuePairs = this.keyValues();
+          for (let i = 0; i < valuePairs.length; i++) {
+            const result = callbackFn(valuePairs[i].key, valuePairs[i].value);
+            if (result === false) break;
+          }
+        }
+
+        // 字典的长度
+        size() {
+          return Object.keys(this.table).length;
+        }
+
+        // 字典是否为空
+        isEmpty() {
+          return this.size() === 0;
+        }
+
+        // 清空字典内容
+        clear() {
+          this.table = {};
+        }
+
+        // 转化为toString
+        toString() {
+          if (this.isEmpty()) return "";
+          const valuePairs = this.keyValues();
+          let objectString = `${valuePairs[0].toString()}`;
+          for (let i = 1; i < valuePairs.length; i++) {
+            objectString = `${objectString},${valuePairs[i].toString()}`;
+          }
+          return objectString;
+        }
+      }
+
+      // 使用字典类
+      // const dictionary = new Dictionary();
+      // dictionary.set("Gandalf", "gandalf@email.com");
+      // dictionary.set("Jhon", "Jhon@email.com");
+      // dictionary.set("Tyrion", "Tyrion@email.com");
+
+      // console.log(dictionary.hasKey("Gandalf"));
+      // console.log(dictionary.size());
+      // console.log(dictionary.keyValues());
+      // console.log(dictionary.keys());
+      // console.log(dictionary.values());
+      // console.log(dictionary.get("Tyrion"));
+      // console.log(dictionary.remove("Jhon"));
+      // console.log(dictionary.size());
+
+      // js内部就是使用散列表来表示每个对象。因此，对象的每个属性和方法(成员)被存储为key对象类型，每个key指向对应的对象成员。
+
+      // 创建散列表
+      class HashTable {
+        constructor(toStrFn = defaultToString) {
+          this.toStrFn = toStrFn;
+          this.table = {};
+        }
+
+        //  创建散列函数
+        loseloseHashCode(key) {
+          if (typeof key === "number") {
+            return key;
+          }
+          const tableKey = this.toStrFn(key);
+          let hash = 0;
+          for (let i = 0; i < tableKey.length; i++) {
+            // 将每个键值中的的每个字母的ASCII值相加
+            hash += tableKey.charCodeAt(i);
+          }
+
+          // 与任意数相除取余数
+          return hash % 37;
+        }
+
+        hashCode(key) {
+          return this.loseloseHashCode(key);
+        }
+
+        // 将键和值加入散列表
+        put(key, value) {
+          if (key != null && value != null) {
+            const pos = this.hashCode(key);
+            this.table[pos] = new ValuePair(key, value);
+            return true;
+          }
+          return false;
+        }
+
+        // 从散列表中获取一个值
+        get(key) {
+          const valuePair = this.table[this.hashCode(key)];
+          return valuePair == null ? undefined : valuePair.value;
+        }
+
+        size() {
+          return Object.values(this.table).length;
+        }
+
+        isEmpty() {
+          return this.size() === 0;
+        }
+
+        // 从散列表中移除一个值
+        remove(key) {
+          const hash = this.hashCode(key);
+          const valuePair = this.table[hash];
+          if (valuePair != null) {
+            delete this.table[hash];
+            return true;
+          }
+          return false;
+        }
+
+        toString() {
+          if (this.isEmpty()) return "";
+          const keys = Object.keys(this.table);
+          let objectString = `{${keys[0]} => ${this.table[
+            keys[0]
+          ].toString()}}`;
+
+          for (let i = 1; i < keys.length; i++) {
+            objectString = `${objectString}, {${keys[i]} => ${this.table[
+              keys[i]
+            ].toString()}}`;
+          }
+
+          return objectString;
+        }
+      }
+
+      // 使用HashTable
+      // const hash = new HashTable();
+      // hash.put("Gandalf", "gandal@email.com");
+      // hash.put("John", "John@email.com");
+      // hash.put("Tyrion", "Tyrion@email.com");
+
+      // console.log(hash.hashCode("Gandalf"));
+      // console.log(hash.hashCode("John"));
+      // console.log(hash.hashCode("Tyrion"));
+
+      // hash.remove("Gandalf");
+      // console.log(hash.get("Gandalf"));
+
+      // 散列集合：由一个集合构成，但是插入、移除或获取元素时，使用的是hashCode函数。不同之处在于：不再添加键值对，而是只插入值而没有键。
+      // 和集合相似，散列集合只存储不重复的唯一值。
+
+      // const hash = new HashTable();
+      // hash.put("Ygritte", "ygritte@email.com");
+      // hash.put("Jonathan", "jonathan@email.com");
+      // hash.put("Jamie", "Jamie@email.com");
+      // hash.put("Jack", "Jack@email.com");
+      // hash.put("Jasmine", "Jasmine@email.com");
+      // hash.put("Jake", "Jake@email.com");
+      // hash.put("Nathan", "Nathan@email.com");
+      // hash.put("Athelstan", "Athelstan@email.com");
+      // hash.put("Sue", "Sue@email.com");
+      // hash.put("Aethelwulf", "Aethelwulf@email.com");
+      // hash.put("Sargeras", "Sargeras@email.com");
+
+      // console.log(hash.hashCode("Ygritte"));
+      // console.log(hash.hashCode("Jonathan"));
+      // console.log(hash.hashCode("Jamie"));
+      // console.log(hash.hashCode("Jack"));
+      // console.log(hash.hashCode("Jasmine"));
+      // console.log(hash.hashCode("Jake"));
+      // console.log(hash.hashCode("Nathan"));
+      // console.log(hash.hashCode("Athelstan"));
+      // console.log(hash.hashCode("Sue"));
+      // console.log(hash.hashCode("Aethelwulf"));
+      // console.log(hash.hashCode("Sargeras"));
+
+      // console.log(hash.toString());
+
+      /* 
+        处理散列冲突：分离链接、线性探查和双散列法
+        1.分离链接法：为散列表的每一个位置创建一个链表并将元素存储在里面。它是解决冲突的最简单的方法，但是在HashTable
+        实例之外还需要额外的存储空间。
+      */
+    </script>
+  </body>
+</html>
