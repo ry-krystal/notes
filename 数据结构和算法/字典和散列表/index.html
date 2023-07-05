@@ -268,11 +268,169 @@
 
       // console.log(hash.toString());
 
-      /* 
+      /*
         处理散列冲突：分离链接、线性探查和双散列法
         1.分离链接法：为散列表的每一个位置创建一个链表并将元素存储在里面。它是解决冲突的最简单的方法，但是在HashTable
         实例之外还需要额外的存储空间。
       */
+
+      // 分离链接
+      class HashTableSeparateChaining extends HashTable {
+        constructor(toStrFn = defaultToString) {
+          this.toStrFn = toStrFn;
+          this.table = {};
+        }
+
+        // 重写put方法
+        put(key, value) {
+          if (key != null && value != null) {
+            // key和value都不能为空
+            const pos = super.hashCode(key);
+            if (this.table[pos] == null) {
+              // 如果为空
+              this.table[pos] = new LinkedList();
+            }
+            this.table[pos].push(new ValuePair(key, value));
+            return true;
+          }
+          return false;
+        }
+
+        // 重写get方法
+        get(key) {
+          const pos = super.hashCode(key);
+          const linkedList = this.table[pos];
+          if (linkedList != null && !linkedList.isEmpty()) {
+            let current = linkedList.getHead();
+            while (current != null) {
+              // 当前节点不为空
+              if (current.element.key === key) {
+                return current.element.value;
+              }
+              current = current.next;
+            }
+          }
+          return undefined;
+        }
+
+        // 重写remove方法
+        remove(key) {
+          const pos = super.hashCode(key);
+          const linkedList = this.table[pos];
+          if (linkedList != null && !linkedList.isEmpty()) {
+            let current = linkedList.getHead();
+            while (current != null) {
+              if (current.element.key === key) {
+                linkedList.remove(current.element);
+                if (linkedList.isEmpty()) {
+                  delete this.table[pageYOffset];
+                }
+                return true;
+              }
+              current = current.next;
+            }
+          }
+          return false;
+        }
+      }
+
+      // 线性探查：它处理冲突的方法是将元素直接存储到表中，而不是在单独的数据结构中
+
+      // 线性探查
+      class HashTableLineSearching extends HashTable {
+        constructor(toStrFn = defaultToString) {
+          this.toStrFn = toStrFn;
+          this.table = {};
+        }
+
+        // 重写put方法
+        put(key, value) {
+          if (key != null && value != null) {
+            // key和value都不能为空
+            const pos = super.hashCode(key);
+            if (this.table[pos] == null) {
+              // 如果为空
+              this.table[pos] = new ValuePair(key, value);
+            } else {
+              let index = pos + 1;
+              while (this.table[index] != null) {
+                index++;
+              }
+              this.table[index] = new ValuePair(key, value);
+            }
+            return true;
+          }
+          return false;
+        }
+
+        // 重写get方法
+        get(key) {
+          const pos = super.hashCode(key);
+          if (this.table[pos] != null) {
+            if (this.table[pos].key === key) {
+              return this.table[pos].value;
+            }
+            let index = pos + 1;
+            while (this.table[index] != null && this.table[index].key !== key) {
+              index++;
+            }
+            if (this.table[index] != null && this.table[index].key === key) {
+              return this.table[pos].value;
+            }
+          }
+          return undefined;
+        }
+
+        // 重写remove方法
+        remove(key) {
+          const pos = super.hashCode(key);
+          if (this.table[pos] != null) {
+            if (this.table[pos].key === key) {
+              delete this.table[pos];
+              this.verifyRemoveSideEffect(key, pos);
+              return true;
+            }
+
+            let index = pos + 1;
+            while (this.table[index] != null && this.table[index].key !== key) {
+              index++;
+            }
+
+            if (this.table[index] != null && this.table[index].key === key) {
+              delete this.table[index];
+              this.verifyRemoveSideEffect(key, index);
+              return true;
+            }
+          }
+          return false;
+        }
+
+        // 移除操作需要验证是否有副作用
+        verifyRemoveSideEffect(key, removePos) {
+          const hash = super.hashCode(key);
+          let index = removePos + 1;
+          while (this.table[index] != null) {
+            const posHash = super.hashCode(this.table[index].key);
+            if (posHash <= hash || posHash <= removePos) {
+              // 哈希值小于要移除元素的哈希值
+              this.table[removePos] = this.table[index];
+              delete this.table[index];
+              removePos = index;
+            }
+            index++;
+          }
+        }
+
+        // 创建更好的散列函数
+        djb2HashCode(key) {
+          const tableKey = this.toStrFn(key);
+          let hash = 5381;
+          for (let i = 0; i < tableKey.length; i++) {
+            hash = hash * 33 + tableKey.charCodeAt(i);
+          }
+          return hash & 1013;
+        }
+      }
     </script>
   </body>
 </html>
