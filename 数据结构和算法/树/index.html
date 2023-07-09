@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <script>
+      /*
+        树：对于存储需要快速查找的数据非常有用。
+        树的高度取决于所有节点深度的最大值。根节点在0层，子节点在第一层，以此类推。
+        节点的深度取决于它的祖先节点的数量
+
+        二叉树：节点最多只能有两个子节点：一个是左侧子节点，另一个是右侧子节点。
+        二叉搜索树：是二叉树中的一种，但是只允许你在左侧节点存储(比父节点)小的值，在右侧存储(比父节点)大的值。
+      */
+
+      const Compare = {
+        LESS_THAN: -1,
+        BIGGER_THAN: 1,
+      };
+
+      const defaultCompare = (a, b) => {
+        if (a === b) return 0;
+
+        return a < b ? Compare.LESS_THAN : Compare.BIGGER_THAN;
+      };
+
+      // 创建节点类
+      class Node {
+        constructor(key) {
+          this.key = key; // 节点值
+          this.left = null; // 左侧子节点引用
+          this.right = null; // 右侧子节点引用
+        }
+      }
+
+      // 创建二叉搜索树
+      class BinarySearchTree {
+        constructor(compareFn = defaultCompare) {
+          this.compareFn = compareFn; // 用来比较节点值
+          this.root = null; // 根节点
+        }
+
+        // 向二叉搜索树中插入一个键
+        insert(key) {
+          if (this.root == null) {
+            // 根节点不存在，就创建根节点
+            this.root = new Node(key);
+          } else {
+            // 根节点存在，将节点添加到根节点以外的位置
+            this.insertNode(this.root, key);
+          }
+        }
+
+        // 插入到根节点以外的位置
+        insertNode(node, key) {
+          if (this.compareFn(key, node.key) === Compare.LESS_THAN) {
+            // 插入的节点值小于node节点的值
+            if (node.left == null) {
+              // node节点左侧节点为空
+              node.left = new Node(key);
+            } else {
+              // node节点左侧节点不为空,以左侧节点为父节点，继续递归插入
+              this.insertNode(node.left, key);
+            }
+          } else {
+            // 插入的节点值大于node节点的值
+            if (node.right == null) {
+              // node节点右侧节点为空
+              node.right = new Node(key);
+            } else {
+              // node节点右侧不为空, 以右侧节点为父节点，继续递归插入
+              this.insertNode(node.right, key);
+            }
+          }
+        }
+
+        // 树的遍历：遍历一棵树是指访问树的每个节点并对它们进行某种操作的过程。
+        // 访问树的所有节点有三种方式：中序、先序和后序。
+
+        // 中序遍历：一种以上行顺序访问BST所有节点的遍历方式，也就是以最小到最大的顺序访问所有节点。
+        // 中序遍历的一种应用就是对树进行排序操作。
+        // 接收一个回调函数，用来定义我们对遍历到的每个节点进行的操作(也叫作访问者模式)
+        inOrderTraverse(callback) {
+          this.inOrderTraverseNode(this.root, callback);
+        }
+        // 由于我们在BST中最常实现的算法是递归，这里使用了一个辅助方法，来接收一个节点和对应的回调函数作为参数
+        inOrderTraverseNode(node, callback) {
+          if (node != null) {
+            this.inOrderTraverseNode(node.left, callback);
+            callback(node.key);
+            this.inOrderTraverseNode(node.right, callback);
+          }
+        }
+
+        // 先序遍历：以优先于后代节点的顺序访问每个节点。
+        // 先序遍历的一种应用是：打印一个结构化的文档。
+        preOrderTraverse(callback) {
+          this.preOrderTraverseNode(this.root, callback);
+        }
+        // 先序遍历：先访问节点本身，然后再访问它的左侧子节点，最后是右侧子节点
+        preOrderTraverseNode(node, callback) {
+          if (node != null) {
+            callback(node.key);
+            this.preOrderTraverseNode(node.left, callback);
+            this.preOrderTraverseNode(node.right, callback);
+          }
+        }
+
+        // 后序遍历：先访问节点的后代节点，再访问节点本身。
+        // 后序遍历的一种应用是计算一个目录及其子目录所有文件所占空间的大小
+        postOrderTraverse(callback) {
+          this.postOrderTraverseNode(this.root, callback);
+        }
+        postOrderTraverseNode(node, callback) {
+          if (node != null) {
+            this.postOrderTraverseNode(node.left, callback);
+            this.postOrderTraverseNode(node.right, callback);
+            callback(node.key);
+          }
+        }
+
+        // 搜索树中的值：最小、最大和特定值
+
+        // 搜索最小值
+        min() {
+          return this.minNode(this.root);
+        }
+        minNode(node) {
+          let current = node;
+          while (current != null && current.left != null) {
+            current = current.left;
+          }
+          return current;
+        }
+
+        // 搜索最大值
+        max() {
+          return this.maxNode(this.root);
+        }
+        maxNode(node) {
+          let current = node;
+          while (current != null && !current.right) {
+            current = current.right;
+          }
+          return current;
+        }
+
+        // 搜索一个特定的值
+        search(key) {
+          return this.searchNode(this.root, key);
+        }
+
+        searchNode(node, key) {
+          if (node == null) {
+            return false;
+          }
+          if (this.compareFn(key, node.key) === Compare.LESS_THAN) {
+            // 搜索的值小于当前node节点的值, 继续递归查找
+            return this.searchNode(node.left, key);
+          } else if (this.compareFn(key, node.key) === Compare.BIGGER_THAN) {
+            // 搜索的值大于当前node节点的值, 继续递归查找
+            return this.searchNode(node.right, key);
+          } else {
+            return true;
+          }
+        }
+
+        // 移除一个节点
+        remove(key) {
+          this.root = this.removeNode(this.root, key);
+        }
+
+        removeNode(node, key) {
+          if (node == null) {
+            return null;
+          }
+
+          if (this.compareFn(key, node.key) === Compare.LESS_THAN) {
+            node.left = this.removeNode(node.left, key);
+            return node;
+          } else if (this.compareFn(key, node.key) === Compare.BIGGER_THAN) {
+            node.right = this.removeNode(node.right, key);
+            return node;
+          } else {
+            // 键等于node.key
+
+            // 第一种情况，移除一个叶子节点
+            if (node.left == null && node.right == null) {
+              node = null;
+              return node;
+            }
+
+            // 第二种情况：移除有一个左侧或者右侧子节点的节点
+            if (node.left == null) {
+              node = node.right;
+              return node;
+            } else if (node.right == null) {
+              node = node.left;
+              return node;
+            }
+
+            // 移除有两个子节点的节点
+            const aux = this.minNode(node.right);
+            node.key = aux.key;
+            // 移除这个aux.key的节点
+            node.right = this.removeNode(node.right, aux.key);
+            return node;
+          }
+        }
+      }
+
+      const tree = new BinarySearchTree();
+      tree.insert(11);
+      tree.insert(7);
+      tree.insert(15);
+      tree.insert(5);
+      tree.insert(3);
+      tree.insert(9);
+      tree.insert(8);
+      tree.insert(10);
+      tree.insert(13);
+      tree.insert(12);
+      tree.insert(14);
+      tree.insert(20);
+      tree.insert(18);
+      tree.insert(25);
+      tree.insert(6);
+      // console.log("tree", tree);
+
+      const printNode = (value) => console.log(value);
+
+      // tree.inOrderTraverse(printNode);
+      // tree.preOrderTraverse(printNode);
+      // tree.postOrderTraverse(printNode);
+
+      // AVL树：是一种自平衡二叉搜索树，意思是任意一个节点左右两侧子树的高度之差最多为1。
+      // 既然AVL树是一个BST，只需要覆盖用来维持AVL树平衡的方法，也就是insert、insertNode和removeNode方法。所有其他的方法会被AVLTree类继承
+      // 节点的高度：从节点到其任意子节点的边的最大值。
+      // 在AVL树中，需要对每个节点计算右子树高度(hr)和左子树高度(hl)之间的差值，该值(hr-hl)应该为0、1或-1。如果结果不是这三个值之一，则需要平衡该AVL树，这就是平衡因子
+      const BalanceFactor = {
+        UNBALANCED_RIGHT: 1,
+        SLIGHTLY_UNBALANCED_RIGHT: 2,
+        BALANCED: 3,
+        SLIGHTLY_UNBALANCED_LEFT: 4,
+        UNBALANCED_LEFT: 5,
+      };
+      class AVLTree extends BinarySearchTree {
+        constructor(compareFn = defaultCompare) {
+          super(compareFn);
+          this.compareFn = compareFn;
+          this.root = null;
+        }
+
+        // 计算一个节点的高度
+        getNodeHeight(node) {
+          if (node == null) {
+            return -1;
+          }
+          return (
+            Math.max(
+              this.getNodeHeight(node.left),
+              this.getNodeHeight(node.right)
+            ) + 1
+          );
+        }
+
+        // 计算一个节点的平衡因子
+        getBalanceFactor(node) {
+          const heightDifference =
+            this.getNodeHeight(node.left) - this.getNodeHeight(node.right);
+          switch (heightDifference) {
+            case -2:
+              return BalanceFactor.UNBALANCED_RIGHT;
+            case -1:
+              return BalanceFactor.SLIGHTLY_UNBALANCED_RIGHT;
+            case 1:
+              return BalanceFactor.SLIGHTLY_UNBALANCED_LEFT;
+            case 2:
+              return BalanceFactor.UNBALANCED_LEFT;
+            default:
+              return BalanceFactor.BALANCED;
+          }
+        }
+
+        /*
+          平衡操作-AVL旋转
+          左-左(LL): 向右的单旋转
+          右-右(RR): 向左的单旋转
+          左-右(LR): 向右的双旋转(先LL，再RR)
+          右-左(RL): 向左的双旋转(先RR，再LL)
+        */
+
+        // 左-左(LL): 这种情况出现于节点的左侧子节点的高度大于右侧子节点的高度时，并且左侧子节点也是平衡或左侧较重的
+        rotationLL(node) {
+          const temp = node.left;
+          node.left = temp.right;
+          temp.right = node;
+          return temp;
+        }
+
+        // 右-右(RR): 这种情况出现于右侧子节点的高度大于左侧子节点的高度，并且右侧子节点也是平衡或者右侧较重的
+        rotationRR(node) {
+          const temp = node.right;
+          node.right = temp.left;
+          temp.left = node;
+          return node;
+        }
+
+        // 左-右(LR)：这种情况出现于左侧子节点的高度大于右侧子节点的高度，并且左侧子节点右侧偏重
+        rotationLR(node) {
+          node.left = this.rotationRR(node.left);
+          return this.rotationLL(node);
+        }
+
+        // 右-左(RL): 这种情况出现于右侧子节点的高度大于左侧子节点的高度，并且右侧子节点的左侧较重
+        rotationRL(node) {
+          node.right = this.rotationLL(node.right);
+          return this.rotationRR(node);
+        }
+
+        // 插入一个新节点
+        insert(key) {
+          this.root = this.insertNode(this.root, key);
+        }
+
+        // 重写insertNode方法
+        insertNode(node, key) {
+          // 像在BST树中一样插入节点
+          if (node == null) {
+            return new Node(key);
+          } else if (this.compareFn(key, node.key) === Compare.LESS_THAN) {
+            node.left = this.insertNode(node.left, key);
+          } else if (this.compareFn(key, node.key) === Compare.BIGGER_THAN) {
+            node.right = this.insertNode(node.right, key);
+          } else {
+            // 重复的键
+            return node;
+          }
+
+          // 如果需要，将树进行平衡操作
+          const balanceFactor = this.getBalanceFactor(node);
+          if (balanceFactor === BalanceFactor.UNBALANCED_LEFT) {
+            if (this.compareFn(key, node.left.key) === Compare.LESS_THAN) {
+              node = this.rotationLL(node);
+            } else {
+              // 先RR，在LL
+              return this.rotationLR(node);
+            }
+          }
+          if (balanceFactor === BalanceFactor.UNBALANCED_RIGHT) {
+            if (this.compareFn(key, node.right.key) === Compare.BIGGER_THAN) {
+              node = this.rotationRR(node);
+            } else {
+              this.rotationRL(node);
+            }
+          }
+
+          return node;
+        }
+
+        // 移除节点
+        removeNode(node, key) {
+          node = super.removeNode(node, key);
+          if (node == null) {
+            return node; // null， 不需要进行平衡
+          }
+
+          // 检测树是否平衡
+          const balanceFactor = this.getBalanceFactor(node);
+          if (balanceFactor === BalanceFactor.UNBALANCED_LEFT) {
+            // 左侧树不平衡
+            const balanceFactorLeft = this.getBalanceFactor(node.left);
+            if (
+              balanceFactorLeft === BalanceFactor.BALANCED ||
+              balanceFactorLeft === BalanceFactor.SLIGHTLY_UNBALANCED_LEFT
+            ) {
+              return this.rotationLL(node);
+            }
+
+            if (balanceFactorLeft === balanceFactor.SLIGHTLY_UNBALANCED_RIGHT) {
+              return this.rotationLR(node.left);
+            }
+          }
+          if (balanceFactor === BalanceFactor.UNBALANCED_RIGHT) {
+            const balanceFactorRight = this.getBalanceFactor(node.right);
+            if (
+              balanceFactorRight === BalanceFactor.BALANCED ||
+              balanceFactorRight === BalanceFactor.SLIGHTLY_UNBALANCED_RIGHT
+            ) {
+              return this.rotationRR(node);
+            }
+            if (balanceFactorRight === BalanceFactor.SLIGHTLY_UNBALANCED_LEFT) {
+              return this.rotationRL(node);
+            }
+          }
+          return node;
+        }
+      }
+
+      /*
+        红黑树: 也是一个自平衡二叉搜索树，AVL树插入和移除节点可能会造成旋转，所以我们需要一个包含多次插入和删除的自平衡树，红黑树是比较好的。
+        如果插入和删除频率比较低，那么AVL树比红黑树更好。
+
+        红黑树中，每个节点都遵循的规则：
+        1. 每个节点不是红色的就是黑色的
+        2. 树的根节点是黑的
+        3. 所有叶子节点都是黑的(用null引用表示的节点)
+        4. 如果一个节点是红的，那么它的两个子节点都是黑的
+        5. 不能有两个相邻的红节点，一个红节点不能有红的父节点或者子节点。
+        6. 从给定的节点到它的后代节点(Null 叶子节点)的所有路径包含相同数量的黑色节点
+      */
+
+      const Colors = {
+        BLACK: "black",
+        RED: "red",
+      };
+
+      class RedBlackNode extends Node {
+        constructor(key) {
+          super(key);
+          this.key = key;
+          this.color = Colors.RED;
+          this.parent = null;
+        }
+
+        isRed() {
+          return this.color === Colors.RED;
+        }
+      }
+
+      class RedBlackTree extends BinarySearchTree {
+        constructor(compareFn = defaultCompare) {
+          super(compareFn);
+          this.compareFn = compareFn;
+          this.root = null;
+        }
+
+        // 向红黑树中插入节点：除了插入的节点，我们还要在插入后的节点应用一种颜色，并且验证树是否满足红黑树的条件以及是否还是自平衡的
+        insert(key) {
+          if (this.root == null) {
+            this.root = new RedBlackNode(key);
+            this.root.color = Colors.BLACK;
+          } else {
+            const newNode = this.insertNode(this.root, key);
+            this.fixTreeProperties(newNode);
+          }
+        }
+
+        // 重写insertNode方法
+        // 保存了指向被插入节点父节点的引用，并且返回了节点的引用，这样我们可以在后面验证树的属性
+        // 要验证红黑树是否还是平衡的以及满足它的所有要求，我们需要使用两个概念：重新填色和旋转。
+        insertNode(node, key) {
+          if (this.compareFn(key, node.key) === Compare.LESS_THAN) {
+            if (node.left == null) {
+              node.left = new RedBlackNode(key);
+              node.left.parent = node;
+              return node.left;
+            } else {
+              return this.insertNode(node.left, key);
+            }
+          } else if (node.right == null) {
+            node.right = new RedBlackNode(key);
+            node.right.parent = node;
+            return node.right;
+          } else {
+            return this.insertNode(node.right, key);
+          }
+        }
+
+        // 插入节点后，新节点将会是红色，这不会影响黑色节点的数量(规则6)，但会影响规则5: 两个后代红节点不能共存。
+        // 如果插入的父节点是黑色，那没有问题，如果是红色，违反规则5，要解决这个冲突，只需要改变父节点、祖父节点和叔节点。
+        fixTreeProperties(node) {
+          while (node && node.parent && node.parent.color.isRed()) {
+            //  节点存在，父节点也存在并且父节点是红色的
+            let parent = node.parent; // 父节点
+            const grandParent = parent.parent; // 祖父节点
+
+            if (grandParent && grandParent.left === parent) {
+              // 情况A：父节点是左侧子节点
+              const uncle = grandParent.right; // 叔节点
+
+              // 情况1A：叔节点也是红色节点-只需要重新填色
+              if (uncle && uncle.color === Colors.RED) {
+                grandParent.color = Colors.RED; // 祖父节点也为红色
+                parent.color = Colors.BLACK; // 父节点为黑色
+                uncle.color = Colors.BLACK; // 叔节点为黑色
+                node = grandParent;
+              } else {
+                // 情况2A：节点是右侧子节点-左旋转(LR)
+                if (node === parent.right) {
+                  this.rotationRR(parent);
+                  node = parent; // 更新node
+                  parent = node.parent; // 更新parent
+                }
+                // 情况3A：节点是左侧子节点-右旋转(LL)
+                this.rotationLL(grandParent);
+                parent.color = Colors.BLACK;
+                grandParent.color = Colors.RED;
+                node = parent;
+              }
+            } else {
+              // 情况B：父节点是右侧子节点
+              const uncle = grandParent.left;
+
+              // 情况1B: 叔节点是红色-只需要重写填色
+              if (uncle && uncle.color === Colors.RED) {
+                grandParent.color = Colors.RED;
+                parent.color = Colors.BLACK;
+                uncle.color = Colors.BLACK;
+                node = grandParent;
+              } else {
+                // 情况2B：节点是左侧子节点-右旋转(RL)
+                if (node === parent.left) {
+                  this.rotationLL(parent);
+                  node = parent;
+                  parent = node.parent;
+                }
+                // 情况3B：节点是右侧子节点-左旋转(RR)
+                this.rotationRR(grandParent);
+                parent.color = Colors.BLACK;
+                grandParent.color = Colors.RED;
+                node = parent;
+              }
+            }
+          }
+        }
+
+        // 红黑树旋转
+
+        // 右旋转
+        rotationLL(node) {
+          const temp = node.left;
+          node.left = temp.right;
+          if (temp.right && temp.right.key) {
+            temp.right.parent = node;
+          }
+          temp.parent = node.parent;
+          if (!node.parent) {
+            this.root = temp;
+          } else {
+            if (node === node.parent.left) {
+              node.parent.left = temp;
+            } else {
+              node.parent.right = temp;
+            }
+          }
+          temp.right = node;
+          node.parent = temp;
+        }
+
+        // 右-右旋转
+        rotationRR(node) {
+          const temp = node.right;
+          node.right = temp.left;
+          if (temp.left && temp.left.key) {
+            temp.left.parent = node;
+          }
+          temp.parent = node.parent;
+          if (!node.parent) {
+            this.root = temp;
+          } else {
+            if (node === node.parent.left) {
+              node.parent.left = temp;
+            } else {
+              node.parent.right = temp;
+            }
+          }
+          temp.left = node;
+          node.parent = temp;
+        }
+      }
+    </script>
+  </body>
+</html>
