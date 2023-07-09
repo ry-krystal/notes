@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <script>
+      /* 
+        递归
+      */
+
+      // 利用迭代实现斐波那切契数
+      const fibonacciIterative = (n) => {
+        if (n < 1) return 0;
+        if (n <= 2) return 1;
+
+        let fibNMinus2 = 0;
+        let fibNMinus1 = 1;
+        let fibN = n;
+
+        for (let i = 2; i <= n; i++) {
+          fibN = fibNMinus1 + fibNMinus2; // f(n-1) + f(n-2)
+          fibNMinus2 = fibNMinus1;
+          fibNMinus1 = fibN;
+        }
+
+        return fibN;
+      };
+
+      // 递归求解斐波那切契数
+      const fibonacci = (n) => {
+        if (n < 1) return 0;
+        if (n <= 2) return 1;
+        return fibonacci(n - 1) + fibonacci(n - 2);
+      };
+
+      // 记忆化斐波那切契数
+      const fibonacciMemoization = (n) => {
+        const memo = [0, 1];
+        const fibonacci = (n) => {
+          if (memo[n] != null) return memo[n];
+          return (memo[n] = fibonacci(n - 1, memo) + fibonacci(n - 2, memo));
+        };
+        return fibonacci;
+      };
+
+      /* 
+        迭代比递归快很多，但是递归更容易理解，代码通常更少。另外，对一些算法来说，迭代的解法可能不可用，而且有了
+        尾调用优化，递归的多余消耗甚至可能被消除
+      */
+    </script>
+  </body>
+</html>
