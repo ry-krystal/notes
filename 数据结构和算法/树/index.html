@@ -490,7 +490,7 @@
                 uncle.color = Colors.BLACK; // 叔节点为黑色
                 node = grandParent;
               } else {
-                // 情况2A：节点是右侧子节点-左旋转(LR)
+                // 情况2A：节点是右侧子节点-左旋转(RR)
                 if (node === parent.right) {
                   this.rotationRR(parent);
                   node = parent; // 更新node
@@ -513,7 +513,7 @@
                 uncle.color = Colors.BLACK;
                 node = grandParent;
               } else {
-                // 情况2B：节点是左侧子节点-右旋转(RL)
+                // 情况2B：节点是左侧子节点-右旋转(LL)
                 if (node === parent.left) {
                   this.rotationLL(parent);
                   node = parent;
