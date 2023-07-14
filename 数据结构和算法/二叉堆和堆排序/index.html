@@ -200,16 +200,80 @@
         }
       }
 
-      const maxHeap = new MaxHeap();
-      maxHeap.insert(2);
-      maxHeap.insert(3);
-      maxHeap.insert(4);
-      maxHeap.insert(5);
+      // const maxHeap = new MaxHeap();
+      // maxHeap.insert(2);
+      // maxHeap.insert(3);
+      // maxHeap.insert(4);
+      // maxHeap.insert(5);
 
-      maxHeap.insert(1);
+      // maxHeap.insert(1);
 
-      console.log(maxHeap.size());
-      console.log(maxHeap.findMinimun());
+      // console.log(maxHeap.size());
+      // console.log(maxHeap.findMinimun());
+
+      /*
+         可以使用二叉堆数据结构来帮助我们创建堆排序算法：
+         1. 用数组创建一个最大堆用作源数据
+         2. 在创建最大堆后，最大的值会被存储在堆的第一个位置。要将它替换为堆的最后一个值，将堆的大小减1.
+         3. 最后，我们将堆的根节点下移并重复步骤2直到堆的大小为1。
+
+         我们用最大堆得到一个升序排列的数组(从最小到最大)。如果我们想要这个数组按降序排列，可以用最小堆代替。
+      */
+
+      const heapSort = (array, compareFn = defaultCompare) => {
+        let heapSize = array.length;
+        buildMaxHeap(array, compareFn);
+        while (heapSize > 1) {
+          swap(array, 0, --heapSize);
+          heapify(array, 0, heapSize, compareFn);
+        }
+        return array;
+      };
+
+      // 要构建最大堆，可以使用下面的函数
+      const buildMaxHeap = (array, compareFn) => {
+        for (let i = Math.floor(array.length / 2); i >= 0; i--) {
+          heapify(array, i, array.length, compareFn);
+        }
+        return array;
+      };
+
+      /**
+       * @description: 类似于siftDown
+       * @param {*} array
+       * @param {*} index
+       * @param {*} size
+       * @param {*} compareFn
+       * @return {*}
+       */
+      const heapify = (array, index, size, compareFn) => {
+        let element = index;
+        const left = 2 * index + 1;
+        const right = 2 * index + 2;
+
+        if (
+          left < size &&
+          compareFn(array[element], array[left]) === Compare.BIGGER_THAN
+        ) {
+          element = left;
+        }
+
+        if (
+          right < size &&
+          compareFn(array[element], array[right]) === Compare.BIGGER_THAN
+        ) {
+          element = right;
+        }
+
+        if (index !== element) {
+          swap(array, index, element);
+          heapify(element);
+        }
+      };
+
+      const array = [7, 6, 3, 5, 4, 1, 2];
+      console.log(array);
+      console.log(heapSort(array));
     </script>
   </body>
 </html>
