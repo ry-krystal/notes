@@ -473,32 +473,77 @@
         };
       };
 
-      const shortestPathA = BFS(graph, myVertices[0]);
-      console.log(shortestPathA);
+      // const shortestPathA = BFS(graph, myVertices[0]);
+      // console.log(shortestPathA);
 
       // 通过前溯点数组，我们可以用下面这段代码来构建从顶点A到其他顶点的路径。
-      const fromVertex = myVertices[2];
+      // const fromVertex = myVertices[2];
+      // for (let i = 1; i < myVertices.length; i++) {
+      //   const toVertex = myVertices[i];
+      //   const path = new Stack();
 
-      for (let i = 1; i < myVertices.length; i++) {
-        const toVertex = myVertices[i];
-        const path = new Stack();
+      //   for (
+      //     let v = toVertex;
+      //     v && v !== fromVertex;
+      //     v = shortestPathA.predecessors[v]
+      //   ) {
+      //     path.push(v);
+      //   }
+      //   if (path.size()) {
+      //     path.push(fromVertex);
+      //     let s = path.pop();
+      //     while (!path.isEmpty()) {
+      //       s += " - " + path.pop();
+      //     }
+      //     console.log(s);
+      //   }
+      // }
 
-        for (
-          let v = toVertex;
-          v && v !== fromVertex;
-          v = shortestPathA.predecessors[v]
-        ) {
-          path.push(v);
-        }
-        if (path.size()) {
-          path.push(fromVertex);
-          let s = path.pop();
-          while (!path.isEmpty()) {
-            s += " - " + path.pop();
+      /* 
+        深度优先搜索：将会从第一个指定的顶点开始遍历图，沿着路径知道这条路径最后一个顶点被访问了，
+        接着原路回退并探索下一条路径，先深度后广度地访问顶点
+
+        要访问顶点v,步骤如下：
+        1. 标注v为被发现的(灰色)
+        2. 对于v的所有未访问(白色)的邻点w, 访问顶点w。
+        3. 标注v为已被探索的(黑色)。
+
+        深度优先搜索的步骤是递归的，这意味着深度优先搜索使用栈来存储函数调用
+      */
+
+      const depthFirstSearch = (graph, callback) => {
+        // 获取所有的顶点
+        const vertices = graph.getVertices();
+        // 获取邻接表
+        const adjList = graph.getAdjList();
+        // 初始化颜色
+        const color = initializeColor(vertices);
+
+        for (let i = 0; i < vertices.length; i++) {
+          if (color[vertices[i]] === Colors.WHITE) {
+            depthFirstSearchVisit(vertices[i], color, adjList, callback);
           }
-          console.log(s);
         }
-      }
+      };
+
+      const depthFirstSearchVisit = (u, color, adjList, callback) => {
+        color[u] = Colors.GREY;
+        if (callback) {
+          callback(u);
+        }
+        // 获取所有的邻接点
+        const neighbors = adjList.get(u);
+        for (let i = 0; i < neighbors.length; i++) {
+          const w = neighbors[i];
+          if (color[w] === Colors.WHITE) {
+            depthFirstSearchVisit(w, color, adjList, callback);
+          }
+        }
+        color[u] = Colors.BLACK;
+      };
+
+      const printVertex = (value) => console.log("Visited vertex：" + value);
+      depthFirstSearch(graph, printVertex);
     </script>
   </body>
 </html>
