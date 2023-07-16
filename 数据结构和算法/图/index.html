@@ -20,6 +20,74 @@
         我们可以用列表(数组)、链表，甚至是散列表或是字典表示相邻顶点列表。我们将使用邻接表表示法
       */
 
+      class Stack {
+        constructor() {
+          this._count = 0; // 记录元素的数量
+          this._items = {};
+        }
+
+        // 插入元素
+        push(element) {
+          this._items[this._count] = element;
+          this._count++; // 数量+1
+        }
+
+        // 栈的大小
+        size() {
+          return this._count;
+        }
+
+        // 栈是否为空
+        isEmpty() {
+          return this._count === 0;
+        }
+
+        // 从栈中弹出元素
+        pop() {
+          // 首先判断栈中有无元素
+          if (this.isEmpty()) return;
+          this._count--; // 每弹出一个元素，数量-1
+          const result = this._items[this._count]; // 找到要弹出的元素
+          delete this._items[this._count]; // 删除元素
+          return result;
+        }
+
+        // 查看栈顶的值
+        peek() {
+          if (this.isEmpty()) {
+            // 是否为空
+            return;
+          }
+          // 返回栈顶元素
+          return this._items[this._count - 1];
+        }
+
+        // 清空该栈
+        clear() {
+          this._items = {};
+          this._count = 0;
+
+          // 也可以遵循LIFO原则，使用下面的逻辑来移除栈中的所有元素
+          // while (!this.isEmpty()) {
+          //   this.pop();
+          // }
+        }
+
+        // 创建toString()方法
+        toString() {
+          if (this.isEmpty()) {
+            return "";
+          }
+          const { 0: firstItem } = this._items;
+          let objString = `${firstItem}`;
+          for (let i = 1; i < this._count; i++) {
+            objString += `,${this._items[i]}`;
+          }
+
+          return objString;
+        }
+      }
+
       const defaultToString = (item) => {
         if (item === null) {
           return "NULL";
@@ -213,7 +281,224 @@
       graph.addEdge("B", "F");
       graph.addEdge("E", "I");
 
-      console.log(graph.toString());
+      // console.log(graph.toString());
+
+      /* 
+        图的遍历：广度优先搜索(BFS)和深度优先搜索(DFS)。图遍历可以用来寻找特定的顶点或寻找两个顶点之间的路径，
+        检查图是否连通，检查图是否含有环，等等。
+
+        图的遍历算法的思想是必须追踪每个第一次访问的节点，并且追踪有哪些及诶点还没有被完全探索。
+        对于每一条边所连接的没有被访问过的顶点，将其标注为被发现的，并将其加进待访问顶点列表中。
+
+        算法        数据结构   描述
+        深度优先搜索：栈       将顶点存入栈，顶点是沿着路径被探索的，存在新的相邻顶点就去访问
+        广度优先搜索：队列     将顶点存入队列，最先入队列的顶点先被探索
+
+        当要标注已经访问过的顶点时，用三种颜色来反映它们的状态。
+        - 白色：表示该顶点还没有被访问
+        - 灰色：表示该顶点被访问过，但并未被探索过
+        - 黑色: 表示该顶点被访问过且被完全探索过
+      */
+
+      // 为了有助于在广度优先和深度优先算法中标记顶点，我们要使用Colors变量：
+      const Colors = {
+        WHITE: 0,
+        GREY: 1,
+        BLACK: 2,
+      };
+
+      // 两个算法还需要一个辅助对象来帮助存储顶点是否被访问过。在每个算法的开头，所有的顶点会被
+      // 标记为未访问(白色)。我们要用下面的函数来初始化每个顶点的颜色。
+
+      const initializeColor = (vertices) => {
+        const color = {};
+        for (let i = 0; i < vertices.length; i++) {
+          color[vertices[i]] = Colors.WHITE;
+        }
+        return color;
+      };
+
+      // 创建队列
+      class Queue {
+        constructor() {
+          // 控制队列的大小
+          this.count = 0;
+          // 用来追踪第一个元素
+          this.lowestCount = 0;
+          // 可以使用数组，但是使用对象效率更高
+          this.items = {};
+        }
+
+        // 向队列尾部添加一个(或多个)项
+        enqueue(element) {
+          this.items[this.count] = element;
+          this.count++;
+        }
+
+        // 从队列移除元素
+        dequeue() {
+          if (this.isEmpty()) return;
+          // 找到队列头部的元素
+          const result = this.items[this.lowestCount];
+          // 删除队列头部元素
+          delete this.items[this.lowestCount];
+          this.lowestCount++;
+          return result;
+        }
+
+        // 查看队列头元素
+        peek() {
+          if (this.isEmpty()) return;
+          return this.items[this.lowestCount];
+        }
+
+        // 检验队列是否为空
+        isEmpty() {
+          return this.size() === 0;
+        }
+
+        // 获取队列的长度
+        size() {
+          return this.count - this.lowestCount;
+        }
+
+        // 清空队列
+        clear() {
+          this.items = {};
+          this.count = 0;
+          this.lowestCount = 0;
+        }
+
+        // toString方法
+        toString() {
+          if (this.isEmpty()) return;
+
+          let objString = `${this.items[this.lowestCount]}`;
+          for (let i = this.lowestCount + 1; i < this.count; i++) {
+            objString = `${objString},${this.items[i]}`;
+          }
+
+          return objString;
+        }
+      }
+
+      /* 
+        广度优先搜索算法会从指定的第一个顶点开始遍历图，先访问其所有的邻点(相邻顶点)，
+        就像一次访问图的一层。换句话说，就是现宽后深地访问顶点。
+
+        1. 创建一个队列Q
+        2. 标注v为被发现的(灰色)，并将v入队列Q
+        3. 如果Q为非空，则运行以下步骤：
+          a. 将u从Q中出队列
+          b. 标注u为被发现的(灰色)
+          c. 将u所有未被访问过的邻点(白色)入队列
+          d. 标注u为已被探索的(黑色)
+      */
+      const breadFirstSearch = (graph, startVertex, callback) => {
+        const vertices = graph.getVertices();
+        const adjList = graph.getAdjList();
+        const color = initializeColor(vertices);
+
+        // 创建队列
+        const queue = new Queue();
+        // 将队列中加入开始顶点
+        queue.enqueue(startVertex);
+
+        while (!queue.isEmpty()) {
+          const u = queue.dequeue();
+          const neighbors = adjList.get(u);
+          color[u] = Colors.GREY;
+          for (let i = 0; i < neighbors.length; i++) {
+            const w = neighbors[i];
+            if (color[w] === Colors.WHITE) {
+              color[w] = Colors.GREY;
+              queue.enqueue(w);
+            }
+          }
+          color[u] = Colors.BLACK;
+          if (callback) {
+            callback(u);
+          }
+        }
+      };
+
+      // const printVertex = (value) => console.log("Visited vertex：" + value);
+      // breadFirstSearch(graph, myVertices[0], printVertex);
+
+      /* 
+        使用BFS寻找最短路径
+        给出一个图G和源顶点v, 找出每个顶点u和v之间最短路径的距离(以边的数量计)
+        我们可以修改breadFirstSearch方法以返回给我们一些信息：
+
+        - 从v到u的距离distances[u]
+        - 前溯点predecessors[u]，用来推到出从v到其他每个顶点u的最短路径
+      */
+
+      // 改进过的广度优先方法
+      const BFS = (graph, startVertex) => {
+        const vertices = graph.getVertices();
+        const adjList = graph.getAdjList();
+        const color = initializeColor(vertices);
+
+        const queue = new Queue();
+        const distances = {};
+        const predecessors = {};
+        queue.enqueue(startVertex);
+
+        for (let i = 0; i < vertices.length; i++) {
+          distances[vertices[i]] = 0;
+          predecessors[vertices[i]] = null;
+        }
+
+        while (!queue.isEmpty()) {
+          // 出队列
+          const u = queue.dequeue();
+          const neighbors = adjList.get(u);
+          color[u] = Colors.GREY;
+          for (let i = 0; i < neighbors.length; i++) {
+            const w = neighbors[i];
+            if (color[w] === Colors.WHITE) {
+              color[w] = Colors.GREY;
+              distances[w] = distances[u] + 1;
+              predecessors[w] = u;
+              queue.enqueue(w);
+            }
+          }
+          color[u] = Colors.BLACK;
+        }
+
+        return {
+          distances,
+          predecessors,
+        };
+      };
+
+      const shortestPathA = BFS(graph, myVertices[0]);
+      console.log(shortestPathA);
+
+      // 通过前溯点数组，我们可以用下面这段代码来构建从顶点A到其他顶点的路径。
+      const fromVertex = myVertices[2];
+
+      for (let i = 1; i < myVertices.length; i++) {
+        const toVertex = myVertices[i];
+        const path = new Stack();
+
+        for (
+          let v = toVertex;
+          v && v !== fromVertex;
+          v = shortestPathA.predecessors[v]
+        ) {
+          path.push(v);
+        }
+        if (path.size()) {
+          path.push(fromVertex);
+          let s = path.pop();
+          while (!path.isEmpty()) {
+            s += " - " + path.pop();
+          }
+          console.log(s);
+        }
+      }
     </script>
   </body>
 </html>
