@@ -20,7 +20,6 @@
       */
 
       // 工具函数
-
       const Compare = {
         LESS_THAN: -1,
         BIGGER_THAN: 1,
@@ -28,7 +27,6 @@
 
       const defaultCompare = (a, b) => {
         if (a === b) return 0;
-
         return a < b ? Compare.LESS_THAN : Compare.BIGGER_THAN;
       };
 
@@ -159,7 +157,7 @@
             element = right;
           }
 
-          console.log(index, element);
+          // console.log(index, element);
           if (index !== element) {
             swap(this.heap, index, element);
             this.siftDown(element);
@@ -271,9 +269,9 @@
         }
       };
 
-      const array = [7, 6, 3, 5, 4, 1, 2];
-      console.log(array);
-      console.log(heapSort(array));
+      // const array = [7, 6, 3, 5, 4, 1, 2];
+      // console.log(array);
+      // console.log(heapSort(array));
     </script>
   </body>
 </html>

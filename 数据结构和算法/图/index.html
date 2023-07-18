@@ -8,7 +8,7 @@
   </head>
   <body>
     <script>
-      /* 
+      /*
         图
         图是由一组边连接的节点(或顶点)。
 
@@ -197,14 +197,14 @@
         }
       }
 
-      /* 
+      /*
         创建Graph类
         可以接收一个参数来表示图是否有向，默认情况下，图是无向的。
         可以使用一个数组来存储图中所有顶点的名字，以及一个字典来存邻接表。
         字典将会使用顶点的名字作为键，邻接顶点列表作为值。
 
         接下来实现两个方法：1. 一个用来向图中添加一个新的顶点(因为图实例化之后是空的) 2.另外一个方法用来添加顶点之间的边。
-       
+
       */
       // 创建Graph类
       class Graph {
@@ -283,7 +283,7 @@
 
       // console.log(graph.toString());
 
-      /* 
+      /*
         图的遍历：广度优先搜索(BFS)和深度优先搜索(DFS)。图遍历可以用来寻找特定的顶点或寻找两个顶点之间的路径，
         检查图是否连通，检查图是否含有环，等等。
 
@@ -382,7 +382,7 @@
         }
       }
 
-      /* 
+      /*
         广度优先搜索算法会从指定的第一个顶点开始遍历图，先访问其所有的邻点(相邻顶点)，
         就像一次访问图的一层。换句话说，就是现宽后深地访问顶点。
 
@@ -425,7 +425,7 @@
       // const printVertex = (value) => console.log("Visited vertex：" + value);
       // breadFirstSearch(graph, myVertices[0], printVertex);
 
-      /* 
+      /*
         使用BFS寻找最短路径
         给出一个图G和源顶点v, 找出每个顶点u和v之间最短路径的距离(以边的数量计)
         我们可以修改breadFirstSearch方法以返回给我们一些信息：
@@ -499,7 +499,7 @@
       //   }
       // }
 
-      /* 
+      /*
         深度优先搜索：将会从第一个指定的顶点开始遍历图，沿着路径知道这条路径最后一个顶点被访问了，
         接着原路回退并探索下一条路径，先深度后广度地访问顶点
 
@@ -544,6 +544,62 @@
 
       const printVertex = (value) => console.log("Visited vertex：" + value);
       depthFirstSearch(graph, printVertex);
+
+      /*
+        探索深度优先算法
+        对于给定的图G，我们希望深度优先搜索算法遍历图G的所有节点，构建”森林“(有根树的一个集合)以及一组源顶点(根)，
+        并输出两个数组：发现时间和完成探索时间。
+
+        - 顶点u的发现时间d[u]
+        - 当顶点u被标注为黑色时，u的完成探索时间f[u]
+        - 顶点u的前溯点p[u]
+      */
+      const DFS = (graph) => {
+        // 获取所有的顶点
+        const vertices = graph.getVertices();
+        // 获取领接表
+        const adjList = graph.getAdjList();
+        // 初始化颜色
+        const color = initializeColor(vertices);
+        // 被发现的顶点
+        const d = {};
+        // 完成探索的顶点
+        const f = {};
+        // 前溯点
+        const p = {};
+        const time = { count: 0 };
+        for (let i = 0; i < vertices.length; i++) {
+          f[vertices[i]] = 0;
+          d[vertices[i]] = 0;
+          p[vertices[i]] = null;
+        }
+        for (let i = 0; i < vertices.length; i++) {
+          if (color[vertices[i]] === Colors.WHITE) {
+            DFSVisit(vertices[i], color, d, f, p, time, adjList);
+          }
+        }
+
+        return {
+          discovery: d,
+          finished: f,
+          predecessors: p,
+        };
+      };
+
+      const DFSVisit = (u, color, d, f, p, time, adjList) => {
+        color[u] = Colors.GREY;
+        d[u] = ++time.count;
+        const neighbors = adjList.get(u);
+        for (let i = 0; i < neighbors.length; i++) {
+          const w = neighbors[i];
+          if (color[w] === Colors.WHITE) {
+            p[w] = u;
+            DFSVisit(w, color, d, f, p, time, adjList);
+          }
+        }
+        color[u] = Colors.BLACK;
+        f[u] = ++time.count;
+      };
     </script>
   </body>
 </html>
