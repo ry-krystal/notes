@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <script>
+      /*
+        冒泡排序：时间复杂度：O(n^2)
+      */
+      const defaultCompare = {
+        LESS_THAN: -1,
+        BIGGER_THAN: 1,
+      };
+
+      // 数组交换
+      const swap = (array, a, b) => {
+        [array[a], array[b]] = [array[b], array[b]];
+      };
+      // 冒泡排序
+      const bubbleSort = (array, compareFn = defaultCompare) => {
+        const { length } = array;
+        for (let i = 0; i < length; i++) {
+          // 每个数都要进行比较
+          for (let j = 0; j < length - 1; j++) {
+            // 每个数都要进行两量比较
+            if (compareFn(array[j], array[j + 1]) === Compare.BIGGER_THAN) {
+              swap(array, j, j + 1);
+            }
+          }
+        }
+        return array;
+      };
+      // 改进的冒泡排序
+      const modifiedBubbleSort = (array, compareFn = defaultCompare) => {
+        const { length } = array;
+        for (let i = 0; i < length; i++) {
+          for (let j = 0; j < length - 1 - i; j++) {
+            // 从内层循环减去外循环中已跑过的轮数
+            if (compareFn(array[j], array[j + 1]) === Compare.BIGGER_THAN) {
+              swap(array, j, j + 1);
+            }
+          }
+        }
+        return array;
+      };
+
+      /*
+        选择排序：原址比较算法，找到数据结构中的最小值并将其放置在第一位，接着找到
+        第二小的值并将其放在第二位，以此类推。
+        时间复杂度：O(n^2)
+      */
+      const selectionSort = (array, compareFn = defaultCompare) => {
+        const { length } = array;
+        let indexMin;
+        for (let i = 0; i < length - 1; i++) {
+          indexMin = i;
+          for (let j = i; j < length; j++) {
+            if (
+              compareFn(array[indexMin], array[j]) === compareFn.BIGGER_THAN
+            ) {
+              indexMin = j;
+            }
+          }
+          if (i !== indexMin) {
+            swap(array, i, indexMin);
+          }
+        }
+        return array;
+      };
+
+      // 插入排序
+      const insertionSort = (array, compareFn = defaultCompare) => {
+        const { length } = array;
+        let temp;
+        for (let i = 1; i <script length; i++) {
+          let j = i;
+          temp = array[i];
+          while (
+            j > 0 &&
+            compareFn(array[j - 1], temp) === compareFn.BIGGER_THAN
+          ) {
+            // 将前一项赋值给当前项
+            array[j] = array[j - 1];
+            // 将j索引减1
+            j--;
+          }
+          array[j] = temp;
+        }
+        return array;
+      };
+
+      /*
+        归并排序：是第一个可以实际使用的排序算法：其复杂度为O(nlog(n)),
+        归并排序是一种分而治之算法。其思想是将原始数组切分成小数组，直到每个小数组只有一个位置，
+        接着将小数组并归成较大的数组，直到最后只有一个排序完毕的大数组。
+
+        由于是分治法，归并排序也是递归的。我们要将算法分为两个函数：第一个负责将一个大数组分多个小数组并调用
+        用来排序的辅助函数。我们来看看这里声明的主要函数。
+      */
+      const mergeSort = (array, compareFn = defaultCompare) => {
+        if (array.length > 1) {
+          const { length } = array;
+          const middle = Math.floor(length / 2)
+          const left = mergeSort(array.slice(0, middle), compareFn)
+          const right = mergeSort(array.slice(middle, length), compareFn)
+          array = merge(left, right, compareFn)
+        }
+        return array
+      };
+
+      /**
+       * @description: 负责合并和排序小数组来产生大数组，直接到原始数组并已排序完成。
+       * @param {*} left
+       * @param {*} right
+       * @param {*} compareFn
+       * @return {*}
+       */
+      const merge = (left, right, compareFn) => {
+        let i = 0;
+        let j = 0;
+        const result = [];
+        while(i < left.length && j < right.length) {
+          result.push(
+            compareFn(left[i], right[j]) === Compare.LESS_THAN ? left[i++] : right[j++]
+          )
+        }
+        return result.concat(i < left.length ? left.slice(i) : right.slice(j))
+      }
+    </script>
+  </body>
+</html>
