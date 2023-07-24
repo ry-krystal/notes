@@ -76,7 +76,7 @@
       const insertionSort = (array, compareFn = defaultCompare) => {
         const { length } = array;
         let temp;
-        for (let i = 1; i <script length; i++) {
+        for (let i = 1; i < length; i++) {
           let j = i;
           temp = array[i];
           while (
@@ -104,12 +104,12 @@
       const mergeSort = (array, compareFn = defaultCompare) => {
         if (array.length > 1) {
           const { length } = array;
-          const middle = Math.floor(length / 2)
-          const left = mergeSort(array.slice(0, middle), compareFn)
-          const right = mergeSort(array.slice(middle, length), compareFn)
-          array = merge(left, right, compareFn)
+          const middle = Math.floor(length / 2);
+          const left = mergeSort(array.slice(0, middle), compareFn);
+          const right = mergeSort(array.slice(middle, length), compareFn);
+          array = merge(left, right, compareFn);
         }
-        return array
+        return array;
       };
 
       /**
@@ -123,13 +123,68 @@
         let i = 0;
         let j = 0;
         const result = [];
-        while(i < left.length && j < right.length) {
+        while (i < left.length && j < right.length) {
           result.push(
-            compareFn(left[i], right[j]) === Compare.LESS_THAN ? left[i++] : right[j++]
-          )
+            compareFn(left[i], right[j]) === Compare.LESS_THAN
+              ? left[i++]
+              : right[j++]
+          );
         }
-        return result.concat(i < left.length ? left.slice(i) : right.slice(j))
-      }
+        return result.concat(i < left.length ? left.slice(i) : right.slice(j));
+      };
+
+      /*
+        快速排序：复杂度为O(nlog(n))，且性能通常比其他复杂度为O(nlog(n))的排序算法要好。
+        和归并排序一样，快速排序也使用分而治之的方法，将原始数组分为较小的数组(但它没有像归并排序那样将它们分隔开)。
+
+        1. 首先，从数组中选择一个值作为主元(pivot)，也就是数组中间的那个值。
+        2. 创建两个指针(引用)，左边一个指向数组第一个值，右边一个指向数组最后一个值。移动左指针直到我们找到一个比主元大的值，
+          接着，移动右指针直到找到一个比主元小的值，然后交换它们，重复这个过程，直到左指针超过了右指针。这个过程将使得比主元小
+          的值都排在主元之前，而比主元大的值排在主元之后，这一步叫作划分(partition)操作。
+        3. 接着，算法对划分后的小数组(较主元小的值组成的子数组，以及较主元大的值组成的子数组)重复之前的两个步骤，直到数组已完全排序。
+      */
+
+      const quickSort = (array, compareFn = defaultCompare) => {
+        return quick(array, 0, array.length - 1, compareFn);
+      };
+
+      const quick = (array, left, right, compareFn) => {
+        let index;
+        if (array.length > 1) {
+          // 该变量能够将子数组分离为较小数组和较大数组，这样就能再次调用quick函数了。
+          index = partition(array, left, right, compareFn);
+          if (left < index - 1) {
+            quick(array, left, index - 1, compareFn);
+          }
+
+          if (index < right) {
+            quick(array, index, right, compareFn);
+          }
+        }
+        return array;
+      };
+
+      // 划分过程
+      const partition = (array, left, right, compareFn) => {
+        const pivot = array[Math.floor((right + left) / 2)];
+        let i = left;
+        let j = right;
+        while (i <= j) {
+          while (compareFn(array[i], pivot) === compareFn.LESS_THAN) {
+            i++;
+          }
+          while (compareFn(array[j], pivot) === compareFn.BIGGER_THAN) {
+            j--;
+          }
+
+          if (i <= j) {
+            swap(array, i, j);
+            i++;
+            j--;
+          }
+        }
+        return i;
+      };
     </script>
   </body>
 </html>
