@@ -11,14 +11,20 @@
       /*
         冒泡排序：时间复杂度：O(n^2)
       */
-      const defaultCompare = {
+      const Compare = {
         LESS_THAN: -1,
         BIGGER_THAN: 1,
       };
 
+      const defaultCompare = (a, b) => {
+        if (a === b) return 0;
+
+        return a < b ? Compare.LESS_THAN : Compare.BIGGER_THAN;
+      };
+
       // 数组交换
       const swap = (array, a, b) => {
-        [array[a], array[b]] = [array[b], array[b]];
+        [array[a], array[b]] = [array[b], array[a]];
       };
       // 冒泡排序
       const bubbleSort = (array, compareFn = defaultCompare) => {
@@ -153,10 +159,12 @@
         if (array.length > 1) {
           // 该变量能够将子数组分离为较小数组和较大数组，这样就能再次调用quick函数了。
           index = partition(array, left, right, compareFn);
+          console.log(left, index, right);
+          console.log(left, index - 1, "left");
           if (left < index - 1) {
             quick(array, left, index - 1, compareFn);
           }
-
+          console.log(index, right, "right");
           if (index < right) {
             quick(array, index, right, compareFn);
           }
@@ -167,23 +175,184 @@
       // 划分过程
       const partition = (array, left, right, compareFn) => {
         const pivot = array[Math.floor((right + left) / 2)];
+        console.log("pivot", pivot);
         let i = left;
         let j = right;
         while (i <= j) {
-          while (compareFn(array[i], pivot) === compareFn.LESS_THAN) {
+          while (compareFn(array[i], pivot) === Compare.LESS_THAN) {
             i++;
           }
-          while (compareFn(array[j], pivot) === compareFn.BIGGER_THAN) {
+          while (compareFn(array[j], pivot) === Compare.BIGGER_THAN) {
             j--;
           }
 
           if (i <= j) {
             swap(array, i, j);
+            console.log("array", array);
             i++;
             j--;
+            console.log(i);
           }
         }
         return i;
+      };
+
+      console.log(quickSort([3, 5, 1, 6, 4, 7, 2]));
+
+      /*
+        计数排序：是第一个分布式排序，分布式排序使用已组织好的辅助数据结构(桶)，然后进行合并，得到排序好的数组。
+        计数排序使用一个用来存储每个元素在原始数组中出现次数的临时数组。在所有元素都计数完成后，临时数组已排好序并
+        可迭代以构建排序后的结果数组。
+        它是用来排序整数的优秀算法(它是一个整数排序算法)，时间复杂度为O(n+k)，其中k是临时计数数组的大小；但是，
+        它确实需要更多的内存来存放临时数组。
+      */
+      const countingSort = (array) => {
+        if (array.length < 2) {
+          return array;
+        }
+
+        // 找到最大值
+        const maxValue = findMaxValue(array);
+        // 创建临时数组
+        const counts = new Array(maxValue + 1);
+        array.forEach((element) => {
+          if (!counts[element]) {
+            counts[element] = 0;
+          }
+          counts[element]++;
+        });
+
+        let sortedIndex = 0;
+        counts.forEach((count, i) => {
+          while (count > 0) {
+            array[sortedIndex++] = i;
+            count--;
+          }
+        });
+
+        return array;
+      };
+
+      // 找到最大值
+      const findMaxValue = (array) => {
+        let max = array[0];
+        for (let i = 1; i < array.length; i++) {
+          if (array[i] > max) {
+            max = array[i];
+          }
+        }
+        return max;
+      };
+
+      /*
+        桶排序：也是分布式算法，它将元素分为不同的桶(较小的数组)，再使用一个简单的排序算法，例如插入排序，
+        来对每个桶进行排序。然后，它将所有的桶合并为结果数组。
+        对于桶排序算法，我们需要指定需要多少桶来排序各个元素。默认情况下，我们会使用5个桶。桶排序在所有元素
+        平均分到各个桶中时的表现最好。如果元素非常稀疏，则使用更多的桶会更好。如果元素非常密集，则使用较少的桶会
+        更好。
+      */
+      const bucketSort = (array, bucketSize = 5) => {
+        if (array.length < 2) {
+          return array;
+        }
+        const buckets = createBuckets(array, bucketSize);
+        return sortBuckets(buckets);
+      };
+
+      // 创建桶
+      const createBuckets = (array, bucketSize) => {
+        let minValue = array[0];
+        let maxValue = array[0];
+        for (let i = 1; i < array.length; i++) {
+          if (array[i] < minValue) {
+            minValue = array[i];
+          } else if (array[i] > maxValue) {
+            maxValue = array[i];
+          }
+        }
+
+        const bucketCount = Math.floor((maxValue - minValue) / bucketSize) + 1;
+        const buckets = [];
+        for (let i = 0; i < bucketCount; i++) {
+          buckets[i] = [];
+        }
+        for (let i = 0; i < array.length; i++) {
+          const bucketIndex = Math.floor((array[i] - minValue) / bucketSize);
+          buckets[bucketIndex].push(array[i]);
+        }
+
+        return buckets;
+      };
+
+      // 对桶进行插入排序
+      const sortBuckets = (buckets) => {
+        const sortedArray = [];
+        for (let i = 0; i < buckets.length; i++) {
+          if (buckets[i] != null) {
+            insertionSort(buckets[i]);
+            sortedArray.push(...buckets[i]);
+          }
+        }
+      };
+
+      /*
+        基数排序：也是一种分布式排序算法，它根据数字的有效位或者基数将整数分布到桶中。基数是基于数组中值的记数制的。
+        比如，对于十进制数，使用的基数是10。因此，算法将会使用10个桶用来分布元素并且首先基于个位数字进行排序，然后基于
+        十位数字，然后基于百位数字，以此类推。
+      */
+      const radixSort = (array, radixBase = 10) => {
+        if (array.length < 2) {
+          return array;
+        }
+        const minValue = findMinValue(array);
+        const maxValue = findMaxValue(array);
+
+        let significantDigit = 1;
+        while ((maxValue - minValue) / significantDigit >= 1) {
+          array = countingSortForRadix(
+            array,
+            radixBase,
+            significantDigit,
+            minValue
+          );
+          significantDigit *= radixBase;
+        }
+        return array;
+      };
+
+      const countingSortForRadix = (
+        array,
+        radixBase,
+        significantDigit,
+        minValue
+      ) => {
+        let bucketsIndex;
+        const buckets = [];
+        const aux = [];
+        for (let i = 0; i < radixBase; i++) {
+          buckets[i] = 0;
+        }
+        for (let i = 0; i < array.length; i++) {
+          bucketsIndex = Math.floor(
+            ((array[i] - minValue) / significantDigit) % radixBase
+          );
+          buckets[bucketsIndex]++;
+        }
+        for (let i = 1; i < radixBase; i++) {
+          buckets[i] += buckets[i - 1];
+        }
+        for (let i = array.length - 1; i >= 0; i--) {
+          bucketsIndex = Math.floor(
+            ((array[i] - minValue) / significantDigit) % radixBase
+          );
+          aux[--buckets[bucketsIndex]] = array[i];
+        }
+
+        for (let i = 0; i < array.length; i++) {
+          array[i] = aux[i];
+        }
+
+        return array;
       };
     </script>
   </body>
