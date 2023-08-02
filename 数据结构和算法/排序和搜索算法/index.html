@@ -14,6 +14,7 @@
       const Compare = {
         LESS_THAN: -1,
         BIGGER_THAN: 1,
+        EQUALS: 0,
       };
 
       const defaultCompare = (a, b) => {
@@ -352,6 +353,92 @@
           array[i] = aux[i];
         }
 
+        return array;
+      };
+
+      const lesserOrEquals = (a, b, compareFn) => {
+        const comp = compareFn(a, b);
+        return comp === Compare.LESS_THAN || comp === Compare.EQUALS;
+      };
+
+      const DOES_NOT_EXIST = -1;
+      /*
+        搜索算法：二分搜索
+        1. 选择数组的中间值
+        2. 如果选中值是待搜索值，那么算法执行完毕
+        3. 如果待搜索值比选中值要小，则返回步骤1并选中值左边的子数组中寻找(较小)。
+        4. 如果待搜索值比选中值要大，则返回步骤1并在选中值右边的子数组中寻找(较大)。
+      */
+      const binarySearch = (array, value, compareFn = defaultCompare) => {
+        const sortedArray = quickSort(array);
+        let low = 0;
+        let high = sortedArray.length - 1;
+
+        while (lesserOrEquals(low, high, compareFn)) {
+          const mid = Math.floor((low + high) / 2);
+          const element = sortedArray[mid];
+          if (compareFn(element, value) === Compare.LESS_THAN) {
+            low = mid + 1;
+          } else if (compareFn(element, value) === Compare.BIGGER_THAN) {
+            high = mid - 1;
+          } else {
+            return mid;
+          }
+        }
+        return DOES_NOT_EXIST;
+      };
+
+      /*
+        内插搜索：改良版的二分搜索。二分搜索总是检查mid位置上的值，而内插搜索可能会根据要搜索的值
+        检查数组中的不同地方。
+
+        要求被搜索的数据结构已排序：
+        1. 使用position公式选中一个值
+        2. 如果这个值是待搜索值，那么算法执行完毕
+        3. 如果待搜索值比选中值要小，则返回步骤1并在选中值左边的子数组中寻找(较小)
+        4. 如果待搜索值比选中值要大，则返回步骤1并在选中值右边的子数组中寻找(较大)
+      */
+      const interpolationSearch = (array, target) => {
+        const sortedArray = quickSort(array);
+        let low = 0;
+        let high = arr.length - 1;
+
+        while (
+          low <= high &&
+          target >= sortedArray[low] &&
+          target <= sortedArray[high]
+        ) {
+          // 估算目标元素在数组中的位置
+          let pos =
+            low +
+            Math.floor(
+              ((target - sortedArray[low]) /
+                (sortedArray[high] - sortedArray[low])) *
+                (high - low)
+            );
+
+          if (arr[pos] === target) {
+            return pos; // 找到目标元素，返回索引位置
+          }
+
+          if (sortedArray[pos] < target) {
+            low = pos + 1; // 目标元素在估计位置的右侧
+          } else {
+            high = pos - 1; // 目标元素在估计位置的左侧
+          }
+        }
+
+        return DOES_NOT_EXIST;
+      };
+
+      /* 
+        随机算法
+      */
+      const shuffle = (array) => {
+        for (let i = array.length - 1; i > 0; i--) {
+          const randomIndex = Math.floor(Math.random() * (i + 1));
+          swap(array, i, randomIndex);
+        }
         return array;
       };
     </script>
