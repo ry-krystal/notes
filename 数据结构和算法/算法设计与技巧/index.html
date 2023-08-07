@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <script>
+      /*
+        分而治之：
+        1. 分解原问题为多个子问题(原问题为多个小实例)
+        2. 解决子问题，用返回解决子问题的方式的递归算法。递归算法的基本情形可以用来解决子问题。
+        3. 组合这些子问题的解决方式，得到原问题的解
+      */
+
+      /*
+        分而治之的二分搜索
+      */
+      const binarySearch = (arr, target, left, right) => {
+        if (left > right) return -1; // 目标元素不存在
+        const mid = Math.floor((left + right) / 2);
+        if (arr[mid] === target) {
+          return mid;
+        } else if (arr[mid] < target) {
+          return binarySearch(arr, target, mid + 1, right);
+        } else {
+          return binarySearch(arr, target, left, mid - 1);
+        }
+      };
+
+      /*
+        动态规划：是一种将复杂问题分解成更小的子问题来解决的优化技术。
+        1. 定义子问题
+        2. 实现要反复执行来解决子问题的部分
+        3. 识别并求解出基线条件
+      */
+
+      /*
+        最少硬币找零问题：
+        硬币找零问题是给出要找零的钱数，以及可用的硬币面额d1,...,dn及其数量，
+        找出有多少种找零的方法。找到所需的最少的硬币个数。
+
+        最少硬币找零的解决方案是找到n所需的最小硬币树。但要做到这一点，首先得找到
+        对每个x<n的解。然后，我们可以基于更小的值的解来求解
+      */
+      // const minCoinChange = (coins, amount) => {
+      //   const cache = [];
+      //   const makeChange = (value) => {
+      //     if (!value) return [];
+      //     if (cache[value]) return cache[value];
+      //     let min = [];
+      //     let newMin;
+      //     let newAmount;
+      //     for (let i = 0; i < coins.length; i++) {
+      //       const coin = coins[i];
+      //       newAmount = value - coin;
+      //       if (newAmount >= 0) {
+      //         newMin = makeChange(newAmount);
+      //       }
+      //       if (
+      //         newAmount >= 0 &&
+      //         (newMin.length < min.length - 1 || !min.length) &&
+      //         (newMin.length || !newAmount)
+      //       ) {
+      //         min = [coin].concat(newMin);
+      //         console.log("newMin " + min + " for " + newAmount);
+      //       }
+      //     }
+      //     return (cache[value] = min);
+      //   };
+      //   return makeChange(amount);
+      // };
+      // console.log(minCoinChange([1, 5, 10, 25], 36));
+      // console.log(minCoinChange([1, 3, 4], 6));
+
+      // 另一种思路：
+      const minCoinChange = (coins, amount) => {
+        // 初始化数组，用来存放每个金额的最少硬币数
+        const dp = new Array(amount + 1).fill(Infinity);
+        // 金额为0，不需要硬币
+        dp[0] = 0;
+
+        for (let i = 1; i < amount; i++) {
+          for (const coin of coins) {
+            if (i - coin >= 0) {
+              dp[i] = Math.min(dp[i], dp[i - coin] + 1);
+            }
+          }
+        }
+
+        return dp[amount] === Infinity ? -1 : dp[amount];
+      };
+      console.log(minCoinChange([1, 3, 4], 6));
+      console.log(minCoinChange([1, 5, 10, 25], 36));
+    </script>
+  </body>
+</html>
