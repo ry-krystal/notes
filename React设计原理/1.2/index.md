@@ -88,6 +88,8 @@ function useEffect(callback) {
 }
 ```
 
+cleanup 的实现：
+
 ```js
 function cleanup(effect) {
   // 从该effect订阅的所有state对应subs中移除该effect
