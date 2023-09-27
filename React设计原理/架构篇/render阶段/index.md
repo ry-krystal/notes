@@ -2,7 +2,7 @@
 
 Reconciler 工作的阶段在 React 内部被称为 render 阶段，ClassComponent 的 render 函数、Function Component 函数本身都在该阶段被调用。
 
-根据 Scheduler 调用的结果不同，render 阶段可能开始于 performSyncWorkOnRoot(同步更新流程)或 performConcurrentWorkOnRoot(并发更新流程)方法。
+根据 Scheduler 调用的结果不同，**render 阶段可能开始于 performSyncWorkOnRoot(同步更新流程)或 performConcurrentWorkOnRoot(并发更新流程)方法。**
 
 ```js
 // performSyncWorkOnRoot 会执行该方法
@@ -41,4 +41,47 @@ LIFiber.return = ULFiber;
 
 ```js
 // jsx情况
+<ul>
+  <li></li>
+  <li></li>
+  <li></li>
+</ul>;
+
+// 子fiberNode依次连接
+LI0Fiber.sibling = LI1Fiber;
+LI1Fiber.sibling = LI2Fiber;
+
+// 为首的子fiberNode与父fiberNode连接
+LI0Fiber.return = ULFiber;
+```
+
+当遍历到叶子元素(不包含子 fiberNode)时，performUnitOfWork 就会进入“归”阶段。
+“归”阶段会调用 completeWork 方法处理 fiberNode。当某个 fiberNode 执行完 completeWork 方法后，如果其存在兄弟 fiberNode(fiberNode.sibling !== null),会进入其兄弟 fiberNode 的‘递’阶段，如果不能存在兄弟 fiberNode,则进入父 fiberNode 的"归"阶段。”递“阶段和”归“阶段会交错执行直至 HostRootFiber 的”归“阶段。至此，render 阶段的工作结束。
+
+```md
+HostRootFiber beginWork --> App fiberNode
+App fiberNode beginWork --> DIV fiberNode
+DIV fiberNode beginWork --> 'hello'、SPAN fiberNode
+'hello' fiberNode beginWork (叶子元素)
+'hello' fiberNode completeWork
+SPAN fiberNode beginWork (叶子元素)
+SPAN fiberNode completeWork
+DIV fiberNode completeWork
+APP fiberNode completeWork
+HostRootFiber fiberNode completeWork
+```
+
+将 performUnitOfWork 方法改写为”递归“版本，代码如下：
+
+```js
+function performUnitOfWork(fiberNode) {
+  // 省略还行beginWork工作
+  if (fiberNode.child) {
+    performUnitOfWork(fiberNode.child);
+  }
+  // 省略执行completeWork工作
+  if (fiberNode.sibling) {
+    performUnitOfWork(fiberNode.sibling);
+  }
+}
 ```
