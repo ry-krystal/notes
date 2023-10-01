@@ -10,7 +10,7 @@ if (current !== null) {
 
 如果当前流程是 update 流程，则 wip fiberNode 存在对应的 Current fiberNode。如果本次更新不影响 fiberNode.child，则可以复用对应的 Current fiberNode,这是一条 render 阶段的优化路径。
 
-!['xxx'](../images/beginWork工作流程.drawio.svg "beginWork流程图")
+!['xxx'](../images/beginWork工作流程图.drawio.svg "beginWork流程图")
 
 如果无法复用 Current fiberNode, 则 mount 与 update 的流程大体一致，包括：
 (1) 根据 wip.tag 进入”不同类型元素的处理分支“
